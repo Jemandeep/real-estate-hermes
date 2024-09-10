@@ -2,26 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-blue-500;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.login-container {
+  @apply flex items-center justify-center min-h-screen;
+}
+
+.login-box {
+  @apply w-full max-w-md bg-white p-8 shadow-md rounded-lg;
+}
+
+.login-title {
+  @apply text-3xl font-bold text-center mb-4;
+}
+
+.login-form {
+  @apply space-y-4;
+}
+
+.login-input-label {
+  @apply block text-gray-700;
+}
+
+.login-input {
+  @apply w-full px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 placeholder-gray-500;
+}
+
+.login-button {
+  @apply w-full py-2 bg-indigo-600 text-white font-bold rounded hover:bg-indigo-700 transition duration-200;
+}
+
+.social-login-button {
+  @apply w-full py-2 flex items-center justify-center font-bold rounded transition duration-200;
+}
+
+.google-button {
+  @apply bg-red-600 text-white hover:bg-red-700;
+}
+
+.github-button {
+  @apply bg-gray-800 text-white hover:bg-gray-900;
+}
+
+.error-message {
+  @apply text-red-500 text-xs italic mt-4;
 }
