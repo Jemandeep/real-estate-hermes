@@ -3,9 +3,14 @@
 @tailwind utilities;
 
 body {
-  @apply bg-blue-500;
+  @apply bg-stone-300;
 }
-
+NavBar {
+  @apply bg-stone-300 text-white;
+}
+header {
+  @apply bg-stone-500 text-white;
+}
 .login-container {
   @apply flex items-center justify-center min-h-screen;
 }
