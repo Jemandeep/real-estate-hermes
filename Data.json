@@ -1,0 +1,212 @@
+[
+    {
+      "location": "123 Maple St, Calgary, AB",
+      "priceHistory": {
+        "2014": { "summer": 520000, "winter": 510000 },
+        "2015": { "summer": 510000, "winter": 500000 },
+        "2016": { "summer": 495000, "winter": 485000 },
+        "2017": { "summer": 480000, "winter": 470000 },
+        "2018": { "summer": 470000, "winter": 460000 },
+        "2019": { "summer": 465000, "winter": 455000 },
+        "2020": { "summer": 475000, "winter": 460000 },
+        "2021": { "summer": 495000, "winter": 480000 },
+        "2022": { "summer": 525000, "winter": 510000 },
+        "2023": { "summer": 540000, "winter": 530000 }
+      },
+      "bedrooms": 4,
+      "bathrooms": 3,
+      "area": "2500 sqft",
+      "description": "A spacious 4-bedroom house in a quiet neighborhood with a large backyard."
+    },
+    {
+      "location": "456 Oak St, Vancouver, BC",
+      "priceHistory": {
+        "2014": { "summer": 780000, "winter": 765000 },
+        "2015": { "summer": 820000, "winter": 800000 },
+        "2016": { "summer": 860000, "winter": 850000 },
+        "2017": { "summer": 900000, "winter": 880000 },
+        "2018": { "summer": 920000, "winter": 900000 },
+        "2019": { "summer": 910000, "winter": 895000 },
+        "2020": { "summer": 920000, "winter": 905000 },
+        "2021": { "summer": 950000, "winter": 935000 },
+        "2022": { "summer": 980000, "winter": 965000 },
+        "2023": { "summer": 1020000, "winter": 1000000 }
+      },
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "area": "1800 sqft",
+      "description": "A modern 3-bedroom house located in the heart of Vancouver with easy access to public transit."
+    },
+    {
+      "location": "789 Pine Ave, Toronto, ON",
+      "priceHistory": {
+        "2014": { "summer": 660000, "winter": 650000 },
+        "2015": { "summer": 680000, "winter": 670000 },
+        "2016": { "summer": 700000, "winter": 685000 },
+        "2017": { "summer": 720000, "winter": 710000 },
+        "2018": { "summer": 730000, "winter": 720000 },
+        "2019": { "summer": 740000, "winter": 730000 },
+        "2020": { "summer": 760000, "winter": 750000 },
+        "2021": { "summer": 780000, "winter": 770000 },
+        "2022": { "summer": 810000, "winter": 800000 },
+        "2023": { "summer": 840000, "winter": 830000 }
+      },
+      "bedrooms": 4,
+      "bathrooms": 3,
+      "area": "2200 sqft",
+      "description": "A family-friendly 4-bedroom home with a finished basement and modern appliances."
+    },
+    {
+      "location": "1012 Birch Rd, Edmonton, AB",
+      "priceHistory": {
+        "2014": { "summer": 450000, "winter": 440000 },
+        "2015": { "summer": 445000, "winter": 435000 },
+        "2016": { "summer": 435000, "winter": 425000 },
+        "2017": { "summer": 420000, "winter": 410000 },
+        "2018": { "summer": 415000, "winter": 405000 },
+        "2019": { "summer": 410000, "winter": 400000 },
+        "2020": { "summer": 420000, "winter": 410000 },
+        "2021": { "summer": 430000, "winter": 420000 },
+        "2022": { "summer": 440000, "winter": 430000 },
+        "2023": { "summer": 455000, "winter": 445000 }
+      },
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "area": "2000 sqft",
+      "description": "A cozy 3-bedroom house with a large front yard and a newly renovated kitchen."
+    },
+    {
+      "location": "205 Spruce Dr, Montreal, QC",
+      "priceHistory": {
+        "2014": { "summer": 550000, "winter": 540000 },
+        "2015": { "summer": 565000, "winter": 550000 },
+        "2016": { "summer": 580000, "winter": 565000 },
+        "2017": { "summer": 600000, "winter": 580000 },
+        "2018": { "summer": 610000, "winter": 600000 },
+        "2019": { "summer": 605000, "winter": 595000 },
+        "2020": { "summer": 620000, "winter": 610000 },
+        "2021": { "summer": 640000, "winter": 630000 },
+        "2022": { "summer": 660000, "winter": 650000 },
+        "2023": { "summer": 680000, "winter": 670000 }
+      },
+      "bedrooms": 4,
+      "bathrooms": 3,
+      "area": "2400 sqft",
+      "description": "A beautiful 4-bedroom home located near schools, parks, and public transport."
+    },
+    {
+      "location": "678 Cedar Blvd, Ottawa, ON",
+      "priceHistory": {
+        "2014": { "summer": 600000, "winter": 590000 },
+        "2015": { "summer": 610000, "winter": 600000 },
+        "2016": { "summer": 630000, "winter": 615000 },
+        "2017": { "summer": 640000, "winter": 630000 },
+        "2018": { "summer": 650000, "winter": 640000 },
+        "2019": { "summer": 655000, "winter": 645000 },
+        "2020": { "summer": 670000, "winter": 660000 },
+        "2021": { "summer": 685000, "winter": 675000 },
+        "2022": { "summer": 700000, "winter": 690000 },
+        "2023": { "summer": 720000, "winter": 710000 }
+      },
+      "bedrooms": 5,
+      "bathrooms": 4,
+      "area": "3000 sqft",
+      "description": "A luxurious 5-bedroom house with a finished basement, home office, and a spacious backyard."
+    },
+    {
+      "location": "32 Aspen Dr, Calgary, AB",
+      "priceHistory": {
+        "2014": { "summer": 450000, "winter": 440000 },
+        "2015": { "summer": 440000, "winter": 430000 },
+        "2016": { "summer": 425000, "winter": 420000 },
+        "2017": { "summer": 415000, "winter": 405000 },
+        "2018": { "summer": 400000, "winter": 390000 },
+        "2019": { "summer": 395000, "winter": 385000 },
+        "2020": { "summer": 410000, "winter": 400000 },
+        "2021": { "summer": 430000, "winter": 420000 },
+        "2022": { "summer": 450000, "winter": 440000 },
+        "2023": { "summer": 460000, "winter": 450000 }
+      },
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "area": "1900 sqft",
+      "description": "A cozy family home located near parks and schools, ideal for a growing family."
+    },
+    {
+      "location": "12 Elm St, Winnipeg, MB",
+      "priceHistory": {
+        "2014": { "summer": 350000, "winter": 340000 },
+        "2015": { "summer": 360000, "winter": 350000 },
+        "2016": { "summer": 375000, "winter": 365000 },
+        "2017": { "summer": 380000, "winter": 370000 },
+        "2018": { "summer": 390000, "winter": 380000 },
+        "2019": { "summer": 400000, "winter": 390000 },
+        "2020": { "summer": 410000, "winter": 400000 },
+        "2021": { "summer": 420000, "winter": 410000 },
+        "2022": { "summer": 435000, "winter": 425000 },
+        "2023": { "summer": 450000, "winter": 440000 }
+      },
+      "bedrooms": 4,
+      "bathrooms": 2,
+      "area": "2100 sqft",
+      "description": "A charming 4-bedroom house with a large backyard, located in a family-friendly neighborhood."
+    },
+    {
+      "location": "23 Riverbank Rd, Hamilton, ON",
+      "priceHistory": {
+        "2014": { "summer": 620000, "winter": 610000 },
+        "2015": { "summer": 630000, "winter": 620000 },
+        "2016": { "summer": 640000, "winter": 630000 },
+        "2017": { "summer": 655000, "winter": 645000 },
+        "2018": { "summer": 665000, "winter": 655000 },
+        "2019": { "summer": 675000, "winter": 665000 },
+        "2020": { "summer": 690000, "winter": 680000 },
+        "2021": { "summer": 710000, "winter": 700000 },
+        "2022": { "summer": 730000, "winter": 720000 },
+        "2023": { "summer": 750000, "winter": 740000 }
+      },
+      "bedrooms": 5,
+      "bathrooms": 3,
+      "area": "3200 sqft",
+      "description": "A large 5-bedroom house located near the waterfront with stunning views."
+    },
+    {
+      "location": "45 Bay St, Halifax, NS",
+      "priceHistory": {
+        "2014": { "summer": 460000, "winter": 450000 },
+        "2015": { "summer": 470000, "winter": 460000 },
+        "2016": { "summer": 480000, "winter": 470000 },
+        "2017": { "summer": 490000, "winter": 480000 },
+        "2018": { "summer": 495000, "winter": 485000 },
+        "2019": { "summer": 505000, "winter": 495000 },
+        "2020": { "summer": 515000, "winter": 505000 },
+        "2021": { "summer": 530000, "winter": 520000 },
+        "2022": { "summer": 545000, "winter": 535000 },
+        "2023": { "summer": 560000, "winter": 550000 }
+      },
+      "bedrooms": 4,
+      "bathrooms": 3,
+      "area": "2600 sqft",
+      "description": "A stunning 4-bedroom home with ocean views, located near the beach."
+    },
+    {
+      "location": "88 Mountain View Rd, Banff, AB",
+      "priceHistory": {
+        "2014": { "summer": 950000, "winter": 930000 },
+        "2015": { "summer": 970000, "winter": 950000 },
+        "2016": { "summer": 990000, "winter": 970000 },
+        "2017": { "summer": 1020000, "winter": 1000000 },
+        "2018": { "summer": 1050000, "winter": 1030000 },
+        "2019": { "summer": 1070000, "winter": 1050000 },
+        "2020": { "summer": 1100000, "winter": 1080000 },
+        "2021": { "summer": 1150000, "winter": 1120000 },
+        "2022": { "summer": 1180000, "winter": 1150000 },
+        "2023": { "summer": 1220000, "winter": 1200000 }
+      },
+      "bedrooms": 5,
+      "bathrooms": 4,
+      "area": "3800 sqft",
+      "description": "A luxurious 5-bedroom mountain lodge with breathtaking views of the Rockies."
+    }
+  ]
+  
