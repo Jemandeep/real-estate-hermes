@@ -4,6 +4,7 @@ const NavBar = () => {
   return (
     <nav className="bg-white shadow-md py-4">
       <div className="container mx-auto flex justify-between items-center">
+<<<<<<< Updated upstream
         {/* Link the "Calgary Real Estate" text to the home page */}
         <Link href="/" className="text-xl font-bold text-gray-800">
           Calgary Real Estate
@@ -16,5 +17,23 @@ const NavBar = () => {
     </nav>
   );
 };
+=======
+      <Link href="/" className="text-xl font-bold text-gray-800">
+          Calgary Real Estate
+        </Link>
+        <ul className="flex space-x-6">
+          <li><Link href="/">Home</Link></li>
+          
+          <li><Link href="/login">Login</Link></li>
+        </ul>
+      </div>
+    </nav>
+  );
+}
+>>>>>>> Stashed changes
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 export default NavBar;
