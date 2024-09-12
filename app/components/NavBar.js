@@ -17,4 +17,8 @@ const NavBar = () => {
   );
 };
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 export default NavBar;
