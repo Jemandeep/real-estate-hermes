@@ -1,41 +1,41 @@
-"use client"
-import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase"; // Ensure the path to your firebase.js is correct
-import Link from "next/link"; // Import Link for navigation
+"use client";
 
-export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-  const handleLogin = async (e) => {
+export default function Login() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const router = useRouter();
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      // Firebase authentication using email and password
-      await signInWithEmailAndPassword(auth, email, password);
-      alert("Login successful!");
-    } catch (error) {
-      setError("Failed to login. Please check your credentials.");
+    if (username === 'admin' && password === 'password') {
+      alert('Login successful!');
+      setErrorMessage('');
+      router.push('/homepage'); // Navigate to homepage
+    } else {
+      setErrorMessage('Invalid username or password');
     }
   };
 
   return (
     <div className="login-container">
       <div className="login-box">
-        <h2 className="login-title">LOGIN</h2>
-        <form onSubmit={handleLogin} className="login-form">
+        <h2 className="login-title">LOGIN/REGISTER</h2>
+        <form onSubmit={handleSubmit} className="login-form">
           <div>
-            <label htmlFor="email" className="login-input-label">
-              Email
+            <label htmlFor="username" className="login-input-label">
+              Username
             </label>
             <input
-              type="email"
-              id="email"
-              name="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
+              type="text"
+              id="username"
+              name="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Username"
               required
               className="login-input"
             />
@@ -58,13 +58,17 @@ export default function LoginPage() {
           <button type="submit" className="login-button">
             Login Now
           </button>
-          {error && <p className="error-message">{error}</p>}
+          {errorMessage && <p className="error-message">{errorMessage}</p>}
         </form>
-        <div className="mt-4 text-center">
-          <p>Don't have an account?</p>
-          <Link href="/signup" className="text-indigo-600 hover:text-indigo-800 transition duration-200">
-            Register here
-          </Link>
+        <div className="mt-6">
+          <button className="social-login-button google-button">
+            Login with Google
+          </button>
+        </div>
+        <div className="mt-4">
+          <button className="social-login-button github-button">
+            Login with GitHub
+          </button>
         </div>
       </div>
     </div>
