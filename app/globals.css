@@ -5,16 +5,11 @@
 body {
   @apply bg-stone-300;
 }
-<<<<<<< Updated upstream
 NavBar {
   @apply bg-stone-300 text-white;
 }
 header {
   @apply bg-stone-500 text-white;
-=======
-header {
-  @apply bg-stone-500 text-white text-center py-4;
->>>>>>> Stashed changes
 }
 .login-container {
   @apply flex items-center justify-center min-h-screen;
