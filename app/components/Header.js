@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../../firebase"; // Ensure the path to your Firebase config is correct
+import { doc, getDoc } from "firebase/firestore"; // Firestore methods for fetching user data
+import { auth, db } from "../../firebase"; // Ensure the path to your Firebase config is correct
 
 const Header = () => {
   const [userName, setUserName] = useState(null); // State to track user's name
@@ -10,17 +11,33 @@ const Header = () => {
     return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
   };
 
+  // Function to fetch user's name from Firestore
+  const fetchUserName = async (email) => {
+    try {
+      // Fetch the user's document from Firestore using their email as the document ID
+      const userDoc = await getDoc(doc(db, "users", email));
+      
+      if (userDoc.exists()) {
+        // Get the full name from Firestore
+        const fullName = userDoc.data().name || "";
+        const firstName = fullName.split(" ")[0]; // Get the first name
+        setUserName(capitalizeFirstLetter(firstName));
+      } else {
+        // If no document exists, fall back to using the email prefix as the name
+        const fallbackName = email.split("@")[0];
+        setUserName(capitalizeFirstLetter(fallbackName));
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
   // Monitor the user's authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // Get the first part of displayName or email
-        let firstName = user.displayName
-          ? user.displayName.split(" ")[0] // Split by space if there's a displayName
-          : user.email.split("@")[0];      // Split by '@' if using email
-          
-        // Capitalize the first letter of the first name
-        setUserName(capitalizeFirstLetter(firstName));
+        // Fetch user's name from Firestore if logged in
+        fetchUserName(user.email);
       } else {
         // If no user is logged in, clear the state
         setUserName(null);
@@ -41,10 +58,12 @@ const Header = () => {
       
       {/* Action Buttons */}
       <div className="space-x-4">
-        <a href="/listings" className="bg-white text-stone-600 font-semibold px-6 py-3 rounded-md hover:bg-gray-100">Browse Listings</a>
+        <a href="/listings" className="bg-white text-stone-600 font-semibold px-6 py-3 rounded-md hover:bg-gray-100">
+          Browse Listings
+        </a>
       </div>
     </div>
   );
-}
+};
 
 export default Header;

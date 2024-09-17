@@ -9,8 +9,9 @@ import Layout from "../components/Layout";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // State for toggling password visibility
   const [error, setError] = useState("");
-  
+
   const router = useRouter(); // Initialize the useRouter hook
 
   const handleLogin = async (e) => {
@@ -49,12 +50,14 @@ export default function LoginPage() {
                 className="login-input"
               />
             </div>
-            <div>
+            
+            {/* Password Field with Show/Hide */}
+            <div className="relative">
               <label htmlFor="password" className="login-input-label">
                 Password
               </label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
                 value={password}
@@ -63,7 +66,16 @@ export default function LoginPage() {
                 required
                 className="login-input"
               />
+              {/* Show/Hide Button */}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-2 top-9 text-sm text-gray-600 hover:text-gray-800"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
             </div>
+            
             <button type="submit" className="login-button">
               Login Now
             </button>
