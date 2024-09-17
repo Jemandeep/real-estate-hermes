@@ -54,3 +54,13 @@ header {
 .error-message {
   @apply text-red-500 text-xs italic mt-4;
 }
+@media (max-width: 768px) {
+  .container {
+    grid-template-areas:
+      'header'
+      'main-content'
+      'sidebar'
+      'footer';
+    grid-template-columns: 1fr;
+  }
+}
