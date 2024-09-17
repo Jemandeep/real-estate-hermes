@@ -105,7 +105,6 @@ const Analysis = () => {
     <Layout>
       <div className="max-w-lg mx-auto p-4 bg-white rounded shadow mt-10">
         <h1 className="text-2xl font-bold mb-4">Property Listings</h1>
-
         {}
         <div className="mb-4 grid grid-cols-2 gap-4">
           <div>
@@ -144,7 +143,7 @@ const Analysis = () => {
           </div>
         </div>
 
-        {/* Month Selector */}
+        {}
         <div className="mb-4">
           <label className="block text-sm font-semibold mb-2" htmlFor="month-selector">
             Select Number of Months:
@@ -162,7 +161,7 @@ const Analysis = () => {
             ))}
           </select>
         </div>
-
+        {/* Render listing*/} 
         {error ? (
           <p className="text-red-600">{error}</p>
         ) : filteredListings.length > 0 ? (
