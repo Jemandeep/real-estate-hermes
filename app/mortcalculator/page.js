@@ -1,8 +1,30 @@
 "use client";
 
 import { useState } from 'react';
-import InputField from './components/InputField';
-import ResultDisplay from './components/ResultDisplay';
+
+const InputField = ({ label, type, value, onChange, placeholder }) => {
+  return (
+    <div className="mb-4">
+      <label className="block text-gray-700 text-sm font-bold mb-2">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+      />
+    </div>
+  );
+};
+
+const ResultDisplay = ({ result }) => {
+  return (
+    <div className="bg-blue-100 p-4 rounded shadow-md mt-6">
+      <h3 className="text-xl font-bold text-blue-600">Mortgage Payment</h3>
+      <p className="text-lg">Your monthly payment: <span className="font-bold">${result}</span></p>
+    </div>
+  );
+};
 
 const MortCalculatorPage = () => {
   const [price, setPrice] = useState(0);
@@ -11,12 +33,10 @@ const MortCalculatorPage = () => {
   const [term, setTerm] = useState(25); // default 25-year term
   const [result, setResult] = useState(null);
 
-  // Function to calculate mortgage payment
   const calculateMortgage = () => {
     const loanAmount = price - (price * downPayment / 100);
     const monthlyInterestRate = (interestRate / 100) / 12;
     const numberOfPayments = term * 12;
-
     const payment = loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments) / (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
 
     setResult(payment.toFixed(2));
