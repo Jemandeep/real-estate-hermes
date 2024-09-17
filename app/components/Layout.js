@@ -4,32 +4,32 @@ import React, { useEffect } from 'react';
 import NavBar from './NavBar';
 
 const Layout = ({ children }) => {
-
   useEffect(() => {
-    const handleResize = () => {
-      const chart = document.getElementById('chart'); // You can adjust this to match your specific element
-      if (chart) {
-        chart.style.width = window.innerWidth * 0.8 + 'px'; // Adjust chart width
-        chart.style.height = window.innerHeight * 0.5 + 'px'; // Adjust chart height
-      }
-    };
+    // Ensure the chart-related functionality is only applied on pages that actually have a chart.
+    const chart = document.getElementById('chart');
+    if (chart) {
+      const handleResize = () => {
+        chart.style.width = window.innerWidth * 0.8 + 'px';
+        chart.style.height = window.innerHeight * 0.5 + 'px';
+      };
 
-    // Call the resize function initially when the component mounts
-    handleResize();
+      // Initial call when the component mounts
+      handleResize();
 
-    // Add the event listener for window resize
-    window.addEventListener('resize', handleResize);
+      // Setup the resize event listener
+      window.addEventListener('resize', handleResize);
 
-    // Clean up the event listener when the component unmounts
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+      // Cleanup the event listener on component unmount
+      return () => window.removeEventListener('resize', handleResize);
+    }
   }, []);
 
   return (
     <div>
+      {/* Fixed NavBar at the top */}
       <NavBar />
-      <main className="container mx-auto p-4">{children}</main>
+      {/* Ensure the padding at the top accommodates the height of the NavBar */}
+      <main className="container mx-auto p-4 pt-20">{children}</main>
     </div>
   );
 };
