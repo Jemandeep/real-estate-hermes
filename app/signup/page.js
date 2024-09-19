@@ -8,7 +8,8 @@ import Link from "next/link";
 import Layout from "../components/Layout";
 
 export default function SignupPage() {
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState(""); // Optional field
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,7 +21,6 @@ export default function SignupPage() {
   const router = useRouter(); // Initialize the useRouter hook
 
   useEffect(() => {
-    // We ensure that this is only run on the client-side
     if (typeof window !== "undefined") {
       // We are on the client-side
     }
@@ -39,9 +39,12 @@ export default function SignupPage() {
       // Create user with email and password using Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-      // Store the user's name and email in Firestore using email as the primary key (document ID)
+      // Combine first and last name (if last name is provided)
+      const fullName = lastName ? `${firstName} ${lastName}` : firstName;
+
+      // Store the user's full name and email in Firestore using email as the primary key (document ID)
       await setDoc(doc(db, "users", email), {
-        name: name,
+        name: fullName,
         email: email,
       });
 
@@ -67,19 +70,35 @@ export default function SignupPage() {
         <div className="login-box">
           <h2 className="login-title">Sign Up</h2>
           <form onSubmit={handleSignup} className="login-form">
-            {/* Name Field */}
+            {/* First Name Field */}
             <div>
-              <label htmlFor="name" className="login-input-label">
-                Name
+              <label htmlFor="firstName" className="login-input-label">
+                First Name
               </label>
               <input
                 type="text"
-                id="name"
-                name="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Name"
+                id="firstName"
+                name="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="First Name"
                 required
+                className="login-input"
+              />
+            </div>
+
+            {/* Last Name Field (Optional) */}
+            <div>
+              <label htmlFor="lastName" className="login-input-label">
+                Last Name (Optional)
+              </label>
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Last Name"
                 className="login-input"
               />
             </div>
