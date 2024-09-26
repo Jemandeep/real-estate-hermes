@@ -1,70 +1,84 @@
 "use client";
-
+import React, { useState, useEffect } from 'react';
 import NavBar from './components/NavBar';
 import Header from './components/Header';
+import ListingCard from './listings/ListingCard'; 
 
-const listings = [
-  {
-    location: "123 Maple St, Calgary, AB",
-    bedrooms: 4,
-    bathrooms: 3,
-    area: "2500 sqft",
-    description: "A spacious 4-bedroom house in a quiet neighborhood with a large backyard.",
-    imageUrl: "https://via.placeholder.com/300x200"
-  },
-  {
-    location: "456 Oak St, Vancouver, BC",
-    bedrooms: 3,
-    bathrooms: 2,
-    area: "1800 sqft",
-    description: "A modern 3-bedroom house located in the heart of Vancouver with easy access to public transit.",
-    imageUrl: "https://via.placeholder.com/300x200"
-  },
-  {
-    location: "789 Pine Ave, Toronto, ON",
-    bedrooms: 4,
-    bathrooms: 3,
-    area: "2200 sqft",
-    description: "A family-friendly 4-bedroom home with a finished basement and modern appliances.",
-    imageUrl: "https://via.placeholder.com/300x200"
-  }
-];
+// URL for fetching mock data
+const MOCKAROO_URL = 'https://api.mockaroo.com/api/3b6f9270?count=1000&key=9e007e70';
 
-export default function HomePage() {
+const HomePage = () => {
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(MOCKAROO_URL, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch data: ${response.statusText}`);
+        }
+        const text = await response.text();
+        const data = JSON.parse(text);
+        setListings(data.slice(0, 6)); // Show only the first 6 listings on the home page
+        setLoading(false);
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
-    <div className="overflow-y-auto h-screen">
-      {/* Navigation Bar */}
+    <div className="overflow-y-auto h-screen bg-stone-100"> {/* Soft background color for the page */}
       <NavBar />
-
-      {/* Header with Buttons */}
       <Header />
 
-      
+      <div className="container mx-auto py-10 px-4">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">Featured Listings</h1>
 
-      {/* Listings Section */}
-      <div className="container mx-auto py-10 px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {listings.map((listing, index) => (
-          <div key={index} className="border rounded-lg shadow-lg p-4 bg-white">
-            <img src={listing.imageUrl} alt={listing.location} className="w-full h-40 object-cover mb-4" />
-            <h2 className="text-xl font-bold mb-2 text-gray-800">{listing.location}</h2>
-            <p className="mb-2 text-gray-700">🛏️ {listing.bedrooms} Bedrooms | 🛁 {listing.bathrooms} Bathrooms</p>
-            <p className="mb-2 text-gray-700">📏 {listing.area}</p>
-            <p className="text-sm text-gray-600">{listing.description}</p>
-            <div className="mt-4">
-              <a href="#" className="text-blue-500 hover:underline">View Details</a>
-            </div>
+        {/* Show loading message while data is being fetched */}
+        {loading ? (
+          <p className="text-gray-600 text-center mt-8">Please wait, data is being fetched...</p>
+        ) : error ? (
+          <p className="text-red-500 text-center mt-8">{error}</p>
+        ) : listings.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {listings.map((listing, index) => (
+              <ListingCard
+                key={index}
+                address={listing.adress} // Ensure the field names are correct
+                neighborhood={listing.neighboorhood} // Ensure this is correct in the API data
+                propertyType={listing.property_type}
+                currentPrice={listing.current_price}
+                bedCount={listing.bed_count}
+                bathroomCount={listing.bathroom_count}
+              />
+            ))}
           </div>
-        ))}
+        ) : (
+          <p className="text-gray-600">No listings to display.</p>
+        )}
       </div>
+
       {/* Vision Section */}
       <div className="bg-stone-500 text-white px-40 py-40 text-center">
-        
         <h2 className="text-3xl font-bold mb-4 text-white-800">Our Vision</h2>
         <p className="text-lg text-white-600 max-w-3xl mx-auto">
           At Calgary Real Estate, our vision is to help you discover your dream home with ease and confidence. We aim to provide you with the most accurate and up-to-date property listings, ensuring that you have all the tools you need to make informed decisions about your future home. With a wide range of properties in various locations, we are dedicated to offering you the best real estate experience.
         </p>
       </div>
     </div>
-    
   );
-}
+};
+
+export default HomePage;
