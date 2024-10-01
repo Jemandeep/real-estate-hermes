@@ -4,11 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import Layout from '../components/Layout';
 
-//Mockaroo API 
+//Mockaroo API
 const MOCKAROO_URL = 'https://api.mockaroo.com/api/3b6f9270?count=1000&key=9e007e70';
 
-// Component to display individual listings info
-const ListingCard = ({ address, neighborhood, propertyType, prices, maxMonth, currentPrice }) => {
+const ListingCard = ({ address, neighborhood, propertyType, prices, maxMonth, currentPrice, onSelect }) => {
   const validPrices = prices.slice(0, maxMonth).filter((price) => price !== undefined && price !== null);
   const trendDirection = validPrices[validPrices.length - 1] - validPrices[0] > 0 ? 'up' : 'down';
 
@@ -24,6 +23,12 @@ const ListingCard = ({ address, neighborhood, propertyType, prices, maxMonth, cu
         <h2 className="text-lg font-bold">{propertyType}</h2>
         <p className="text-sm text-gray-600">{address}, {neighborhood}</p>
         <div className="flex items-center mt-2">
+          <button onClick={() => onSelect({ address, neighborhood, propertyType, prices })}
+            className="select-button"
+          >
+            Add to Favorites
+          </button>
+
           <ResponsiveContainer width={250} height={70}>
             <LineChart data={priceData}>
               <XAxis dataKey="name" hide />
@@ -52,7 +57,6 @@ const ListingCard = ({ address, neighborhood, propertyType, prices, maxMonth, cu
   );
 };
 
-// Component to handle data fetching, filtering, and loading state
 const Analysis = () => {
   const [listings, setListings] = useState([]);
   const [filteredNeighborhood, setFilteredNeighborhood] = useState('All');
@@ -61,6 +65,7 @@ const Analysis = () => {
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [error, setError] = useState(null);
   const [maxMonth, setMaxMonth] = useState(1);
+  const [selectedProperties, setSelectedProperties] = useState([]);
   const [loading, setLoading] = useState(true); // Loading state
 
   useEffect(() => {
@@ -80,7 +85,7 @@ const Analysis = () => {
         setListings(data.slice(0, 250));
 
         // Extract unique neighborhoods and property types for filtering from Mockaroo
-        const uniqueNeighborhoods = ['All', ...new Set(data.map((item) => item.neighboorhood))];
+        const uniqueNeighborhoods = ['All', ...new Set(data.map((item) => item.neighborhood))];
         const uniquePropertyTypes = ['All', ...new Set(data.map((item) => item.property_type))];
 
         setNeighborhoods(uniqueNeighborhoods);
@@ -96,10 +101,16 @@ const Analysis = () => {
     fetchData();
   }, []);
 
+  const onSelect = (property) => {
+    if (property && !selectedProperties.some((p) => p.address === property.address)) {
+      setSelectedProperties((prevSelected) => [...prevSelected, property]);
+    }
+  };
+
   // Filters
   const filteredListings = listings.filter((listing) => {
     const matchesNeighborhood =
-      filteredNeighborhood === 'All' || listing.neighboorhood === filteredNeighborhood;
+      filteredNeighborhood === 'All' || listing.neighborhood === filteredNeighborhood;
     const matchesPropertyType =
       filteredPropertyType === 'All' || listing.property_type === filteredPropertyType;
     return matchesNeighborhood && matchesPropertyType;
@@ -170,15 +181,17 @@ const Analysis = () => {
               </select>
             </div>
 
+            {/* Render listing */}
             {error ? (
               <p className="text-red-600">{error}</p>
             ) : filteredListings.length > 0 ? (
               filteredListings.map((listing, index) => (
                 <ListingCard
                   key={index}
-                  address={listing.adress}
-                  neighborhood={listing.neighboorhood}
+                  address={listing.address}
+                  neighborhood={listing.neighborhood}
                   propertyType={listing.property_type}
+                  onSelect={() => onSelect(listing)}
                   prices={[
                     listing.price_1_month,
                     listing.price_2_months,
