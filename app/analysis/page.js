@@ -4,19 +4,20 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import Layout from '../components/Layout';
 
-//Mockaroo API 
+//Mockaroo API
 const MOCKAROO_URL = 'https://api.mockaroo.com/api/3b6f9270?count=1000&key=9e007e70';
 
-// Component to display individual listings info
+/* chatgpt prompt: I need help building a ListingCard component for a React app. The component should display individual property
+listings with the following details: address, neighborhood, property type, and current price.
+Additionally, I need it to include a price trend chart that shows the price over several months
+(up to 12 months). If the price trend is increasing, the chart should show in green, and if it's
+decreasing, the chart should be red. The price trend direction should also be indicated with an up
+ or down arrow. Please use the recharts library for the chart. Also, make sure to filter out any
+undefined or null prices from the data." I provided the code  I wrote as well */
+
 const ListingCard = ({ address, neighborhood, propertyType, prices, maxMonth, currentPrice }) => {
   const validPrices = prices.slice(0, maxMonth).filter((price) => price !== undefined && price !== null);
   const trendDirection = validPrices[validPrices.length - 1] - validPrices[0] > 0 ? 'up' : 'down';
-
-//Filters the price data based on selected months
-  const priceData = validPrices.map((price, index) => ({
-    name: `Month ${index + 1}`,
-    price,
-  }));
 
   return (
     <div className="bg-white shadow rounded p-4 mb-4 flex justify-between items-center">
@@ -24,6 +25,7 @@ const ListingCard = ({ address, neighborhood, propertyType, prices, maxMonth, cu
         <h2 className="text-lg font-bold">{propertyType}</h2>
         <p className="text-sm text-gray-600">{address}, {neighborhood}</p>
         <div className="flex items-center mt-2">
+        <button onClick={onSelect} className="select-button"> Select Property </button>
           <ResponsiveContainer width={250} height={70}>
             <LineChart data={priceData}>
               <XAxis dataKey="name" hide />
@@ -52,7 +54,14 @@ const ListingCard = ({ address, neighborhood, propertyType, prices, maxMonth, cu
   );
 };
 
-//variables hold the fetched API data, filters, and error tracking 
+//Filters the price data based on selected months
+// Explain the $ sign and =>
+const priceData = validPrices.map((price, index) => ({
+  name: `Month ${index + 1}`,
+  price,
+}));
+
+//variables hold the fetched API data, filters, and error tracking
 const Analysis = () => {
   const [listings, setListings] = useState([]);
   const [filteredNeighborhood, setFilteredNeighborhood] = useState('All');
@@ -61,6 +70,7 @@ const Analysis = () => {
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [error, setError] = useState(null);
   const [maxMonth, setMaxMonth] = useState(1);
+  const [selectedPrices, setSelectedPrices] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,11 +111,17 @@ const Analysis = () => {
     return matchesNeighborhood && matchesPropertyType;
   });
 
+  //function to handle property selection
+  //handleSelectProperty will update selectedPrices state when a property is selected
+  //handleSelectProperty takes 'prices' as a parameter, setSelectedPrices is used to update the state.
+  const handleSelectProperty = (prices) => {
+    setSelectedPrices((prevPrices) => [...prevPrices, prices]);
+  };
+  
   return (
     <Layout>
       <div className="max-w-lg mx-auto p-4 bg-white rounded shadow mt-10">
         <h1 className="text-2xl font-bold mb-4">Property Listings</h1>
-
         {}
         <div className="mb-4 grid grid-cols-2 gap-4">
           <div>
@@ -144,7 +160,7 @@ const Analysis = () => {
           </div>
         </div>
 
-        {/* Month Selector */}
+        {}
         <div className="mb-4">
           <label className="block text-sm font-semibold mb-2" htmlFor="month-selector">
             Select Number of Months:
@@ -162,7 +178,7 @@ const Analysis = () => {
             ))}
           </select>
         </div>
-
+        {/* Render listing*/}
         {error ? (
           <p className="text-red-600">{error}</p>
         ) : filteredListings.length > 0 ? (
@@ -172,6 +188,8 @@ const Analysis = () => {
               address={listing.adress}
               neighborhood={listing.neighboorhood}
               propertyType={listing.property_type}
+              //passing the handleSelectPropert function as a prop to the component, so that it can be used when the button is clicked
+              onSelect={() => handleSelectProperty(listing.prices)}
               prices={[
                 listing.price_1_month,
                 listing.price_2_months,
@@ -188,6 +206,7 @@ const Analysis = () => {
               ]}
               maxMonth={maxMonth}
               currentPrice={listing.current_price}
+              //select button
             />
           ))
         ) : (
