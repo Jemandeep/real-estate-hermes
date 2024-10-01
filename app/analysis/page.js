@@ -32,7 +32,12 @@ const priceData = validPrices.map((price, index) => ({
         <h2 className="text-lg font-bold">{propertyType}</h2>
         <p className="text-sm text-gray-600">{address}, {neighborhood}</p>
         <div className="flex items-center mt-2">
-        <button onClick={onSelect} className="select-button"> Select Property </button>
+        <button onClick={() => onSelect({ address, neighborhood, propertyType, prices })}
+          className="select-button"
+        >
+          Add to Favorites
+        </button>
+
           <ResponsiveContainer width={250} height={70}>
             <LineChart data={priceData}>
               <XAxis dataKey="name" hide />
@@ -73,6 +78,8 @@ const Analysis = () => {
   const [error, setError] = useState(null);
   const [maxMonth, setMaxMonth] = useState(1);
   const [selectedPrices, setSelectedPrices] = useState([]);
+  const [selectedProperties, setSelectedProperties] = useState([]);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,7 +97,7 @@ const Analysis = () => {
         setListings(data.slice(0, 250));
 
         // Extract unique neighborhoods and property types for filtering from Mockaroo
-        const uniqueNeighborhoods = ['All', ...new Set(data.map((item) => item.neighboorhood))];
+        const uniqueNeighborhoods = ['All', ...new Set(data.map((item) => item.neighborhood))];
         const uniquePropertyTypes = ['All', ...new Set(data.map((item) => item.property_type))];
 
         setNeighborhoods(uniqueNeighborhoods);
@@ -104,10 +111,18 @@ const Analysis = () => {
     fetchData();
   }, []);
 
+
+  const onSelect = (property) => {
+    if (property && !selectedProperties.some((p) => p.address === property.address)) {
+      setSelectedProperties((prevSelected) => [...prevSelected, property]);
+    }
+  };
+  
+
   // Filters
   const filteredListings = listings.filter((listing) => {
     const matchesNeighborhood =
-      filteredNeighborhood === 'All' || listing.neighboorhood === filteredNeighborhood;
+      filteredNeighborhood === 'All' || listing.neighborhood === filteredNeighborhood;
     const matchesPropertyType =
       filteredPropertyType === 'All' || listing.property_type === filteredPropertyType;
     return matchesNeighborhood && matchesPropertyType;
@@ -117,14 +132,22 @@ const Analysis = () => {
   //handleSelectProperty will update selectedPrices state when a property is selected
   //handleSelectProperty takes 'prices' as a parameter, setSelectedPrices is used to update the state.
   const handleSelectProperty = (prices) => {
-    setSelectedPrices((prevPrices) => [...prevPrices, prices]);
+    setSelectedProperties((prevPrices) => [...prevPrices, prices]);
   };
   
   return (
     <Layout>
       <div className="max-w-lg mx-auto p-4 bg-white rounded shadow mt-10">
         <h1 className="text-2xl font-bold mb-4">Property Listings</h1>
-        {}
+              {/* Selected Properties */}
+              <h2>Favorites</h2>
+            {selectedProperties.map((property, index) => (
+              <div key={index} className="favorite-property">
+                <h3>{property.address || 'Address not available'}</h3>
+                <p>{property.neighborhood || 'Neighborhood not available'}</p>
+                <p>{property.propertyType || 'Property Type not available'}</p>
+              </div>
+            ))}
         <div className="mb-4 grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-semibold mb-2" htmlFor="neighborhood-filter">
@@ -187,11 +210,11 @@ const Analysis = () => {
           filteredListings.map((listing, index) => (
             <ListingCard
               key={index}
-              address={listing.adress}
-              neighborhood={listing.neighboorhood}
+              address={listing.address}
+              neighborhood={listing.neighborhood}
               propertyType={listing.property_type}
               //passing the handleSelectPropert function as a prop to the component, so that it can be used when the button is clicked
-              onSelect={() => handleSelectProperty(listing.prices)}
+              onSelect={() => onSelect(listing)}
               prices={[
                 listing.price_1_month,
                 listing.price_2_months,
