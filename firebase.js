@@ -25,7 +25,7 @@ if (typeof window !== "undefined") {
 
 // Initialize Firebase services like Authentication and Firestore (if needed)
 const auth = getAuth(app);
-const db = getFirestore(app); // Firestore if needed
+const db = getFirestore(app); 
 
 // Exporting the initialized Firebase services
 export { app, auth, db, analytics };
