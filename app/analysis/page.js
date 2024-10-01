@@ -15,9 +15,16 @@ decreasing, the chart should be red. The price trend direction should also be in
  or down arrow. Please use the recharts library for the chart. Also, make sure to filter out any
 undefined or null prices from the data." I provided the code  I wrote as well */
 
-const ListingCard = ({ address, neighborhood, propertyType, prices, maxMonth, currentPrice }) => {
+const ListingCard = ({ address, neighborhood, propertyType, prices, maxMonth, currentPrice, onSelect  }) => {
   const validPrices = prices.slice(0, maxMonth).filter((price) => price !== undefined && price !== null);
   const trendDirection = validPrices[validPrices.length - 1] - validPrices[0] > 0 ? 'up' : 'down';
+//Filters the price data based on selected months
+// Explain the $ sign and =>
+const priceData = validPrices.map((price, index) => ({
+  name: `Month ${index + 1}`,
+  price,
+
+}));
 
   return (
     <div className="bg-white shadow rounded p-4 mb-4 flex justify-between items-center">
@@ -54,12 +61,7 @@ const ListingCard = ({ address, neighborhood, propertyType, prices, maxMonth, cu
   );
 };
 
-//Filters the price data based on selected months
-// Explain the $ sign and =>
-const priceData = validPrices.map((price, index) => ({
-  name: `Month ${index + 1}`,
-  price,
-}));
+
 
 //variables hold the fetched API data, filters, and error tracking
 const Analysis = () => {
