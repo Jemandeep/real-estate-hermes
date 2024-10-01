@@ -10,6 +10,7 @@ const ModListings = () => {
     bed_count: 0,
     current_price: 0,
     neighborhood: '',
+    property_type: '',  // Added property_type
     prices: {
       price_1_month: '',
       price_2_month: '',
@@ -27,7 +28,9 @@ const ModListings = () => {
   });
 
   const [nextListingId, setNextListingId] = useState('');
+  const [listings, setListings] = useState([]);
 
+  // Fetch existing listings and determine the next listing ID
   useEffect(() => {
     const fetchListings = async () => {
       const listingsSnapshot = await getDocs(collection(db, 'listings'));
@@ -70,6 +73,7 @@ const ModListings = () => {
         bed_count: formValues.bed_count,
         current_price: formValues.current_price,
         neighborhood: formValues.neighborhood,
+        property_type: formValues.property_type,  // Include property_type
         prices: { ...formValues.prices }
       });
 
@@ -81,7 +85,7 @@ const ModListings = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">Add New Listing</h2>
+      <h2 className="text-2xl font-bold mb-4">Add or Modify Listing</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-gray-700">Address</label>
@@ -132,6 +136,17 @@ const ModListings = () => {
             name="neighborhood"
             value={formValues.neighborhood}
             onChange={handleChange}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700">Property Type</label>
+          <input
+            type="text"
+            name="property_type"
+            value={formValues.property_type}
+            onChange={handleChange}
+            required
             className="w-full p-2 border rounded"
           />
         </div>
