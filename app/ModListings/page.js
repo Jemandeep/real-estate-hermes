@@ -1,92 +1,87 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { db } from '../../firebase';
-import { collection, doc, setDoc, getDocs } from 'firebase/firestore';
+import { useState } from 'react';
+import { db } from '../../firebase'; // Ensure this path is correct
+import { collection, addDoc } from 'firebase/firestore';
 
-const ModListings = () => {
+const ModifyListings = () => {
   const [formValues, setFormValues] = useState({
     address: '',
-    bathroom_count: 0,
-    bed_count: 0,
-    current_price: 0,
-    neighborhood: '',
-    property_type: '',  // Added property_type
-    prices: {
-      price_1_month: '',
-      price_2_month: '',
-      price_3_month: '',
-      price_4_month: '',
-      price_5_month: '',
-      price_6_month: '',
-      price_7_month: '',
-      price_8_month: '',
-      price_9_month: '',
-      price_10_month: '',
-      price_11_month: '',
-      price_12_month: ''
-    }
+    bathroom_count: 1,
+    bed_count: 1,
+    current_price: 50000,
+    prices: [],
   });
+  const [historicalPrices, setHistoricalPrices] = useState([{ month: 'Last month', price: 50000 }]);
 
-  const [nextListingId, setNextListingId] = useState('');
-  const [listings, setListings] = useState([]);
-
-  // Fetch existing listings and determine the next listing ID
-  useEffect(() => {
-    const fetchListings = async () => {
-      const listingsSnapshot = await getDocs(collection(db, 'listings'));
-      const listingNumbers = listingsSnapshot.docs.map((doc) => {
-        const id = doc.id.replace('listing', ''); // Remove the 'listing' prefix to get the number
-        return parseInt(id, 10); // Convert to number
-      });
-
-      const maxListingNumber = Math.max(...listingNumbers); // Get the highest listing number
-      const newListingNumber = maxListingNumber + 1; // Increment by 1 for the new listing ID
-      setNextListingId(`listing${newListingNumber}`); // Set the next listing ID (e.g., listing12)
-    };
-
-    fetchListings(); // Fetch the existing listings on component mount
-  }, []);
-
+  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.startsWith('price_')) {
-      setFormValues((prevState) => ({
-        ...prevState,
-        prices: { ...prevState.prices, [name]: value }
-      }));
-    } else {
-      setFormValues({ ...formValues, [name]: value });
-    }
+    setFormValues({ ...formValues, [name]: value });
   };
 
+  // Format numbers with commas for price input
+  const formatPrice = (price) => {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  // Remove commas for operations
+  const unformatPrice = (price) => {
+    return price.replace(/,/g, '');
+  };
+
+  // Handle price input change (without commas)
+  const handlePriceChange = (e) => {
+    const priceValue = unformatPrice(e.target.value);
+    setFormValues({ ...formValues, current_price: priceValue });
+  };
+
+  // Handle adding more input fields for historical prices with default current price
+  const handleAddPrice = () => {
+    const lastPriceCount = historicalPrices.length;
+    const nextMonth = `Last ${lastPriceCount + 1} month`;
+    setHistoricalPrices([...historicalPrices, { month: nextMonth, price: formValues.current_price }]);
+  };
+
+  // Handle the changes in historical prices inputs
+  const handleHistoricalChange = (index, e) => {
+    const { value } = e.target;
+    const newPrices = [...historicalPrices];
+    newPrices[index].price = unformatPrice(value);
+    setHistoricalPrices(newPrices);
+  };
+
+  // Handle form submission to add a new document with an auto-generated ID
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!nextListingId) {
-      alert('Error generating the next listing ID');
-      return;
-    }
+
+    // Ask for confirmation before submission
+    const confirmed = window.confirm('Are you sure you want to add this new listing?');
+    if (!confirmed) return;
 
     try {
-      await setDoc(doc(db, 'listings', nextListingId), {
+      // Add a new listing document with an auto-generated ID
+      const docRef = await addDoc(collection(db, 'listings'), {
         address: formValues.address,
         bathroom_count: formValues.bathroom_count,
         bed_count: formValues.bed_count,
         current_price: formValues.current_price,
-        neighborhood: formValues.neighborhood,
-        property_type: formValues.property_type,  // Include property_type
-        prices: { ...formValues.prices }
+        prices: historicalPrices,
       });
 
-      alert(`Listing added successfully with ID: ${nextListingId}`);
-    } catch (err) {
-      console.error('Error adding document: ', err);
+      // Confirm the addition
+      alert(`Listing added successfully with ID: ${docRef.id}`);
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Error adding new listing: ', error);
+      alert(`Error adding listing: ${error.message}`);
     }
   };
 
   return (
     <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">Add or Modify Listing</h2>
+      <h2 className="text-2xl font-bold mb-4">Add New Listing</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Address Input */}
         <div>
           <label className="block text-gray-700">Address</label>
           <input
@@ -98,78 +93,107 @@ const ModListings = () => {
             className="w-full p-2 border rounded"
           />
         </div>
+
+        {/* Bathroom Dropdown */}
         <div>
           <label className="block text-gray-700">Bathrooms</label>
-          <input
-            type="number"
+          <select
             name="bathroom_count"
             value={formValues.bathroom_count}
             onChange={handleChange}
             className="w-full p-2 border rounded"
-          />
+          >
+            {[...Array(6).keys()].map((num) => (
+              <option key={num + 1} value={num + 1}>
+                {num + 1} Bathroom(s)
+              </option>
+            ))}
+          </select>
         </div>
+
+        {/* Bedroom Dropdown */}
         <div>
           <label className="block text-gray-700">Bedrooms</label>
-          <input
-            type="number"
+          <select
             name="bed_count"
             value={formValues.bed_count}
             onChange={handleChange}
             className="w-full p-2 border rounded"
-          />
+          >
+            {[...Array(6).keys()].map((num) => (
+              <option key={num + 1} value={num + 1}>
+                {num + 1} Bedroom(s)
+              </option>
+            ))}
+          </select>
         </div>
+
+        {/* Current Price Input and Slider */}
         <div>
           <label className="block text-gray-700">Current Price</label>
-          <input
-            type="number"
-            name="current_price"
-            value={formValues.current_price}
-            onChange={handleChange}
-            required
-            className="w-full p-2 border rounded"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-700">Neighborhood</label>
-          <input
-            type="text"
-            name="neighborhood"
-            value={formValues.neighborhood}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-700">Property Type</label>
-          <input
-            type="text"
-            name="property_type"
-            value={formValues.property_type}
-            onChange={handleChange}
-            required
-            className="w-full p-2 border rounded"
-          />
-        </div>
-        <h3 className="text-xl font-semibold">Optional Monthly Prices</h3>
-        {Object.keys(formValues.prices).map((priceKey, index) => (
-          <div key={index}>
-            <label className="block text-gray-700">{`Price ${index + 1} Month`}</label>
+          <div className="flex items-center">
             <input
-              type="number"
-              name={priceKey}
-              value={formValues.prices[priceKey]}
-              onChange={handleChange}
-              placeholder={`Optional Price for month ${index + 1}`}
+              type="text"
+              name="current_price"
+              value={formatPrice(formValues.current_price)}
+              onChange={handlePriceChange}
+              className="w-1/3 p-2 border rounded mr-4"
+            />
+            <input
+              type="range"
+              min="50000"
+              max="20000000"
+              step="50000"
+              value={formValues.current_price}
+              onChange={(e) => handlePriceChange(e)}
+              className="w-2/3"
+            />
+          </div>
+        </div>
+
+        {/* Historical Prices */}
+        <h3 className="text-xl font-semibold">Historical Prices</h3>
+        {historicalPrices.map((price, index) => (
+          <div key={index} className="space-y-2">
+            <label className="block text-gray-700">{price.month}</label>
+            <input
+              type="text"
+              name="price"
+              value={formatPrice(price.price)}
+              onChange={(e) => handleHistoricalChange(index, e)}
+              placeholder="Price"
               className="w-full p-2 border rounded"
+            />
+            {/* Slider for adjusting historical prices */}
+            <input
+              type="range"
+              min="50000"
+              max="20000000"
+              step="50000"
+              value={price.price}
+              onChange={(e) => handleHistoricalChange(index, e)}
+              className="w-full"
             />
           </div>
         ))}
-        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
-          Add Listing
-        </button>
+
+        {/* Buttons with App Colors */}
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={handleAddPrice}
+            className="block px-4 py-2 bg-stone-300 text-stone-600 rounded mb-4 hover:bg-gray-100"
+          >
+            + Add Previous Month Price
+          </button>
+          
+          <button type="submit" className="block px-4 py-2 bg-stone-300 text-stone-600 rounded hover:bg-gray-100">
+            Add New Listing
+          </button>
+        </div>
       </form>
     </div>
   );
 };
 
-export default ModListings;
+export default ModifyListings;
