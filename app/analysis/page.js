@@ -7,27 +7,36 @@ import Layout from '../components/Layout';
 //Mockaroo API
 const MOCKAROO_URL = 'https://api.mockaroo.com/api/3b6f9270?count=1000&key=9e007e70';
 
-const ListingCard = ({ address, neighborhood, propertyType, prices, maxMonth, currentPrice, onSelect }) => {
+/* chatgpt prompt: I need help building a ListingCard component for a React app. The component should display individual property
+listings with the following details: address, neighborhood, property type, and current price.
+Additionally, I need it to include a price trend chart that shows the price over several months
+(up to 12 months). If the price trend is increasing, the chart should show in green, and if it's
+decreasing, the chart should be red. The price trend direction should also be indicated with an up
+ or down arrow. Please use the recharts library for the chart. Also, make sure to filter out any
+undefined or null prices from the data." I provided the code  I wrote as well */
+
+const ListingCard = ({ address, neighborhood, propertyType, prices, maxMonth, currentPrice, onSelect  }) => {
   const validPrices = prices.slice(0, maxMonth).filter((price) => price !== undefined && price !== null);
   const trendDirection = validPrices[validPrices.length - 1] - validPrices[0] > 0 ? 'up' : 'down';
+//Filters the price data based on selected months
+// Explain the $ sign and =>
+const priceData = validPrices.map((price, index) => ({
+  name: `Month ${index + 1}`,
+  price,
 
-  // Filters the price data based on selected months
-  const priceData = validPrices.map((price, index) => ({
-    name: `Month ${index + 1}`,
-    price,
-  }));
+}));
 
   return (
-    <div className="bg-stone-300 shadow rounded p-4 mb-4 flex justify-between items-center">
+    <div className="bg-white shadow rounded p-4 mb-4 flex justify-between items-center">
       <div>
         <h2 className="text-lg font-bold">{propertyType}</h2>
         <p className="text-sm text-gray-600">{address}, {neighborhood}</p>
         <div className="flex items-center mt-2">
-          <button onClick={() => onSelect({ address, neighborhood, propertyType, prices })}
-            className="select-button"
-          >
-            Add to Favorites
-          </button>
+        <button onClick={() => onSelect({ address, neighborhood, propertyType, prices })}
+          className="select-button"
+        >
+          Add to Favorites
+        </button>
 
           <ResponsiveContainer width={250} height={70}>
             <LineChart data={priceData}>
@@ -57,6 +66,12 @@ const ListingCard = ({ address, neighborhood, propertyType, prices, maxMonth, cu
   );
 };
 
+const predictPrice = (currentPrice) => {
+  return currentPrice * 7;
+};
+
+
+//variables hold the fetched API data, filters, and error tracking
 const Analysis = () => {
   const [listings, setListings] = useState([]);
   const [filteredNeighborhood, setFilteredNeighborhood] = useState('All');
@@ -65,12 +80,12 @@ const Analysis = () => {
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [error, setError] = useState(null);
   const [maxMonth, setMaxMonth] = useState(1);
+  const [selectedPrices, setSelectedPrices] = useState([]);
   const [selectedProperties, setSelectedProperties] = useState([]);
-  const [loading, setLoading] = useState(true); // Loading state
+
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); // Start loading
       try {
         const response = await fetch(MOCKAROO_URL, {
           headers: {
@@ -90,10 +105,8 @@ const Analysis = () => {
 
         setNeighborhoods(uniqueNeighborhoods);
         setPropertyTypes(uniquePropertyTypes);
-        setLoading(false); // Data fetched, stop loading
       } catch (error) {
         setError(error.message);
-        setLoading(false); // Stop loading even if error
         console.error('Error fetching data:', error);
       }
     };
@@ -101,11 +114,13 @@ const Analysis = () => {
     fetchData();
   }, []);
 
+
   const onSelect = (property) => {
     if (property && !selectedProperties.some((p) => p.address === property.address)) {
       setSelectedProperties((prevSelected) => [...prevSelected, property]);
     }
   };
+  
 
   // Filters
   const filteredListings = listings.filter((listing) => {
@@ -116,105 +131,142 @@ const Analysis = () => {
     return matchesNeighborhood && matchesPropertyType;
   });
 
+  //function to handle property selection
+  //handleSelectProperty will update selectedPrices state when a property is selected
+  //handleSelectProperty takes 'prices' as a parameter, setSelectedPrices is used to update the state.
+  const handleSelectProperty = (prices) => {
+    setSelectedProperties((prevPrices) => [...prevPrices, prices]);
+  };
+  
+
+
   return (
     <Layout>
-      <div className="max-w-lg mx-auto p-4 bg-white rounded shadow mt-10">
-        <h1 className="text-2xl font-bold mb-4">Property Listings</h1>
-
-        {loading ? (
-          <p className="text-gray-600 text-center mt-8">Please wait, data is being fetched...</p>
-        ) : (
-          <>
-            <div className="mb-4 grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold mb-2" htmlFor="neighborhood-filter">
-                  Filter by Neighborhood:
-                </label>
-                <select
-                  id="neighborhood-filter"
-                  className="p-2 border rounded w-full"
-                  value={filteredNeighborhood}
-                  onChange={(e) => setFilteredNeighborhood(e.target.value)}
-                >
-                  {neighborhoods.map((neighborhood) => (
-                    <option key={neighborhood} value={neighborhood}>
-                      {neighborhood}
-                    </option>
-                  ))}
-                </select>
+      <div className="max-w-lg mx-auto p-4 bg-white rounded shadow mt-10 flex">
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold mb-4">Property Listings</h1>
+          
+          {/* Selected Properties */}
+          <h2 className="text-lg font-bold mb-2">Favorites</h2>
+          {selectedProperties.length > 0 ? (
+            selectedProperties.map((property, index) => (
+              <div key={index} className="favorite-property mb-2 border rounded p-2 bg-white">
+                <h3>{property.address || 'Address not available'}</h3>
+                <p>{property.neighborhood || 'Neighborhood not available'}</p>
+                <p>{property.propertyType || 'Property Type not available'}</p>
               </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2" htmlFor="property-type-filter">
-                  Filter by Property Type:
-                </label>
-                <select
-                  id="property-type-filter"
-                  className="p-2 border rounded w-full"
-                  value={filteredPropertyType}
-                  onChange={(e) => setFilteredPropertyType(e.target.value)}
-                >
-                  {propertyTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            ))
+          ) : (
+            <p>No favorites selected.</p>
+          )}
 
-            {/* Month Selector */}
-            <div className="mb-4">
-              <label className="block text-sm font-semibold mb-2" htmlFor="month-selector">
-                Select Number of Months:
+          <div className="mb-4 grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold mb-2" htmlFor="neighborhood-filter">
+                Filter by Neighborhood:
               </label>
               <select
-                id="month-selector"
-                className="p-2 border rounded"
-                value={maxMonth}
-                onChange={(e) => setMaxMonth(parseInt(e.target.value, 10))}
+                id="neighborhood-filter"
+                className="p-2 border rounded w-full"
+                value={filteredNeighborhood}
+                onChange={(e) => setFilteredNeighborhood(e.target.value)}
               >
-                {[...Array(12).keys()].map((month) => (
-                  <option key={month} value={month + 1}>
-                    {month + 1} Month{month > 0 ? 's' : ''}
+                {neighborhoods.map((neighborhood) => (
+                  <option key={neighborhood} value={neighborhood}>
+                    {neighborhood}
                   </option>
                 ))}
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2" htmlFor="property-type-filter">
+                Filter by Property Type:
+              </label>
+              <select
+                id="property-type-filter"
+                className="p-2 border rounded w-full"
+                value={filteredPropertyType}
+                onChange={(e) => setFilteredPropertyType(e.target.value)}
+              >
+                {propertyTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-            {/* Render listing */}
-            {error ? (
-              <p className="text-red-600">{error}</p>
-            ) : filteredListings.length > 0 ? (
-              filteredListings.map((listing, index) => (
-                <ListingCard
-                  key={index}
-                  address={listing.address}
-                  neighborhood={listing.neighborhood}
-                  propertyType={listing.property_type}
-                  onSelect={() => onSelect(listing)}
-                  prices={[
-                    listing.price_1_month,
-                    listing.price_2_months,
-                    listing.price_3_months,
-                    listing.price_4_months,
-                    listing.price_5_months,
-                    listing.price_6_months,
-                    listing.price_7_months,
-                    listing.price_8_months,
-                    listing.price_9_months,
-                    listing.price_10_months,
-                    listing.price_11_months,
-                    listing.price_12_months,
-                  ]}
-                  maxMonth={maxMonth}
-                  currentPrice={listing.current_price}
-                />
-              ))
-            ) : (
-              <p className="text-gray-600">No listings to display.</p>
-            )}
-          </>
-        )}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold mb-2" htmlFor="month-selector">
+              Select Number of Months:
+            </label>
+            <select
+              id="month-selector"
+              className="p-2 border rounded"
+              value={maxMonth}
+              onChange={(e) => setMaxMonth(parseInt(e.target.value, 10))}
+            >
+              {[...Array(12).keys()].map((month) => (
+                <option key={month} value={month + 1}>
+                  {month + 1} Month{month > 0 ? 's' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Render listings */}
+          {error ? (
+            <p className="text-red-600">{error}</p>
+          ) : filteredListings.length > 0 ? (
+            filteredListings.map((listing, index) => (
+              <ListingCard
+                key={index}
+                address={listing.address}
+                neighborhood={listing.neighborhood}
+                propertyType={listing.property_type}
+                onSelect={() => onSelect(listing)} // passing the handleSelectProperty function as a prop to the component
+                prices={[
+                  listing.price_1_month,
+                  listing.price_2_months,
+                  listing.price_3_months,
+                  listing.price_4_months,
+                  listing.price_5_months,
+                  listing.price_6_months,
+                  listing.price_7_months,
+                  listing.price_8_months,
+                  listing.price_9_months,
+                  listing.price_10_months,
+                  listing.price_11_months,
+                  listing.price_12_months,
+                ]}
+                maxMonth={maxMonth}
+                currentPrice={listing.current_price}
+              />
+            ))
+          ) : (
+            <p className="text-gray-600">No listings to display.</p>
+          )}
+        </div>
+
+        {/* Prediction Sidebar */}
+        <div className="ml-4 bg-gray-100 rounded p-4 shadow-md w-1/3">
+          <h2 className="text-lg font-bold mb-2">Price Predictions in 30 Years</h2>
+          {selectedProperties.length === 0 ? (
+            <p>No properties selected.</p>
+          ) : (
+            selectedProperties.map((property, index) => {
+              const predictedPrice = predictPrice(property.currentPrice);
+              return (
+                <div key={index} className="mb-2 border rounded p-2 bg-white">
+                  <h3 className="font-semibold">{property.address}</h3>
+                  <p>Current Price: ${property.currentPrice.toLocaleString()}</p> {/* Remove () */}
+                  <p>Predicted Price in 30 years: ${predictedPrice.toLocaleString()}</p> {/* Remove () if it was a function */}
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
     </Layout>
   );
