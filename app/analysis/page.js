@@ -260,8 +260,8 @@ const Analysis = () => {
               return (
                 <div key={index} className="mb-2 border rounded p-2 bg-white">
                   <h3 className="font-semibold">{property.address}</h3>
-                  <p>Current Price: ${property.currentPrice.toLocaleString()}</p> {/* Remove () */}
-                  <p>Predicted Price in 30 years: ${predictedPrice.toLocaleString()}</p> {/* Remove () if it was a function */}
+                  <p>Current Price: ${property.currentPrice ? property.currentPrice.toLocaleString() : 'Price not available'}</p>
+                  <p>Predicted Price in 30 years: ${predictedPrice.toLocaleString()}</p>
                 </div>
               );
             })
