@@ -1,7 +1,7 @@
 // pages/about.js
 
 import React from 'react';
-
+import Layout from '../components/Layout';
 export default function About() {
   return (
     <div className="container mx-auto px-6 py-12">

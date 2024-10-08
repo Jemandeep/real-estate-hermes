@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '../../firebase'; // Ensure this path is correct
 import { collection, getDocs } from 'firebase/firestore';
+import Layout from '../components/Layout';
 
 const ViewListings = () => {
   const [listings, setListings] = useState([]);
