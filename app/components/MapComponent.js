@@ -1,47 +1,50 @@
-import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
+import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
+import L from 'leaflet';
+import { useEffect, useState, memo } from 'react';
+import 'leaflet/dist/leaflet.css';
 
-const MapComponent = ({ data, onSelectCommunity, selectedCommunity }) => {
-  const geoUrl = '/community-district-boundaries.geojson'; // Ensure this file is accessible
+const MapComponent = memo(({ onSelectCommunity }) => {
+  const [geoData, setGeoData] = useState(null);
+
+  useEffect(() => {
+    // Fetch GeoJSON data
+    fetch('/community-district-boundaries.geojson') // Adjust the path to your GeoJSON file
+      .then((response) => response.json())
+      .then((data) => setGeoData(data))
+      .catch((error) => console.error('Error loading GeoJSON:', error));
+  }, []);
+
+  const style = {
+    color: '#4CAF50',
+    weight: 2,
+    fillColor: '#6DBF67',
+    fillOpacity: 0.5,
+  };
+
+  const onEachFeature = (feature, layer) => {
+    layer.on({
+      click: () => {
+        onSelectCommunity(feature.properties.name); // Pass community selection
+      },
+    });
+  };
 
   return (
-    <ComposableMap
-      projection="geoAlbers"
-      projectionConfig={{ scale: 60000, center: [-114.07, 51.05] }} // Center the map on Calgary
-      width={800}
-      height={600}
+    <MapContainer
+      center={[51.0447, -114.0719]} // Center the map on Calgary (Latitude, Longitude)
+      zoom={11} // Adjust zoom level for better rendering with EPSG:4326
+      style={{ height: '600px', width: '100%' }}
+      crs={L.CRS.EPSG4326} // Use EPSG:4326 (WGS84) projection for correct rendering
     >
-      <Geographies geography={geoUrl}>
-        {({ geographies, loading, error }) => {
-          // Add logs for debugging
-          console.log('Geographies:', geographies);
-          console.log('Loading:', loading);
-          console.log('Error:', error);
-
-          if (loading) return <div>Loading geographies...</div>;
-          if (error) {
-            console.error('Error loading geographies:', error);
-            return <div>Error loading geographies</div>;
-          }
-          if (!geographies || geographies.length === 0) {
-            console.error('No geographies found');
-            return <div>No geographies available</div>;
-          }
-
-          return geographies.map((geo) => (
-            <Geography
-              key={geo.rsmKey}
-              geography={geo}
-              style={{
-                default: { fill: '#D6D6DA', outline: 'none' },
-                hover: { fill: '#F53', outline: 'none' },
-                pressed: { fill: '#E42', outline: 'none' },
-              }}
-            />
-          ));
-        }}
-      </Geographies>
-    </ComposableMap>
+      {/* TileLayer from OpenStreetMap */}
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      />
+      {/* Render GeoJSON data if available */}
+      {geoData && <GeoJSON data={geoData} style={style} onEachFeature={onEachFeature} />}
+    </MapContainer>
   );
-};
+});
 
 export default MapComponent;

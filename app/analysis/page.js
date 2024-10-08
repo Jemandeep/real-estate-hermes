@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
-import ListingCard from '../components/ListingCard'; // Import ListingCard
+import ListingCard from '../components/ListingCard';
+import MapComponent from '../components/MapComponent';  
 
-// Mockaroo API
+
+
 const MOCKAROO_URL = 'https://api.mockaroo.com/api/3b6f9270?count=1000&key=9e007e70';
 
 const Analysis = () => {
-  // State definitions
   const [listings, setListings] = useState([]);
   const [filteredNeighborhood, setFilteredNeighborhood] = useState('All');
   const [filteredPropertyType, setFilteredPropertyType] = useState('All');
@@ -17,16 +18,15 @@ const Analysis = () => {
   const [neighborhoods, setNeighborhoods] = useState([]);
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [error, setError] = useState(null);
-  const [selectedFavorites, setSelectedFavorites] = useState([]); // Track selected favorites for price prediction
+  const [selectedFavorites, setSelectedFavorites] = useState([]);
+  const [selectedCommunity, setSelectedCommunity] = useState('All'); // Track the selected community
 
   useEffect(() => {
     // Fetch listings from the API on component mount
     const fetchData = async () => {
       try {
         const response = await fetch(MOCKAROO_URL, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
         });
 
         if (!response.ok) {
@@ -58,6 +58,11 @@ const Analysis = () => {
     fetchData();
   }, []);
 
+  const onSelectCommunity = (communityName) => {
+    setSelectedCommunity(communityName); // Update selected community
+    setFilteredNeighborhood(communityName); // Filter listings by selected community
+  };
+
   const onSelect = (listing) => {
     setSelectedProperties((prevSelected) => [
       ...prevSelected,
@@ -87,10 +92,8 @@ const Analysis = () => {
   const handleFavoriteSelection = (property) => {
     setSelectedFavorites((prevSelectedFavorites) => {
       if (prevSelectedFavorites.includes(property)) {
-        // Remove from selection if already selected
         return prevSelectedFavorites.filter((fav) => fav !== property);
       } else {
-        // Add to selected if not already selected
         return [...prevSelectedFavorites, property];
       }
     });
@@ -104,7 +107,6 @@ const Analysis = () => {
     return matchesNeighborhood && matchesPropertyType;
   });
 
-  // Begin return statement
   return (
     <Layout>
       <div className="max-w-7xl mx-auto p-4 bg-white rounded shadow mt-10 flex">
@@ -140,9 +142,17 @@ const Analysis = () => {
             })
           )}
         </div>
+
         {/* Property Listings container */}
         <div className="flex-1">
           <h1 className="text-2xl font-bold mb-4">Property Listings</h1>
+
+          {/* Map of Calgary Communities */}
+          <div className="mb-4">
+            <h2 className="text-xl font-bold mb-2">Calgary Communities Map</h2>
+            <MapComponent onSelectCommunity={onSelectCommunity} /> {/* Pass onSelectCommunity */}
+          </div>
+
           {/* Favorites */}
           <h2 className="text-lg font-bold mb-2">Favorites</h2>
           {selectedProperties.length > 0 ? (
@@ -162,9 +172,9 @@ const Analysis = () => {
           ) : (
             <p>No favorites selected.</p>
           )}
+
           {/* Filters */}
           <div className="mb-4 grid grid-cols-2 gap-4">
-            {/* Neighborhood Filter */}
             <div>
               <label className="block text-sm font-semibold mb-2" htmlFor="neighborhood-filter">
                 Filter by Neighborhood:
@@ -182,7 +192,6 @@ const Analysis = () => {
                 ))}
               </select>
             </div>
-            {/* Property Type Filter */}
             <div>
               <label className="block text-sm font-semibold mb-2" htmlFor="property-type-filter">
                 Filter by Property Type:
@@ -201,6 +210,7 @@ const Analysis = () => {
               </select>
             </div>
           </div>
+
           {/* Month Selector */}
           <div className="mb-4">
             <label className="block text-sm font-semibold mb-2" htmlFor="month-selector">
@@ -222,10 +232,11 @@ const Analysis = () => {
               })}
             </select>
           </div>
+
           {/* Render Listings */}
           {error ? (
             <p className="text-red-600">{error}</p>
-          ) : filteredListings.length > 0 ? (
+          ) : (
             filteredListings.map((listing, index) => {
               const prices = [
                 listing.price_1_month,
@@ -255,8 +266,6 @@ const Analysis = () => {
                 />
               );
             })
-          ) : (
-            <p className="text-gray-600">No listings to display.</p>
           )}
         </div>
       </div>
