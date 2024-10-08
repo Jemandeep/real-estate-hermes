@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import ListingCard from '../components/ListingCard';
-import MapComponent from '../components/MapComponent';  
-
-
+import MapComponent from '../components/MapComponent';
+import PredictionSidebar from '../components/PredictionsSidebar';
+import Filters from '../components/Filters';  
 
 const MOCKAROO_URL = 'https://api.mockaroo.com/api/3b6f9270?count=1000&key=9e007e70';
 
@@ -59,8 +59,8 @@ const Analysis = () => {
   }, []);
 
   const onSelectCommunity = (communityName) => {
-    setSelectedCommunity(communityName); // Update selected community
-    setFilteredNeighborhood(communityName); // Filter listings by selected community
+    setSelectedCommunity(communityName);
+    setFilteredNeighborhood(communityName);
   };
 
   const onSelect = (listing) => {
@@ -111,37 +111,7 @@ const Analysis = () => {
     <Layout>
       <div className="max-w-7xl mx-auto p-4 bg-white rounded shadow mt-10 flex">
         {/* Prediction Sidebar */}
-        <div className="w-1/4 bg-gray-100 rounded p-4 shadow-md mr-4">
-          <h2 className="text-lg font-bold mb-2">Price Predictions for Selected Favorites</h2>
-          {selectedFavorites.length === 0 ? (
-            <p>No favorites selected for prediction.</p>
-          ) : (
-            selectedFavorites.map((property, index) => {
-              const currentPrice = property.prices.find(
-                (price) => price !== null && price !== undefined
-              );
-              const predictedPrice = currentPrice ? currentPrice * 7 : null;
-
-              return (
-                <div key={index} className="mb-2 border rounded p-2 bg-white">
-                  <h3 className="font-semibold">{property.address}</h3>
-                  <p>
-                    Current Price:{' '}
-                    {currentPrice
-                      ? `$${parseFloat(currentPrice).toLocaleString()}`
-                      : 'Not available'}
-                  </p>
-                  <p>
-                    Predicted Price in 30 years:{' '}
-                    {predictedPrice
-                      ? `$${parseFloat(predictedPrice).toLocaleString()}`
-                      : 'Unable to predict'}
-                  </p>
-                </div>
-              );
-            })
-          )}
-        </div>
+        <PredictionSidebar selectedFavorites={selectedFavorites} />
 
         {/* Property Listings container */}
         <div className="flex-1">
@@ -150,7 +120,7 @@ const Analysis = () => {
           {/* Map of Calgary Communities */}
           <div className="mb-4">
             <h2 className="text-xl font-bold mb-2">Calgary Communities Map</h2>
-            <MapComponent onSelectCommunity={onSelectCommunity} /> {/* Pass onSelectCommunity */}
+            <MapComponent onSelectCommunity={onSelectCommunity} />
           </div>
 
           {/* Favorites */}
@@ -174,42 +144,14 @@ const Analysis = () => {
           )}
 
           {/* Filters */}
-          <div className="mb-4 grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold mb-2" htmlFor="neighborhood-filter">
-                Filter by Neighborhood:
-              </label>
-              <select
-                id="neighborhood-filter"
-                className="p-2 border rounded w-full"
-                value={filteredNeighborhood}
-                onChange={(e) => setFilteredNeighborhood(e.target.value)}
-              >
-                {neighborhoods.map((neighborhood) => (
-                  <option key={neighborhood} value={neighborhood}>
-                    {neighborhood}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2" htmlFor="property-type-filter">
-                Filter by Property Type:
-              </label>
-              <select
-                id="property-type-filter"
-                className="p-2 border rounded w-full"
-                value={filteredPropertyType}
-                onChange={(e) => setFilteredPropertyType(e.target.value)}
-              >
-                {propertyTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          <Filters
+            neighborhoods={neighborhoods}
+            propertyTypes={propertyTypes}
+            filteredNeighborhood={filteredNeighborhood}
+            setFilteredNeighborhood={setFilteredNeighborhood}
+            filteredPropertyType={filteredPropertyType}
+            setFilteredPropertyType={setFilteredPropertyType}
+          />
 
           {/* Month Selector */}
           <div className="mb-4">

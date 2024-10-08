@@ -1,7 +1,22 @@
-import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { useEffect, useState, memo } from 'react';
 import 'leaflet/dist/leaflet.css';
+
+// Component to adjust map bounds to GeoJSON data
+const FitBoundsToGeoJSON = ({ geoData }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (geoData) {
+      const geoJsonLayer = L.geoJSON(geoData);
+      const bounds = geoJsonLayer.getBounds();
+      map.fitBounds(bounds); // Adjust the map to fit the GeoJSON bounds
+    }
+  }, [geoData, map]);
+
+  return null;
+};
 
 const MapComponent = memo(({ onSelectCommunity }) => {
   const [geoData, setGeoData] = useState(null);
@@ -31,18 +46,22 @@ const MapComponent = memo(({ onSelectCommunity }) => {
 
   return (
     <MapContainer
-      center={[51.0447, -114.0719]} // Center the map on Calgary (Latitude, Longitude)
-      zoom={11} // Adjust zoom level for better rendering with EPSG:4326
       style={{ height: '600px', width: '100%' }}
-      crs={L.CRS.EPSG4326} // Use EPSG:4326 (WGS84) projection for correct rendering
+      zoom={11} // Default zoom level
+      center={[51.0447, -114.0719]} // Default center (Calgary)
     >
       {/* TileLayer from OpenStreetMap */}
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      {/* Render GeoJSON data if available */}
-      {geoData && <GeoJSON data={geoData} style={style} onEachFeature={onEachFeature} />}
+      {/* Render GeoJSON data and fit bounds to it */}
+      {geoData && (
+        <>
+          <GeoJSON data={geoData} style={style} onEachFeature={onEachFeature} />
+          <FitBoundsToGeoJSON geoData={geoData} /> {/* Adjust map bounds to GeoJSON */}
+        </>
+      )}
     </MapContainer>
   );
 });
