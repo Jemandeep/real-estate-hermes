@@ -4,7 +4,7 @@ import Layout from "../components/Layout";
 
 const AdminPage = () => {
   return (
-    
+    <Layout>
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
 
@@ -30,16 +30,12 @@ const AdminPage = () => {
             </span>
           </Link>
         </li>
-        <li>
-          <Link href="/admin/analytics">
-            <span className="text-lg font-semibold text-blue-600 hover:underline cursor-pointer">
-              View Analytics
-            </span>
-          </Link>
-        </li>
+        
       </ul>
     </div>
+    </Layout>
   );
 };
+
 
 export default AdminPage;

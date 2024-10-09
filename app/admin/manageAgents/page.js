@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../../firebase"; // Ensure correct path to your firebase config
 import Link from "next/link";
+import Layout from "@/app/components/Layout";
 
 const ManageAgents = () => {
   const [pendingAgents, setPendingAgents] = useState([]); // State to store pending agent requests
@@ -69,6 +70,7 @@ const ManageAgents = () => {
   }
 
   return (
+    <Layout>
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Manage Agents</h1>
 
@@ -112,6 +114,7 @@ const ManageAgents = () => {
         <span className="text-blue-600 hover:underline cursor-pointer mt-4 block">Back to Admin Dashboard</span>
       </Link>
     </div>
+    </Layout>
   );
 };
 
