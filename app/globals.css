@@ -54,3 +54,27 @@ header {
 .error-message {
   @apply text-red-500 text-xs italic mt-4;
 }
+@media (max-width: 768px) {
+  .container {
+    grid-template-areas:
+      'header'
+      'main-content'
+      'sidebar'
+      'footer';
+    grid-template-columns: 1fr;
+  }
+}
+
+.favorite-property {
+  border: 1px solid #ddd; /* Light gray border */
+  border-radius: 8px; /* Rounded corners */
+  padding: 16px; /* Space inside the box */
+  margin-bottom: 12px; /* Space between boxes */
+  background-color: #f9f9f9; /* Light background color */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  transition: transform 0.2s; /* Smooth hover effect */
+}
+
+.favorite-property:hover {
+  transform: scale(1.02); /* Slightly enlarge on hover */
+}
