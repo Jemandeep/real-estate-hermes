@@ -13,6 +13,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("user"); // Default role is 'user'
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -42,10 +43,11 @@ export default function SignupPage() {
       // Combine first and last name (if last name is provided)
       const fullName = lastName ? `${firstName} ${lastName}` : firstName;
 
-      // Store the user's full name and email in Firestore using email as the primary key (document ID)
+      // Store the user's full name, email, and role in Firestore using email as the primary key (document ID)
       await setDoc(doc(db, "users", email), {
         name: fullName,
         email: email,
+        role: role, // Save the selected role
       });
 
       setSuccess("Signup successful! Redirecting to login page...");
@@ -166,6 +168,23 @@ export default function SignupPage() {
               >
                 {showConfirmPassword ? "Hide" : "Show"}
               </button>
+            </div>
+
+            {/* Role Selection */}
+            <div>
+              <label htmlFor="role" className="login-input-label">
+                Sign Up As:
+              </label>
+              <select
+                id="role"
+                name="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="login-input"
+              >
+                <option value="user">User</option>
+                <option value="agent">Agent</option>
+              </select>
             </div>
 
             <button type="submit" className="login-button">
