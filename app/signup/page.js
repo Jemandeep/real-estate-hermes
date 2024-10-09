@@ -13,7 +13,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("user"); // Default role is 'user'
+  const [role, setRole] = useState("user"); // State to track user role (default: user)
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -43,11 +43,14 @@ export default function SignupPage() {
       // Combine first and last name (if last name is provided)
       const fullName = lastName ? `${firstName} ${lastName}` : firstName;
 
-      // Store the user's full name, email, and role in Firestore using email as the primary key (document ID)
+      // Set the role based on whether the user wants to be an agent or not
+      const userRole = role === "agent" ? "pending_agent" : "user";
+
+      // Store the user's full name, email, and role in Firestore
       await setDoc(doc(db, "users", email), {
         name: fullName,
         email: email,
-        role: role, // Save the selected role
+        role: userRole, // Assign role (either user or pending_agent)
       });
 
       setSuccess("Signup successful! Redirecting to login page...");
@@ -170,10 +173,10 @@ export default function SignupPage() {
               </button>
             </div>
 
-            {/* Role Selection */}
+            {/* Role Selection (User or Agent) */}
             <div>
               <label htmlFor="role" className="login-input-label">
-                Sign Up As:
+                Sign up as:
               </label>
               <select
                 id="role"
@@ -182,7 +185,7 @@ export default function SignupPage() {
                 onChange={(e) => setRole(e.target.value)}
                 className="login-input"
               >
-                <option value="user">User</option>
+                <option value="user">Regular User</option>
                 <option value="agent">Agent</option>
               </select>
             </div>

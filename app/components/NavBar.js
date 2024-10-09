@@ -61,10 +61,14 @@ const NavBar = () => {
             Advice
           </Link>
 
-          {/* Conditionally render Admin tab if admin, otherwise Agent tab */}
+          {/* Conditionally render Admin tab if admin, New Listings tab if agent */}
           {userRole === "admin" ? (
             <Link href="/admin" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
               Admin
+            </Link>
+          ) : userRole === "agent" ? (
+            <Link href="/ModListings" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
+              New Listing
             </Link>
           ) : (
             <Link href="/agent" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
