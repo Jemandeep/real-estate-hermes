@@ -10,6 +10,7 @@ const ManageListings = () => {
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
   const [selectedListings, setSelectedListings] = useState([]); // State for selected listings
+  const [selectMode, setSelectMode] = useState(false); // Toggle for selection mode
 
   // Fetch listings from Firestore
   useEffect(() => {
@@ -74,13 +75,12 @@ const ManageListings = () => {
     });
   };
 
-  // Select all listings
-  const handleSelectAll = () => {
-    if (selectedListings.length === listings.length) {
-      setSelectedListings([]); // Unselect all
-    } else {
-      setSelectedListings(listings.map(listing => listing.id)); // Select all
+  // Toggle select/unselect mode
+  const toggleSelectMode = () => {
+    if (selectMode) {
+      setSelectedListings([]); // Clear selected listings when unselecting
     }
+    setSelectMode(!selectMode); // Toggle selection mode
   };
 
   if (loading) {
@@ -93,77 +93,85 @@ const ManageListings = () => {
 
   return (
     <Layout>
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Manage Listings</h1>
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-6">Manage Listings</h1>
 
-      {listings.length === 0 ? (
-        <p>No listings available.</p>
-      ) : (
-        <>
-          <button
-            onClick={handleBulkDelete}
-            className={`bg-red-600 text-white py-2 px-4 rounded mb-4 ${
-              selectedListings.length === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-red-700"
-            }`}
-            disabled={selectedListings.length === 0}
-          >
-            Delete Selected
-          </button>
+        {listings.length === 0 ? (
+          <p>No listings available.</p>
+        ) : (
+          <>
+            {/* Select/Unselect Mode Toggle Button */}
+            <button
+              onClick={toggleSelectMode}
+              className="bg-blue-600 text-white py-2 px-4 rounded mb-4 hover:bg-blue-700"
+            >
+              {selectMode ? "Unselect" : "Select"}
+            </button>
 
-          <table className="min-w-full bg-white border border-gray-300">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="py-2 px-4">
-                  <input
-                    type="checkbox"
-                    onChange={handleSelectAll}
-                    checked={selectedListings.length === listings.length}
-                  />
-                </th>
-                <th className="text-left py-2 px-4">Address</th>
-                <th className="text-left py-2 px-4">Price</th>
-                <th className="text-left py-2 px-4">Bedrooms</th>
-                <th className="text-left py-2 px-4">Bathrooms</th>
-                <th className="text-left py-2 px-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {listings.map((listing) => (
-                <tr key={listing.id} className="border-t">
-                  <td className="py-2 px-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedListings.includes(listing.id)}
-                      onChange={() => handleCheckboxChange(listing.id)}
-                    />
-                  </td>
-                  <td className="py-2 px-4">{listing.address}</td>
-                  <td className="py-2 px-4">${listing.current_price.toLocaleString()}</td>
-                  <td className="py-2 px-4">{listing.bed_count}</td>
-                  <td className="py-2 px-4">{listing.bathroom_count}</td>
-                  <td className="py-2 px-4">
-                    <Link href={`/admin/manageListings/edit/${listing.id}`}>
-                      <span className="text-blue-600 hover:underline cursor-pointer">Edit</span>
-                    </Link>
-                    {" | "}
-                    <span
-                      onClick={() => handleDelete(listing.id)}
-                      className="text-red-600 hover:underline cursor-pointer"
-                    >
-                      Delete
-                    </span>
-                  </td>
+            {/* Delete Selected Button (shown only if in select mode) */}
+            {selectMode && (
+              <button
+                onClick={handleBulkDelete}
+                className={`bg-red-600 text-white py-2 px-4 rounded mb-4 ${
+                  selectedListings.length === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-red-700"
+                }`}
+                disabled={selectedListings.length === 0}
+              >
+                Delete Selected
+              </button>
+            )}
+
+            <table className="min-w-full bg-white border border-gray-300">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="py-2 px-4">{selectMode && "Select"}</th> {/* Show "Select" if in select mode */}
+                  <th className="text-left py-2 px-4">Address</th>
+                  <th className="text-left py-2 px-4">Price</th>
+                  <th className="text-left py-2 px-4">Bedrooms</th>
+                  <th className="text-left py-2 px-4">Bathrooms</th>
+                  <th className="text-left py-2 px-4">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      )}
+              </thead>
+              <tbody>
+                {listings.map((listing) => (
+                  <tr key={listing.id} className="border-t">
+                    <td className="py-2 px-4">
+                      {selectMode && (
+                        <input
+                          type="checkbox"
+                          className="w-6 h-6"  // Increased size of checkbox
+                          checked={selectedListings.includes(listing.id)}
+                          onChange={() => handleCheckboxChange(listing.id)}
+                        />
+                      )}
+                    </td>
+                    <td className="py-2 px-4">{listing.address}</td>
+                    <td className="py-2 px-4">${listing.current_price.toLocaleString()}</td>
+                    <td className="py-2 px-4">{listing.bed_count}</td>
+                    <td className="py-2 px-4">{listing.bathroom_count}</td>
+                    <td className="py-2 px-4">
+                      <Link href={`/admin/manageListings/edit/${listing.id}`}>
+                        <span className="text-blue-600 hover:underline cursor-pointer">Edit</span>
+                      </Link>
+                      {" | "}
+                      <span
+                        onClick={() => handleDelete(listing.id)}
+                        className="text-red-600 hover:underline cursor-pointer"
+                      >
+                        Delete
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
 
-      <Link href="/admin">
-        <span className="text-blue-600 hover:underline cursor-pointer mt-4 block">Back to Admin Dashboard</span>
-      </Link>
-    </div>
+        <Link href="/admin">
+          <span className="text-blue-600 hover:underline cursor-pointer mt-4 block">Back to Admin Dashboard</span>
+        </Link>
+      </div>
     </Layout>
   );
 };
