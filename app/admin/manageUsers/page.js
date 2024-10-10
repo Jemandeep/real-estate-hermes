@@ -74,7 +74,9 @@ const ManageUsers = () => {
               <tr key={user.id} className="border-t">
                 <td className="py-2 px-4">{user.name || "N/A"}</td>
                 <td className="py-2 px-4">{user.email}</td>
-                <td className="py-2 px-4">{user.role}</td>
+                <td className="py-2 px-4" style={{
+                    color: user.role === "admin" ? "red" : user.role === "agent" ? "blue" : "inherit"
+                  }}>{user.role}</td>
                 <td className="py-2 px-4">
                   <select
                     value={user.role}
