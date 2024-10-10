@@ -14,7 +14,66 @@ const ModifyListings = () => {
     longitude: '',
     prices: [],
   });
+  const [isGoogleLoaded, setIsGoogleLoaded] = useState(false); // State to track if Google Maps is loaded
   const [historicalPrices, setHistoricalPrices] = useState([{ month: 'Last month', price: 50000 }]);
+
+  // Load Google Maps script dynamically
+  const loadGoogleMapsScript = (callback) => {
+    const existingScript = document.getElementById('googleMaps');
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAkhw-ajGfapfGKUYblHstW85TIm-IjKSU&libraries=places`;
+      script.id = 'googleMaps';
+      document.body.appendChild(script);
+      script.onload = () => {
+        setIsGoogleLoaded(true); // Set state to true when Google Maps script is loaded
+        if (callback) callback();
+      };
+    } else {
+      setIsGoogleLoaded(true); // If script is already loaded, set the state to true
+      if (callback) callback();
+    }
+  };
+
+  // Initialize Google autocomplete
+  const initAutocomplete = () => {
+    if (window.google && window.google.maps) {
+      const autocomplete = new window.google.maps.places.Autocomplete(
+        document.getElementById('address-input'),
+        { types: ['geocode'] }
+      );
+
+      // When the user selects an address, get the coordinates
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (!place.geometry) return;
+
+        const { lat, lng } = place.geometry.location;
+        const postalCodeComponent = place.address_components.find(component => component.types.includes('postal_code'));
+        const postalCode = postalCodeComponent ? postalCodeComponent.short_name : '';
+
+        // Update form values with postal code and coordinates
+        setFormValues({
+          ...formValues,
+          address: place.formatted_address,
+          postal_code: postalCode,
+          latitude: lat(),
+          longitude: lng()
+        });
+      });
+    } else {
+      console.error("Google Maps is not loaded yet.");
+    }
+  };
+
+  // UseEffect to load the Google Maps script and initialize autocomplete
+  useEffect(() => {
+    loadGoogleMapsScript(() => {
+      if (isGoogleLoaded) {
+        initAutocomplete();
+      }
+    });
+  }, [isGoogleLoaded]); // Depend on the state to ensure the script is loaded
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -53,41 +112,6 @@ const ModifyListings = () => {
     setHistoricalPrices(newPrices);
   };
 
-  // Google Maps Geocoding API to get postal code and coordinates
-  const getCoordinatesFromAddress = async (address) => {
-    const apiKey = 'AIzaSyCY0X51vTPdfNR_oNX9Q9DZR4sIVUYySFY'; // Replace with your Google API key
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
-
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.status === 'OK') {
-        const { lat, lng } = data.results[0].geometry.location;
-        const postalCode = data.results[0].address_components.find(component => component.types.includes('postal_code')).short_name;
-
-        // Update form values with postal code and coordinates
-        setFormValues((prev) => ({
-          ...prev,
-          postal_code: postalCode,
-          latitude: lat,
-          longitude: lng
-        }));
-      } else {
-        console.error('Geocoding failed:', data.status);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
-  // Call this function whenever the address is updated
-  useEffect(() => {
-    if (formValues.address) {
-      getCoordinatesFromAddress(formValues.address);
-    }
-  }, [formValues.address]);
-
   // Handle form submission to add a new document with an auto-generated ID
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -122,16 +146,18 @@ const ModifyListings = () => {
     <div className="container mx-auto p-6">
       <h2 className="text-2xl font-bold mb-4">Add New Listing</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Address Input */}
+        {/* Address Input with Autocomplete */}
         <div>
           <label className="block text-gray-700">Address</label>
           <input
             type="text"
             name="address"
+            id="address-input"  // Important for initializing the autocomplete
             value={formValues.address}
             onChange={handleChange}
             required
             className="w-full p-2 border rounded"
+            placeholder="Start typing an address..."
           />
         </div>
 
