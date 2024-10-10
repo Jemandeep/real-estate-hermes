@@ -33,9 +33,9 @@ const HomePage = () => {
       try {
         const listingsCollection = collection(db, "listings");
         const snapshot = await getDocs(listingsCollection);
-        const data = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id, // Include the ID of the listing
+          ...doc.data(),
         }));
         const randomListings = pickRandomListings(data); // Get three random listings
         setListings(randomListings);
@@ -84,9 +84,10 @@ const HomePage = () => {
           <p className="text-red-500 text-center mt-8">{error}</p>
         ) : listings.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {listings.map((listing, index) => (
+            {listings.map((listing) => (
               <ListingCard
-                key={index}
+                key={listing.id}
+                id={listing.id} // Pass ID to the ListingCard
                 address={listing.address}
                 neighborhood={listing.neighborhood}
                 propertyType={listing.property_type}

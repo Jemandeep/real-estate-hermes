@@ -1,18 +1,26 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { onAuthStateChanged, signOut } from "firebase/auth"; // Import signOut for logging out
-import { auth } from "../../firebase"; // Ensure the path to your Firebase config is correct
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth, db } from "../../firebase"; // Ensure the path to your Firebase config is correct
+import { doc, getDoc } from "firebase/firestore"; // For fetching user role
 
 const NavBar = () => {
   const [user, setUser] = useState(null); // State to track logged-in user
+  const [userRole, setUserRole] = useState(""); // State to track the user's role
 
-  // Monitor the user's authentication state
+  // Monitor the user's authentication state and fetch role
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setUser(true); // Set to true if the user is logged in
+        setUser(user); // Set user to the logged-in user
+        // Fetch the user role from Firestore
+        const userDoc = await getDoc(doc(db, "users", user.email));
+        if (userDoc.exists()) {
+          setUserRole(userDoc.data().role); // Set the user's role (admin, agent, etc.)
+        }
       } else {
-        setUser(false); // Set to false if the user is not logged in
+        setUser(null); // No user is logged in
+        setUserRole(""); // Clear the role
       }
     });
 
@@ -45,19 +53,28 @@ const NavBar = () => {
           <Link href="/analysis" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Analysis Dashboard
           </Link>
-          <Link href="/ModListings" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-          New Listings
-          </Link>
+
           <Link href="/viewListings" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-                Recent   Listings
+            Recent Listings
           </Link>
           <Link href="/advice" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-                Advice
-          </Link>
-          <Link href="/agent" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-                Agent
+            Advice
           </Link>
 
+          {/* Conditionally render Admin tab if admin, New Listings tab if agent */}
+          {userRole === "admin" ? (
+            <Link href="/admin" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
+              Admin
+            </Link>
+          ) : userRole === "agent" ? (
+            <Link href="/ModListings" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
+              New Listing
+            </Link>
+          ) : (
+            <Link href="/agent" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
+              Agent
+            </Link>
+          )}
 
           <Link href="/mortcalculator" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Mortgage Calculator

@@ -4,6 +4,7 @@ import React from 'react';
 import Layout from '../components/Layout';
 export default function About() {
   return (
+    <Layout>
     <div className="container mx-auto px-6 py-12">
       <div className="max-w-4xl mx-auto bg-gray-100 p-8 rounded-lg shadow-lg">
         <h1 className="text-3xl font-bold mb-6 text-gray-800">
@@ -118,5 +119,6 @@ export default function About() {
         </div>
       </div>
     </div>
+    </Layout>
   );
 }
