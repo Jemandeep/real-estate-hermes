@@ -67,15 +67,24 @@ const NavBar = () => {
           <Link href="/viewListings" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Recent Listings
           </Link>
+<<<<<<< Updated upstream
           <Link href="/advice" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Advice
           </Link>
+=======
+          
+>>>>>>> Stashed changes
           <Link href="/agent" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Agent
           </Link>
 
           <Link href="/mortcalculator" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Mortgage Calculator
+          </Link>
+
+          {/* New Advice Link */}
+          <Link href="/advice" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
+            Advice
           </Link>
 
           {/* If user is logged in, show Logout button, else show Login button */}
@@ -98,3 +107,4 @@ const NavBar = () => {
 };
 
 export default NavBar;
+
