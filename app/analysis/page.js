@@ -56,21 +56,8 @@ const Analysis = () => {
         address: listing.address,
         neighborhood: listing.neighborhood,
         propertyType: listing.property_type,
-        prices: [
-          listing.price_1_month,
-          listing.price_2_months,
-          listing.price_3_months,
-          listing.price_4_months,
-          listing.price_5_months,
-          listing.price_6_months,
-          listing.price_7_months,
-          listing.price_8_months,
-          listing.price_9_months,
-          listing.price_10_months,
-          listing.price_11_months,
-          listing.price_12_months,
-        ],
-        currentPrice: listing.price_1_month,
+        prices: listing.prices || [], // Ensure prices array exists
+        currentPrice: listing.current_price,
       },
     ]);
   };
@@ -85,6 +72,7 @@ const Analysis = () => {
     });
   };
 
+  // Filter the listings based on selected neighborhood and property type
   const filteredListings = listings.filter((listing) => {
     const matchesNeighborhood =
       filteredNeighborhood === 'All' || listing.neighborhood === filteredNeighborhood;
@@ -160,20 +148,7 @@ const Analysis = () => {
             <p className="text-red-600">{error}</p>
           ) : (
             filteredListings.map((listing, index) => {
-              const prices = [
-                listing.price_1_month,
-                listing.price_2_months,
-                listing.price_3_months,
-                listing.price_4_months,
-                listing.price_5_months,
-                listing.price_6_months,
-                listing.price_7_months,
-                listing.price_8_months,
-                listing.price_9_months,
-                listing.price_10_months,
-                listing.price_11_months,
-                listing.price_12_months,
-              ];
+              const prices = listing.prices?.map((priceObj) => priceObj.price) || []; // Parse prices array
 
               return (
                 <ListingCard
@@ -183,7 +158,7 @@ const Analysis = () => {
                   propertyType={listing.property_type}
                   prices={prices}
                   maxMonth={maxMonth}
-                  currentPrice={listing.price_1_month}
+                  currentPrice={listing.current_price}
                   onSelect={() => onSelect(listing)}
                 />
               );
