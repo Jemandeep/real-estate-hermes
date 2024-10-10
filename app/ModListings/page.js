@@ -170,46 +170,6 @@ const ModifyListings = () => {
     }
   };
 
-  return (
-    <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">Add New Listing</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Address Input with Autocomplete */}
-        <div>
-          <label className="block text-gray-700">Address</label>
-          <input
-            type="text"
-            name="address"
-            id="address-input"  // Important for initializing the autocomplete
-            value={formValues.address}
-            onChange={handleChange}
-            required
-            className="w-full p-2 border rounded"
-            placeholder="Start typing an address..."
-          />
-        </div>
-
-        {/* Bathroom Dropdown */}
-        <div>
-          <label className="block text-gray-700">Bathrooms</label>
-          <select
-            name="bathroom_count"
-            value={formValues.bathroom_count}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          >
-            {[...Array(6).keys()].map((num) => (
-              <option key={num + 1} value={num + 1}>
-                {num + 1} Bathroom(s)
-              </option>
-            ))}
-          </select>
-
-        </div>
-      </Layout>
-    );
-  }
-
   if (user === null) {
     return <div>Loading...</div>;
   }
@@ -224,78 +184,52 @@ const ModifyListings = () => {
             <label className="block text-gray-700">Address</label>
             <input
               type="text"
-              name="current_price"
-              value={formatPrice(formValues.current_price)}
-              onChange={handlePriceChange}
-              className="w-1/3 p-2 border rounded mr-4"
-            />
-            <input
-              type="range"
-              min="50000"
-              max="20000000"
-              step="50000"
-              value={formValues.current_price}
-              onChange={handlePriceChange}
-              className="w-2/3"
-
+              id="address-input"
+              name="address"
+              value={formValues.address}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded"
             />
           </div>
 
-        {/* Postal Code (Auto-filled by Geocoding API) */}
-        <div>
-          <label className="block text-gray-700">Postal Code (Auto-filled)</label>
-          <input
-            type="text"
-            name="postal_code"
-            value={formValues.postal_code}
-            readOnly
-            className="w-full p-2 border rounded bg-gray-100"
-          />
-        </div>
+          {/* Bathroom Dropdown */}
+          <div>
+            <label className="block text-gray-700">Bathrooms</label>
+            <select
+              name="bathroom_count"
+              value={formValues.bathroom_count}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+            >
+              {[...Array(6).keys()].map(num => (
+                <option key={num + 1} value={num + 1}>
+                  {num + 1} Bathroom(s)
+                </option>
+              ))}
+            </select>
+          </div>
 
-        {/* Latitude (Auto-filled by Geocoding API) */}
-        <div>
-          <label className="block text-gray-700">Latitude (Auto-filled)</label>
-          <input
-            type="text"
-            name="latitude"
-            value={formValues.latitude}
-            readOnly
-            className="w-full p-2 border rounded bg-gray-100"
-          />
-        </div>
+          {/* Bedroom Dropdown */}
+          <div>
+            <label className="block text-gray-700">Bedrooms</label>
+            <select
+              name="bed_count"
+              value={formValues.bed_count}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+            >
+              {[...Array(6).keys()].map(num => (
+                <option key={num + 1} value={num + 1}>
+                  {num + 1} Bedroom(s)
+                </option>
+              ))}
+            </select>
+          </div>
 
-        {/* Longitude (Auto-filled by Geocoding API) */}
-        <div>
-          <label className="block text-gray-700">Longitude (Auto-filled)</label>
-          <input
-            type="text"
-            name="longitude"
-            value={formValues.longitude}
-            readOnly
-            className="w-full p-2 border rounded bg-gray-100"
-          />
-        </div>
-
-        {/* Neighborhood/Community (Auto-filled by Geocoding API) */}
-<div>
-  <label className="block text-gray-700">Neighborhood/Community (Auto-filled)</label>
-  <input
-    type="text"
-    name="neighborhood"
-    value={formValues.neighborhood}
-    readOnly
-    className="w-full p-2 border rounded bg-gray-100"
-  />
-</div>
-
-
-        {/* Historical Prices */}
-        <h3 className="text-xl font-semibold">Historical Prices</h3>
-        {historicalPrices.map((price, index) => (
-          <div key={index} className="space-y-2">
-            <label className="block text-gray-700">{price.month}</label>
-
+          {/* Property Type Input */}
+          <div>
+            <label className="block text-gray-700">Property Type</label>
             <input
               type="text"
               name="property_type"
@@ -305,25 +239,111 @@ const ModifyListings = () => {
               placeholder="Enter property type"
             />
           </div>
-        ))}
 
-        {/* Buttons */}
-        <div className="mt-6">
-          <button
-            type="button"
-            onClick={handleAddPrice}
-            className="block px-4 py-2 bg-stone-300 text-stone-600 rounded mb-4 hover:bg-gray-100"
-          >
-            + Add Previous Month Price
-          </button>
+          {/* Current Price Input and Slider */}
+          <div>
+            <label className="block text-gray-700">Current Price</label>
+            <div className="flex items-center">
+              <input
+                type="text"
+                name="current_price"
+                value={formatPrice(formValues.current_price)}
+                onChange={handlePriceChange}
+                className="w-1/3 p-2 border rounded mr-4"
+              />
+              <input
+                type="range"
+                min="50000"
+                max="20000000"
+                step="50000"
+                value={formValues.current_price}
+                onChange={handlePriceChange}
+                className="w-2/3"
+              />
+            </div>
+          </div>
 
-          <button type="submit" className="block px-4 py-2 bg-stone-300 text-stone-600 rounded hover:bg-gray-100">
-            Add New Listing
-          </button>
-        </div>
-      </form>
-    </div>
+          {/* Postal Code (Auto-filled by Geocoding API) */}
+          <div>
+            <label className="block text-gray-700">Postal Code (Auto-filled)</label>
+            <input
+              type="text"
+              name="postal_code"
+              value={formValues.postal_code}
+              readOnly
+              className="w-full p-2 border rounded bg-gray-100"
+            />
+          </div>
 
+          {/* Latitude (Auto-filled by Geocoding API) */}
+          <div>
+            <label className="block text-gray-700">Latitude (Auto-filled)</label>
+            <input
+              type="text"
+              name="latitude"
+              value={formValues.latitude}
+              readOnly
+              className="w-full p-2 border rounded bg-gray-100"
+            />
+          </div>
+
+          {/* Longitude (Auto-filled by Geocoding API) */}
+          <div>
+            <label className="block text-gray-700">Longitude (Auto-filled)</label>
+            <input
+              type="text"
+              name="longitude"
+              value={formValues.longitude}
+              readOnly
+              className="w-full p-2 border rounded bg-gray-100"
+            />
+          </div>
+
+          {/* Neighborhood/Community (Auto-filled by Geocoding API) */}
+          <div>
+            <label className="block text-gray-700">Neighborhood/Community (Auto-filled)</label>
+            <input
+              type="text"
+              name="neighborhood"
+              value={formValues.neighborhood}
+              readOnly
+              className="w-full p-2 border rounded bg-gray-100"
+            />
+          </div>
+
+          {/* Historical Prices */}
+          <h3 className="text-xl font-semibold">Historical Prices</h3>
+          {historicalPrices.map((price, index) => (
+            <div key={index} className="space-y-2">
+              <label className="block text-gray-700">{price.month}</label>
+              <input
+                type="text"
+                name="property_type"
+                value={formValues.property_type}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                placeholder="Enter property type"
+              />
+            </div>
+          ))}
+
+          {/* Buttons */}
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={handleAddPrice}
+              className="block px-4 py-2 bg-stone-300 text-stone-600 rounded mb-4 hover:bg-gray-100"
+            >
+              + Add Previous Month Price
+            </button>
+
+            <button type="submit" className="block px-4 py-2 bg-stone-300 text-stone-600 rounded hover:bg-gray-100">
+              Add New Listing
+            </button>
+          </div>
+        </form>
+      </div>
+    </Layout>
   );
 };
 
