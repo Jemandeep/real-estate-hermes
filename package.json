@@ -16,6 +16,7 @@
     "next": "^14.2.13",
     "react": "^18",
     "react-dom": "^18",
+    "react-icons": "^4.12.0",
     "react-leaflet": "^4.2.1",
     "react-simple-maps": "^1.0.0",
     "recharts": "^2.12.7",
