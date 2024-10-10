@@ -1,26 +1,18 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth, db } from "../../firebase"; // Ensure the path to your Firebase config is correct
-import { doc, getDoc } from "firebase/firestore"; // For fetching user role
+import { onAuthStateChanged, signOut } from "firebase/auth"; // Import signOut for logging out
+import { auth } from "../../firebase"; // Ensure the path to your Firebase config is correct
 
 const NavBar = () => {
   const [user, setUser] = useState(null); // State to track logged-in user
-  const [userRole, setUserRole] = useState(""); // State to track the user's role
 
-  // Monitor the user's authentication state and fetch role
+  // Monitor the user's authentication state
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setUser(user); // Set user to the logged-in user
-        // Fetch the user role from Firestore
-        const userDoc = await getDoc(doc(db, "users", user.email));
-        if (userDoc.exists()) {
-          setUserRole(userDoc.data().role); // Set the user's role (admin, agent, etc.)
-        }
+        setUser(true); // Set to true if the user is logged in
       } else {
-        setUser(null); // No user is logged in
-        setUserRole(""); // Clear the role
+        setUser(false); // Set to false if the user is not logged in
       }
     });
 
@@ -53,38 +45,22 @@ const NavBar = () => {
           <Link href="/analysis" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Analysis Dashboard
           </Link>
-
-          {/* Conditionally render New Listings tab only for agents/admins */}
-          {userRole === "agent" || userRole === "admin" ? (
-            <Link
-              href="/ModListings"
-              className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100"
-            >
-              New Listings
-            </Link>
-          ) : null}
-
+          <Link href="/ModListings" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
+          New Listings
+          </Link>
           <Link href="/viewListings" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-            Recent Listings
+                Recent   Listings
           </Link>
-<<<<<<< Updated upstream
           <Link href="/advice" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-            Advice
+                Advice
           </Link>
-=======
-          
->>>>>>> Stashed changes
           <Link href="/agent" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-            Agent
+                Agent
           </Link>
+
 
           <Link href="/mortcalculator" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Mortgage Calculator
-          </Link>
-
-          {/* New Advice Link */}
-          <Link href="/advice" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-            Advice
           </Link>
 
           {/* If user is logged in, show Logout button, else show Login button */}
@@ -107,4 +83,3 @@ const NavBar = () => {
 };
 
 export default NavBar;
-

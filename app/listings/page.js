@@ -83,6 +83,7 @@ const Listings = () => {
   const filteredListings = listings.filter((listing) => {
     return (
       (filteredNeighborhoods.length === 0 || filteredNeighborhoods.includes(listing.neighborhood)) &&
+      (filteredNeighborhoods.length === 0 || filteredNeighborhoods.includes(listing.neighborhood)) &&
       (filteredPropertyTypes.length === 0 || filteredPropertyTypes.includes(listing.property_type))
     );
   });
@@ -142,7 +143,7 @@ const Listings = () => {
             /* Listing Cards in a grid layout */
             filteredListings.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredListings.map((listing, index) => (
+                {filteredListings.map((listing) => (
                   <ListingCard
                     key={index}
                     address={listing.address || 'N/A'}

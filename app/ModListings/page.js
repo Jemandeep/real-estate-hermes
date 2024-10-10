@@ -12,115 +12,164 @@ const ModifyListings = () => {
     bathroom_count: 1,
     bed_count: 1,
     current_price: 50000,
-    prices: [],
+    property_type: '', // Property type field
+    postal_code: '',
+    latitude: '',
+    longitude: '',
+    neighborhood: ''
   });
+
   const [historicalPrices, setHistoricalPrices] = useState([{ month: 'Last month', price: 50000 }]);
+  const [isGoogleLoaded, setIsGoogleLoaded] = useState(false); // Track if Google Maps is loaded
   const [user, setUser] = useState(null); // Track the signed-in user
   const [redirectMessage, setRedirectMessage] = useState(false); // Track if redirect message is shown
   const router = useRouter(); // Next.js navigation router
 
-  // Check if user is authenticated
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser); // Set the user if signed in
       } else {
-        // If no user is signed in, show redirect message and start the animation
         setRedirectMessage(true);
         setTimeout(() => {
           router.push('/login'); // Redirect to login after delay
         }, 3000); // 3-second delay before redirection
       }
     });
-
-    // Cleanup the listener on component unmount
     return () => unsubscribe();
   }, [router]);
+
+  // Load Google Maps script dynamically
+  const loadGoogleMapsScript = (callback) => {
+    const existingScript = document.getElementById('googleMaps');
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAkhw-ajGfapfGKUYblHstW85TIm-IjKSU&libraries=places`;
+      script.id = 'googleMaps';
+      document.body.appendChild(script);
+      script.onload = () => {
+        setIsGoogleLoaded(true); // Set state to true when Google Maps script is loaded
+        if (callback) callback();
+      };
+    } else {
+      setIsGoogleLoaded(true); // If script is already loaded, set the state to true
+      if (callback) callback();
+    }
+  };
+
+  // Initialize Google autocomplete
+  const initAutocomplete = () => {
+    if (window.google && window.google.maps) {
+      const autocomplete = new window.google.maps.places.Autocomplete(
+        document.getElementById('address-input'),
+        { types: ['geocode'] }
+      );
+
+      // When the user selects an address, get the coordinates
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (!place.geometry) return;
+
+        const { lat, lng } = place.geometry.location;
+
+        // Extract postal code
+        const postalCodeComponent = place.address_components.find(component => component.types.includes('postal_code'));
+        const postalCode = postalCodeComponent ? postalCodeComponent.short_name : '';
+
+        // Extract neighborhood or community
+        const neighborhoodComponent = place.address_components.find(component => component.types.includes('neighborhood') || component.types.includes('sublocality'));
+        const neighborhood = neighborhoodComponent ? neighborhoodComponent.long_name : '';
+
+        // Update form values with postal code, coordinates, and neighborhood
+        setFormValues((prevValues) => ({
+          ...prevValues,
+          address: place.formatted_address,
+          postal_code: postalCode,
+          latitude: lat(),
+          longitude: lng(),
+          neighborhood: neighborhood // Add neighborhood to form values
+        }));
+      });
+    } else {
+      console.error("Google Maps is not loaded yet.");
+    }
+  };
+
+  // UseEffect to load the Google Maps script and initialize autocomplete
+  useEffect(() => {
+    loadGoogleMapsScript(() => {
+      if (isGoogleLoaded) {
+        initAutocomplete();
+      }
+    });
+  }, [isGoogleLoaded]); // Depend on the state to ensure the script is loaded
 
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormValues({ ...formValues, [name]: value });
+    setFormValues((prevValues) => ({
+      ...prevValues,
+      [name]: value
+    }));
   };
 
-  // Format numbers with commas for price input
   const formatPrice = (price) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
-  // Remove commas for operations
   const unformatPrice = (price) => {
     return price.replace(/,/g, '');
   };
 
-  // Handle price input change (without commas)
+  // Handle changes in the current price input
   const handlePriceChange = (e) => {
     const priceValue = unformatPrice(e.target.value);
-    setFormValues({ ...formValues, current_price: priceValue });
+    setFormValues((prevValues) => ({
+      ...prevValues,
+      current_price: priceValue
+    }));
   };
 
-  // Handle adding more input fields for historical prices with default current price
+  // Add a new historical price entry
   const handleAddPrice = () => {
     const lastPriceCount = historicalPrices.length;
     const nextMonth = `Last ${lastPriceCount + 1} month`;
-    setHistoricalPrices([...historicalPrices, { month: nextMonth, price: formValues.current_price }]);
+
+    // Append a new price entry to the historical prices array
+    setHistoricalPrices((prevPrices) => [
+      ...prevPrices,
+      { month: nextMonth, price: formValues.current_price }
+    ]);
   };
 
-  // Handle the changes in historical prices inputs
+  // Handle updates to a specific historical price
   const handleHistoricalChange = (index, e) => {
     const { value } = e.target;
-    const newPrices = [...historicalPrices];
-    newPrices[index].price = unformatPrice(value);
-    setHistoricalPrices(newPrices);
+    const updatedPrices = historicalPrices.map((price, i) =>
+      i === index ? { ...price, price: unformatPrice(value) } : price
+    );
+    setHistoricalPrices(updatedPrices);
   };
 
-  // Handle form submission to add a new document with an auto-generated ID
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Ask for confirmation before submission
     const confirmed = window.confirm('Are you sure you want to add this new listing?');
     if (!confirmed) return;
 
     try {
       // Add a new listing document with an auto-generated ID
       const docRef = await addDoc(collection(db, 'listings'), {
-        address: formValues.address,
-        bathroom_count: formValues.bathroom_count,
-        bed_count: formValues.bed_count,
-        current_price: formValues.current_price,
-        prices: historicalPrices,
+        ...formValues, // Spread all form values
+        prices: historicalPrices // Include historical prices
       });
 
-      // Confirm the addition
       alert(`Listing added successfully with ID: ${docRef.id}`);
     } catch (error) {
-      // Log the error for debugging
       console.error('Error adding new listing: ', error);
       alert(`Error adding listing: ${error.message}`);
     }
   };
 
-  if (redirectMessage) {
-    return (
-      <Layout>
-        <div className="container mx-auto p-6 flex justify-center items-center h-screen">
-          <div className="text-center">
-            {/* Transitioning message */}
-            <p className="text-2xl font-bold text-gray-800 opacity-0 animate-fadeIn">
-              Since you are not logged in, you will be redirected to the login page.
-            </p>
-            {/* Optional loading spinner or animation */}
-            <div className="mt-4">
-              <div className="w-8 h-8 border-4 border-stone-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
-  // Show a loading state or error if the user is not authenticated yet
   if (user === null) {
     return <div>Loading...</div>;
   }
@@ -135,6 +184,7 @@ const ModifyListings = () => {
             <label className="block text-gray-700">Address</label>
             <input
               type="text"
+              id="address-input"
               name="address"
               value={formValues.address}
               onChange={handleChange}
@@ -143,41 +193,20 @@ const ModifyListings = () => {
             />
           </div>
 
-          {/* Bathroom Dropdown */}
+          {/* Property Type Input */}
           <div>
-            <label className="block text-gray-700">Bathrooms</label>
-            <select
-              name="bathroom_count"
-              value={formValues.bathroom_count}
+            <label className="block text-gray-700">Property Type</label>
+            <input
+              type="text"
+              name="property_type"
+              value={formValues.property_type}
               onChange={handleChange}
               className="w-full p-2 border rounded"
-            >
-              {[...Array(6).keys()].map((num) => (
-                <option key={num + 1} value={num + 1}>
-                  {num + 1} Bathroom(s)
-                </option>
-              ))}
-            </select>
+              placeholder="Enter property type"
+            />
           </div>
 
-          {/* Bedroom Dropdown */}
-          <div>
-            <label className="block text-gray-700">Bedrooms</label>
-            <select
-              name="bed_count"
-              value={formValues.bed_count}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            >
-              {[...Array(6).keys()].map((num) => (
-                <option key={num + 1} value={num + 1}>
-                  {num + 1} Bedroom(s)
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Current Price Input and Slider */}
+          {/* Current Price Input */}
           <div>
             <label className="block text-gray-700">Current Price</label>
             <div className="flex items-center">
@@ -194,10 +223,58 @@ const ModifyListings = () => {
                 max="20000000"
                 step="50000"
                 value={formValues.current_price}
-                onChange={(e) => handlePriceChange(e)}
+                onChange={handlePriceChange}
                 className="w-2/3"
               />
             </div>
+          </div>
+
+          {/* Postal Code (Auto-filled by Geocoding API) */}
+          <div>
+            <label className="block text-gray-700">Postal Code (Auto-filled)</label>
+            <input
+              type="text"
+              name="postal_code"
+              value={formValues.postal_code}
+              readOnly
+              className="w-full p-2 border rounded bg-gray-100"
+            />
+          </div>
+
+          {/* Latitude (Auto-filled by Geocoding API) */}
+          <div>
+            <label className="block text-gray-700">Latitude (Auto-filled)</label>
+            <input
+              type="text"
+              name="latitude"
+              value={formValues.latitude}
+              readOnly
+              className="w-full p-2 border rounded bg-gray-100"
+            />
+          </div>
+
+          {/* Longitude (Auto-filled by Geocoding API) */}
+          <div>
+            <label className="block text-gray-700">Longitude (Auto-filled)</label>
+            <input
+              type="text"
+              name="longitude"
+              value={formValues.longitude}
+              readOnly
+              className="w-full p-2 border rounded bg-gray-100"
+            />
+          </div>
+
+          {/* Neighborhood/Community (Auto-filled by Geocoding API) */}
+          <div>
+            <label className="block text-gray-700">Neighborhood/Community (Auto-filled)</label>
+            <input
+              type="text"
+              name="neighborhood"
+              value={formValues.neighborhood}
+              readOnly
+              className="w-full p-2 border rounded bg-gray-100"
+            />
           </div>
 
           {/* Historical Prices */}
@@ -207,26 +284,15 @@ const ModifyListings = () => {
               <label className="block text-gray-700">{price.month}</label>
               <input
                 type="text"
-                name="price"
                 value={formatPrice(price.price)}
                 onChange={(e) => handleHistoricalChange(index, e)}
                 placeholder="Price"
                 className="w-full p-2 border rounded"
               />
-              {/* Slider for adjusting historical prices */}
-              <input
-                type="range"
-                min="50000"
-                max="20000000"
-                step="50000"
-                value={price.price}
-                onChange={(e) => handleHistoricalChange(index, e)}
-                className="w-full"
-              />
             </div>
           ))}
 
-          {/* Buttons with App Colors */}
+          {/* Add Historical Price Button */}
           <div className="mt-6">
             <button
               type="button"
