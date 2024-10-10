@@ -18,14 +18,9 @@ export default function SignupPage() {
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState(false); // State to show the pending message
 
   const router = useRouter(); // Initialize the useRouter hook
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // We are on the client-side
-    }
-  }, []);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -53,15 +48,21 @@ export default function SignupPage() {
         role: userRole, // Assign role (either user or pending_agent)
       });
 
-      setSuccess("Signup successful! Redirecting to login page...");
+      // Show success message
+      setSuccess("Signup successful!");
       setError(""); // Clear error if any
 
-      // Redirect to login page after 2 seconds
-      setTimeout(() => {
-        if (router) {
+      // Show pending agent message if they selected "Agent"
+      if (role === "agent") {
+        setPendingMessage(true); // Show pending message
+        setTimeout(() => {
           router.push("/login");
-        }
-      }, 2000);
+        }, 3000); // 3-second delay before redirecting to the login page
+      } else {
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000); // 2-second delay for regular users
+      }
     } catch (error) {
       console.error(error);
       setError("Failed to create an account. Please try again.");
@@ -196,6 +197,14 @@ export default function SignupPage() {
             {error && <p className="error-message">{error}</p>}
             {success && <p className="text-green-500 text-xs italic mt-4">{success}</p>}
           </form>
+
+          {pendingMessage && (
+            <div className="mt-4 text-center">
+              <p className="text-gray-600">
+                Your request for becoming an agent is pending. Please wait for approval.
+              </p>
+            </div>
+          )}
 
           <div className="mt-4 text-center">
             <p>Already have an account?</p>

@@ -1,13 +1,15 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { db } from '../../firebase'; // Ensure this path is correct
+import { db } from '../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import Layout from '../components/Layout';
+import Link from 'next/link'; // For linking to the detailed page
+import { FaBed, FaBath, FaMapMarkerAlt, FaHome } from 'react-icons/fa'; // Import icons
 
 const ViewListings = () => {
   const [listings, setListings] = useState([]);
 
-  // Fetch listings from Firebase when component mounts
+  // Fetch listings from Firebase
   useEffect(() => {
     const fetchListings = async () => {
       try {
@@ -22,7 +24,7 @@ const ViewListings = () => {
       }
     };
 
-    fetchListings(); // Fetch listings when the component mounts
+    fetchListings();
   }, []);
 
   return (
@@ -39,20 +41,37 @@ const ViewListings = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {listings.map((listing) => (
-              <div key={listing.id} className="bg-stone-100 shadow-lg rounded-lg p-6">
-                <p className="text-lg font-bold mb-2">{listing.address}</p>
-                <p className="text-sm text-gray-700 mb-2">
-                  🛏️ {listing.bed_count} Bedrooms | 🛁 {listing.bathroom_count} Bathrooms
-                </p>
-                <p className="text-sm text-gray-700 mb-2">{listing.neighborhood}</p>
-                <p className="text-sm text-gray-700 mb-2">{listing.property_type}</p>
-                <div className="text-right">
-                  <p className="text-sm font-bold">Current Price:</p>
-                  <p className="text-lg font-semibold">
-                    ${listing.current_price ? listing.current_price.toLocaleString() : 'No price available'}
-                  </p>
+              // Update link to use dynamic route `/viewListings/[id]`
+              <Link key={listing.id} href={`/viewListings/${listing.id}`}>
+                <div className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transform hover:scale-105 transition duration-200 cursor-pointer">
+                  <div className="mb-4">
+                    <p className="text-lg font-bold text-gray-800 mb-2 flex items-center">
+                      <FaMapMarkerAlt className="mr-2 text-gray-700" />
+                      {listing.address}
+                    </p>
+                  </div>
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-700 mb-2 flex items-center">
+                      <FaBed className="mr-2 text-gray-600" />
+                      {listing.bed_count} Bedrooms
+                    </p>
+                    <p className="text-sm text-gray-700 mb-2 flex items-center">
+                      <FaBath className="mr-2 text-gray-600" />
+                      {listing.bathroom_count} Bathrooms
+                    </p>
+                    <p className="text-sm text-gray-700 mb-2 flex items-center">
+                      <FaHome className="mr-2 text-gray-600" />
+                      {listing.property_type}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold">Current Price:</p>
+                    <p className="text-lg font-semibold text-gray-800">
+                      ${listing.current_price ? listing.current_price.toLocaleString() : 'No price available'}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
