@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from '../../firebase'; // Ensure this path is correct
 import { collection, addDoc } from 'firebase/firestore';
 
@@ -9,6 +9,9 @@ const ModifyListings = () => {
     bathroom_count: 1,
     bed_count: 1,
     current_price: 50000,
+    postal_code: '',
+    latitude: '',
+    longitude: '',
     prices: [],
   });
   const [historicalPrices, setHistoricalPrices] = useState([{ month: 'Last month', price: 50000 }]);
@@ -50,6 +53,41 @@ const ModifyListings = () => {
     setHistoricalPrices(newPrices);
   };
 
+  // Google Maps Geocoding API to get postal code and coordinates
+  const getCoordinatesFromAddress = async (address) => {
+    const apiKey = 'AIzaSyCY0X51vTPdfNR_oNX9Q9DZR4sIVUYySFY'; // Replace with your Google API key
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.status === 'OK') {
+        const { lat, lng } = data.results[0].geometry.location;
+        const postalCode = data.results[0].address_components.find(component => component.types.includes('postal_code')).short_name;
+
+        // Update form values with postal code and coordinates
+        setFormValues((prev) => ({
+          ...prev,
+          postal_code: postalCode,
+          latitude: lat,
+          longitude: lng
+        }));
+      } else {
+        console.error('Geocoding failed:', data.status);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  // Call this function whenever the address is updated
+  useEffect(() => {
+    if (formValues.address) {
+      getCoordinatesFromAddress(formValues.address);
+    }
+  }, [formValues.address]);
+
   // Handle form submission to add a new document with an auto-generated ID
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -65,6 +103,9 @@ const ModifyListings = () => {
         bathroom_count: formValues.bathroom_count,
         bed_count: formValues.bed_count,
         current_price: formValues.current_price,
+        postal_code: formValues.postal_code,
+        latitude: formValues.latitude,
+        longitude: formValues.longitude,
         prices: historicalPrices,
       });
 
@@ -145,10 +186,46 @@ const ModifyListings = () => {
               max="20000000"
               step="50000"
               value={formValues.current_price}
-              onChange={(e) => handlePriceChange(e)}
+              onChange={handlePriceChange}
               className="w-2/3"
             />
           </div>
+        </div>
+
+        {/* Postal Code (Auto-filled by Geocoding API) */}
+        <div>
+          <label className="block text-gray-700">Postal Code (Auto-filled)</label>
+          <input
+            type="text"
+            name="postal_code"
+            value={formValues.postal_code}
+            readOnly
+            className="w-full p-2 border rounded bg-gray-100"
+          />
+        </div>
+
+        {/* Latitude (Auto-filled by Geocoding API) */}
+        <div>
+          <label className="block text-gray-700">Latitude (Auto-filled)</label>
+          <input
+            type="text"
+            name="latitude"
+            value={formValues.latitude}
+            readOnly
+            className="w-full p-2 border rounded bg-gray-100"
+          />
+        </div>
+
+        {/* Longitude (Auto-filled by Geocoding API) */}
+        <div>
+          <label className="block text-gray-700">Longitude (Auto-filled)</label>
+          <input
+            type="text"
+            name="longitude"
+            value={formValues.longitude}
+            readOnly
+            className="w-full p-2 border rounded bg-gray-100"
+          />
         </div>
 
         {/* Historical Prices */}
@@ -177,7 +254,7 @@ const ModifyListings = () => {
           </div>
         ))}
 
-        {/* Buttons with App Colors */}
+        {/* Buttons */}
         <div className="mt-6">
           <button
             type="button"
@@ -186,7 +263,7 @@ const ModifyListings = () => {
           >
             + Add Previous Month Price
           </button>
-          
+
           <button type="submit" className="block px-4 py-2 bg-stone-300 text-stone-600 rounded hover:bg-gray-100">
             Add New Listing
           </button>
