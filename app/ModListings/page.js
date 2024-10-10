@@ -12,6 +12,7 @@ const ModifyListings = () => {
     postal_code: '',
     latitude: '',
     longitude: '',
+    neighborhood: '',
     prices: [],
   });
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false); // State to track if Google Maps is loaded
@@ -42,29 +43,37 @@ const ModifyListings = () => {
         document.getElementById('address-input'),
         { types: ['geocode'] }
       );
-
+  
       // When the user selects an address, get the coordinates
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
         if (!place.geometry) return;
-
+  
         const { lat, lng } = place.geometry.location;
+  
+        // Extract postal code
         const postalCodeComponent = place.address_components.find(component => component.types.includes('postal_code'));
         const postalCode = postalCodeComponent ? postalCodeComponent.short_name : '';
-
-        // Update form values with postal code and coordinates
+  
+        // Extract neighborhood or community
+        const neighborhoodComponent = place.address_components.find(component => component.types.includes('neighborhood') || component.types.includes('sublocality'));
+        const neighborhood = neighborhoodComponent ? neighborhoodComponent.long_name : '';
+  
+        // Update form values with postal code, coordinates, and neighborhood
         setFormValues({
           ...formValues,
           address: place.formatted_address,
           postal_code: postalCode,
           latitude: lat(),
-          longitude: lng()
+          longitude: lng(),
+          neighborhood: neighborhood // Add neighborhood to form values
         });
       });
     } else {
       console.error("Google Maps is not loaded yet.");
     }
   };
+  
 
   // UseEffect to load the Google Maps script and initialize autocomplete
   useEffect(() => {
@@ -253,6 +262,19 @@ const ModifyListings = () => {
             className="w-full p-2 border rounded bg-gray-100"
           />
         </div>
+
+        {/* Neighborhood/Community (Auto-filled by Geocoding API) */}
+<div>
+  <label className="block text-gray-700">Neighborhood/Community (Auto-filled)</label>
+  <input
+    type="text"
+    name="neighborhood"
+    value={formValues.neighborhood}
+    readOnly
+    className="w-full p-2 border rounded bg-gray-100"
+  />
+</div>
+
 
         {/* Historical Prices */}
         <h3 className="text-xl font-semibold">Historical Prices</h3>
