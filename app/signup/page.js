@@ -13,18 +13,14 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("user"); // State to track user role (default: user)
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState(false); // State to show the pending message
 
   const router = useRouter(); // Initialize the useRouter hook
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // We are on the client-side
-    }
-  }, []);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -42,21 +38,31 @@ export default function SignupPage() {
       // Combine first and last name (if last name is provided)
       const fullName = lastName ? `${firstName} ${lastName}` : firstName;
 
-      // Store the user's full name and email in Firestore using email as the primary key (document ID)
+      // Set the role based on whether the user wants to be an agent or not
+      const userRole = role === "agent" ? "pending_agent" : "user";
+
+      // Store the user's full name, email, and role in Firestore
       await setDoc(doc(db, "users", email), {
         name: fullName,
         email: email,
+        role: userRole, // Assign role (either user or pending_agent)
       });
 
-      setSuccess("Signup successful! Redirecting to login page...");
+      // Show success message
+      setSuccess("Signup successful!");
       setError(""); // Clear error if any
 
-      // Redirect to login page after 2 seconds
-      setTimeout(() => {
-        if (router) {
+      // Show pending agent message if they selected "Agent"
+      if (role === "agent") {
+        setPendingMessage(true); // Show pending message
+        setTimeout(() => {
           router.push("/login");
-        }
-      }, 2000);
+        }, 3000); // 3-second delay before redirecting to the login page
+      } else {
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000); // 2-second delay for regular users
+      }
     } catch (error) {
       console.error(error);
       setError("Failed to create an account. Please try again.");
@@ -168,12 +174,37 @@ export default function SignupPage() {
               </button>
             </div>
 
+            {/* Role Selection (User or Agent) */}
+            <div>
+              <label htmlFor="role" className="login-input-label">
+                Sign up as:
+              </label>
+              <select
+                id="role"
+                name="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="login-input"
+              >
+                <option value="user">Regular User</option>
+                <option value="agent">Agent</option>
+              </select>
+            </div>
+
             <button type="submit" className="login-button">
               Sign Up
             </button>
             {error && <p className="error-message">{error}</p>}
             {success && <p className="text-green-500 text-xs italic mt-4">{success}</p>}
           </form>
+
+          {pendingMessage && (
+            <div className="mt-4 text-center">
+              <p className="text-gray-600">
+                Your request for becoming an agent is pending. Please wait for approval.
+              </p>
+            </div>
+          )}
 
           <div className="mt-4 text-center">
             <p>Already have an account?</p>
