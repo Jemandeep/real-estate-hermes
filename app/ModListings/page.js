@@ -1,7 +1,11 @@
-"use client";
+"use client"; // Ensure the component is client-side
 import { useState, useEffect } from 'react';
-import { db } from '../../firebase'; // Ensure this path is correct
+import { db, auth } from '../../firebase'; // Ensure this path is correct
+
 import { collection, addDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
+import { useRouter } from 'next/navigation'; // Updated import for Next.js 13+
+import Layout from '../components/Layout'; // Import the Layout component
 
 const ModifyListings = () => {
   const [formValues, setFormValues] = useState({
@@ -17,6 +21,26 @@ const ModifyListings = () => {
   });
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false); // State to track if Google Maps is loaded
   const [historicalPrices, setHistoricalPrices] = useState([{ month: 'Last month', price: 50000 }]);
+  const [user, setUser] = useState(null); // Track the signed-in user
+  const [redirectMessage, setRedirectMessage] = useState(false); // Track if redirect message is shown
+  const router = useRouter(); // Next.js navigation router
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser); // Set the user if signed in
+      } else {
+        // If no user is signed in, show redirect message and start the animation
+        setRedirectMessage(true);
+        setTimeout(() => {
+          router.push('/login'); // Redirect to login after delay
+        }, 3000); // 3-second delay before redirection
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
 
   // Load Google Maps script dynamically
   const loadGoogleMapsScript = (callback) => {
@@ -85,35 +109,31 @@ const ModifyListings = () => {
   }, [isGoogleLoaded]); // Depend on the state to ensure the script is loaded
 
   // Handle form input changes
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
   };
 
-  // Format numbers with commas for price input
   const formatPrice = (price) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
-  // Remove commas for operations
   const unformatPrice = (price) => {
     return price.replace(/,/g, '');
   };
 
-  // Handle price input change (without commas)
   const handlePriceChange = (e) => {
     const priceValue = unformatPrice(e.target.value);
     setFormValues({ ...formValues, current_price: priceValue });
   };
 
-  // Handle adding more input fields for historical prices with default current price
   const handleAddPrice = () => {
     const lastPriceCount = historicalPrices.length;
     const nextMonth = `Last ${lastPriceCount + 1} month`;
     setHistoricalPrices([...historicalPrices, { month: nextMonth, price: formValues.current_price }]);
   };
 
-  // Handle the changes in historical prices inputs
   const handleHistoricalChange = (index, e) => {
     const { value } = e.target;
     const newPrices = [...historicalPrices];
@@ -121,17 +141,15 @@ const ModifyListings = () => {
     setHistoricalPrices(newPrices);
   };
 
-  // Handle form submission to add a new document with an auto-generated ID
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Ask for confirmation before submission
     const confirmed = window.confirm('Are you sure you want to add this new listing?');
     if (!confirmed) return;
 
     try {
       // Add a new listing document with an auto-generated ID
       const docRef = await addDoc(collection(db, 'listings'), {
+
         address: formValues.address,
         bathroom_count: formValues.bathroom_count,
         bed_count: formValues.bed_count,
@@ -140,6 +158,7 @@ const ModifyListings = () => {
         latitude: formValues.latitude,
         longitude: formValues.longitude,
         prices: historicalPrices,
+
       });
 
       // Confirm the addition
@@ -185,29 +204,24 @@ const ModifyListings = () => {
               </option>
             ))}
           </select>
-        </div>
 
-        {/* Bedroom Dropdown */}
-        <div>
-          <label className="block text-gray-700">Bedrooms</label>
-          <select
-            name="bed_count"
-            value={formValues.bed_count}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          >
-            {[...Array(6).keys()].map((num) => (
-              <option key={num + 1} value={num + 1}>
-                {num + 1} Bedroom(s)
-              </option>
-            ))}
-          </select>
         </div>
+      </Layout>
+    );
+  }
 
-        {/* Current Price Input and Slider */}
-        <div>
-          <label className="block text-gray-700">Current Price</label>
-          <div className="flex items-center">
+  if (user === null) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <Layout>
+      <div className="container mx-auto p-6">
+        <h2 className="text-2xl font-bold mb-4">Add New Listing</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Address Input */}
+          <div>
+            <label className="block text-gray-700">Address</label>
             <input
               type="text"
               name="current_price"
@@ -223,9 +237,9 @@ const ModifyListings = () => {
               value={formValues.current_price}
               onChange={handlePriceChange}
               className="w-2/3"
+
             />
           </div>
-        </div>
 
         {/* Postal Code (Auto-filled by Geocoding API) */}
         <div>
@@ -281,23 +295,14 @@ const ModifyListings = () => {
         {historicalPrices.map((price, index) => (
           <div key={index} className="space-y-2">
             <label className="block text-gray-700">{price.month}</label>
+
             <input
               type="text"
-              name="price"
-              value={formatPrice(price.price)}
-              onChange={(e) => handleHistoricalChange(index, e)}
-              placeholder="Price"
+              name="property_type"
+              value={formValues.property_type}
+              onChange={handleChange}
               className="w-full p-2 border rounded"
-            />
-            {/* Slider for adjusting historical prices */}
-            <input
-              type="range"
-              min="50000"
-              max="20000000"
-              step="50000"
-              value={price.price}
-              onChange={(e) => handleHistoricalChange(index, e)}
-              className="w-full"
+              placeholder="Enter property type"
             />
           </div>
         ))}
@@ -318,6 +323,7 @@ const ModifyListings = () => {
         </div>
       </form>
     </div>
+
   );
 };
 

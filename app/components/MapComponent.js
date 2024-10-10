@@ -58,10 +58,10 @@ const MapComponent = memo(({ onSelectCommunity }) => {
       zoom={11} // Initial zoom level (11 is good for city-level maps)
       center={[51.0447, -114.0719]} // Initial center of the map, here it's centered on Calgary (lat, lon)
     >
-      {/* TileLayer provides the map tiles, in this case from OpenStreetMap */}
+      TileLayer provides the map tiles, in this case from OpenStreetMap
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" // URL pattern for OpenStreetMap tiles
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' // Attribution for using OpenStreetMap tiles
+       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" // URL pattern for OpenStreetMap tiles
+       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' // Attribution for using OpenStreetMap tiles
       />
       {/* Conditionally render the GeoJSON data if it's loaded */}
       {geoData && (

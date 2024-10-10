@@ -1,12 +1,15 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { db } from '../../firebase'; // Make sure this path points correctly to your Firebase config
+import { db } from '../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
+import Layout from '../components/Layout';
+import Link from 'next/link'; // For linking to the detailed page
+import { FaBed, FaBath, FaMapMarkerAlt, FaHome } from 'react-icons/fa'; // Import icons
 
 const ViewListings = () => {
   const [listings, setListings] = useState([]);
 
-  // Fetch listings from Firebase when component mounts
+  // Fetch listings from Firebase
   useEffect(() => {
     const fetchListings = async () => {
       try {
@@ -21,44 +24,59 @@ const ViewListings = () => {
       }
     };
 
-    fetchListings(); // Fetch listings when the component mounts
+    fetchListings();
   }, []);
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">View Listings</h1>
+    <Layout>
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
+          View Listings
+        </h1>
 
-      {listings.length === 0 ? (
-        <p>No listings found.</p>
-      ) : (
-        <table className="table-auto w-full">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="px-4 py-2">Listing ID</th>
-              <th className="px-4 py-2">Address</th>
-              <th className="px-4 py-2">Bathrooms</th>
-              <th className="px-4 py-2">Bedrooms</th>
-              <th className="px-4 py-2">Current Price</th>
-              <th className="px-4 py-2">Neighborhood</th>
-              <th className="px-4 py-2">Type</th>
-            </tr>
-          </thead>
-          <tbody>
+        {listings.length === 0 ? (
+          <p className="text-center text-gray-500 text-lg">
+            No listings found.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {listings.map((listing) => (
-              <tr key={listing.id} className="border-t">
-                <td className="border px-4 py-2">{listing.id}</td>
-                <td className="border px-4 py-2">{listing.address}</td>
-                <td className="border px-4 py-2">{listing.bathroom_count}</td>
-                <td className="border px-4 py-2">{listing.bed_count}</td>
-                <td className="border px-4 py-2">${listing.current_price}</td>
-                <td className="border px-4 py-2">{listing.neighborhood}</td>
-                <td className="border px-4 py-2">{listing.property_type}</td>
-              </tr>
+              // Update link to use query parameters to match the format you want
+              <Link key={listing.id} href={`/viewListings/detailedListing?id=${listing.id}`}>
+                <div className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transform hover:scale-105 transition duration-200 cursor-pointer">
+                  <div className="mb-4">
+                    <p className="text-lg font-bold text-gray-800 mb-2 flex items-center">
+                      <FaMapMarkerAlt className="mr-2 text-gray-700" />
+                      {listing.address}
+                    </p>
+                  </div>
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-700 mb-2 flex items-center">
+                      <FaBed className="mr-2 text-gray-600" />
+                      {listing.bed_count} Bedrooms
+                    </p>
+                    <p className="text-sm text-gray-700 mb-2 flex items-center">
+                      <FaBath className="mr-2 text-gray-600" />
+                      {listing.bathroom_count} Bathrooms
+                    </p>
+                    <p className="text-sm text-gray-700 mb-2 flex items-center">
+                      <FaHome className="mr-2 text-gray-600" />
+                      {listing.property_type}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold">Current Price:</p>
+                    <p className="text-lg font-semibold text-gray-800">
+                      ${listing.current_price ? listing.current_price.toLocaleString() : 'No price available'}
+                    </p>
+                  </div>
+                </div>
+              </Link>
             ))}
-          </tbody>
-        </table>
-      )}
-    </div>
+          </div>
+        )}
+      </div>
+    </Layout>
   );
 };
 
