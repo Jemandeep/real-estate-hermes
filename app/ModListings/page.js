@@ -12,14 +12,14 @@ const ModifyListings = () => {
     bathroom_count: 1,
     bed_count: 1,
     current_price: 50000,
-    prices: [],
+    property_type: '', // Added property_type to the form state
+    prices: [], // To store the dynamic price history
   });
   const [historicalPrices, setHistoricalPrices] = useState([{ month: 'Last month', price: 50000 }]);
   const [user, setUser] = useState(null); // Track the signed-in user
   const [redirectMessage, setRedirectMessage] = useState(false); // Track if redirect message is shown
   const router = useRouter(); // Next.js navigation router
 
-  // Check if user is authenticated
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
@@ -33,40 +33,33 @@ const ModifyListings = () => {
       }
     });
 
-    // Cleanup the listener on component unmount
     return () => unsubscribe();
   }, [router]);
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
   };
 
-  // Format numbers with commas for price input
   const formatPrice = (price) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
-  // Remove commas for operations
   const unformatPrice = (price) => {
     return price.replace(/,/g, '');
   };
 
-  // Handle price input change (without commas)
   const handlePriceChange = (e) => {
     const priceValue = unformatPrice(e.target.value);
     setFormValues({ ...formValues, current_price: priceValue });
   };
 
-  // Handle adding more input fields for historical prices with default current price
   const handleAddPrice = () => {
     const lastPriceCount = historicalPrices.length;
     const nextMonth = `Last ${lastPriceCount + 1} month`;
     setHistoricalPrices([...historicalPrices, { month: nextMonth, price: formValues.current_price }]);
   };
 
-  // Handle the changes in historical prices inputs
   const handleHistoricalChange = (index, e) => {
     const { value } = e.target;
     const newPrices = [...historicalPrices];
@@ -74,22 +67,16 @@ const ModifyListings = () => {
     setHistoricalPrices(newPrices);
   };
 
-  // Handle form submission to add a new document with an auto-generated ID
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Ask for confirmation before submission
     const confirmed = window.confirm('Are you sure you want to add this new listing?');
     if (!confirmed) return;
 
     try {
       // Add a new listing document with an auto-generated ID
       const docRef = await addDoc(collection(db, 'listings'), {
-        address: formValues.address,
-        bathroom_count: formValues.bathroom_count,
-        bed_count: formValues.bed_count,
-        current_price: formValues.current_price,
-        prices: historicalPrices,
+        ...formValues,
+        prices: historicalPrices.map(price => ({ month: price.month, price: price.price })),
       });
 
       // Confirm the addition
@@ -106,11 +93,9 @@ const ModifyListings = () => {
       <Layout>
         <div className="container mx-auto p-6 flex justify-center items-center h-screen">
           <div className="text-center">
-            {/* Transitioning message */}
             <p className="text-2xl font-bold text-gray-800 opacity-0 animate-fadeIn">
               Since you are not logged in, you will be redirected to the login page.
             </p>
-            {/* Optional loading spinner or animation */}
             <div className="mt-4">
               <div className="w-8 h-8 border-4 border-stone-600 border-t-transparent rounded-full animate-spin"></div>
             </div>
@@ -120,7 +105,6 @@ const ModifyListings = () => {
     );
   }
 
-  // Show a loading state or error if the user is not authenticated yet
   if (user === null) {
     return <div>Loading...</div>;
   }
@@ -152,7 +136,7 @@ const ModifyListings = () => {
               onChange={handleChange}
               className="w-full p-2 border rounded"
             >
-              {[...Array(6).keys()].map((num) => (
+              {[...Array(6).keys()].map(num => (
                 <option key={num + 1} value={num + 1}>
                   {num + 1} Bathroom(s)
                 </option>
@@ -161,20 +145,33 @@ const ModifyListings = () => {
           </div>
 
           {/* Bedroom Dropdown */}
+<div>
+  <label className="block text-gray-700">Bedrooms</label> {/* Corrected line */}
+  <select
+    name="bed_count"
+    value={formValues.bed_count}
+    onChange={handleChange}
+    className="w-full p-2 border rounded"
+  >
+    {[...Array(6).keys()].map(num => (
+      <option key={num + 1} value={num + 1}>
+        {num + 1} Bedroom(s)
+      </option>
+    ))}
+  </select>
+</div>
+
+          {/* Property Type Input */}
           <div>
-            <label className="block text-gray-700">Bedrooms</label>
-            <select
-              name="bed_count"
-              value={formValues.bed_count}
+            <label className="block text-gray-700">Property Type</label>
+            <input
+              type="text"
+              name="property_type"
+              value={formValues.property_type}
               onChange={handleChange}
               className="w-full p-2 border rounded"
-            >
-              {[...Array(6).keys()].map((num) => (
-                <option key={num + 1} value={num + 1}>
-                  {num + 1} Bedroom(s)
-                </option>
-              ))}
-            </select>
+              placeholder="Enter property type"
+            />
           </div>
 
           {/* Current Price Input and Slider */}
@@ -194,7 +191,7 @@ const ModifyListings = () => {
                 max="20000000"
                 step="50000"
                 value={formValues.current_price}
-                onChange={(e) => handlePriceChange(e)}
+                onChange={handlePriceChange}
                 className="w-2/3"
               />
             </div>
@@ -213,7 +210,6 @@ const ModifyListings = () => {
                 placeholder="Price"
                 className="w-full p-2 border rounded"
               />
-              {/* Slider for adjusting historical prices */}
               <input
                 type="range"
                 min="50000"

@@ -41,8 +41,8 @@ const ViewListings = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {listings.map((listing) => (
-              // Update link to use dynamic route `/viewListings/[id]`
-              <Link key={listing.id} href={`/viewListings/${listing.id}`}>
+              // Update link to use query parameters to match the format you want
+              <Link key={listing.id} href={`/viewListings/detailedListing?id=${listing.id}`}>
                 <div className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transform hover:scale-105 transition duration-200 cursor-pointer">
                   <div className="mb-4">
                     <p className="text-lg font-bold text-gray-800 mb-2 flex items-center">
