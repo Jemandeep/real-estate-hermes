@@ -1,13 +1,15 @@
-"use client"; // Next.js directive to specify that this component runs on the client-side
+// analysis/page.js
+"use client";
 
 import React, { useState, useEffect } from 'react';
-import { getDocs, collection } from 'firebase/firestore'; // Firestore imports
-import { db } from '../../firebase'; // Import Firestore instance
+import { getDocs, collection } from 'firebase/firestore';
+import { db } from '../../firebase';
 import Layout from '../components/Layout';
 import ListingCard from '../components/ListingCard';
 import MapComponent from '../components/MapComponent';
 import PredictionSidebar from '../components/PredictionsSidebar';
 import Filters from '../components/Filters';
+import PropertyManager from '../components/PropertyManager'; // Import Property Manager
 
 const Analysis = () => {
   const [listings, setListings] = useState([]);
@@ -21,18 +23,19 @@ const Analysis = () => {
   const [selectedFavorites, setSelectedFavorites] = useState([]);
   const [selectedCommunity, setSelectedCommunity] = useState('All');
 
+  const onSelectCommunity = (communityName) => {
+    setSelectedCommunity(communityName);
+    setFilteredNeighborhood(communityName);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'listings')); // Firestore collection 'listings'
-        const data = querySnapshot.docs.map((doc) => doc.data()); // Map through documents and extract data
-
-        setListings(data.slice(0, 250)); // Limit the number of listings
-
-        // Extract unique neighborhoods and property types for filtering
+        const querySnapshot = await getDocs(collection(db, 'listings'));
+        const data = querySnapshot.docs.map((doc) => doc.data());
+        setListings(data.slice(0, 250));
         const uniqueNeighborhoods = ['All', ...new Set(data.map((item) => item.neighborhood))];
         const uniquePropertyTypes = ['All', ...new Set(data.map((item) => item.property_type))];
-
         setNeighborhoods(uniqueNeighborhoods);
         setPropertyTypes(uniquePropertyTypes);
       } catch (error) {
@@ -41,13 +44,8 @@ const Analysis = () => {
       }
     };
 
-    fetchData(); // Fetch data when the component mounts
+    fetchData();
   }, []);
-
-  const onSelectCommunity = (communityName) => {
-    setSelectedCommunity(communityName);
-    setFilteredNeighborhood(communityName);
-  };
 
   const onSelect = (listing) => {
     setSelectedProperties((prevSelected) => [
@@ -56,13 +54,17 @@ const Analysis = () => {
         address: listing.address,
         neighborhood: listing.neighborhood,
         propertyType: listing.property_type,
-        prices: listing.prices || [], // Ensure prices array exists
+        prices: listing.prices || [],
         currentPrice: listing.current_price,
       },
     ]);
   };
 
   const handleFavoriteSelection = (property) => {
+    if (!property.latitude || !property.longitude) {
+      console.warn('Property is missing latitude or longitude:', property);
+      return;
+    }
     setSelectedFavorites((prevSelectedFavorites) => {
       if (prevSelectedFavorites.includes(property)) {
         return prevSelectedFavorites.filter((fav) => fav !== property);
@@ -72,7 +74,6 @@ const Analysis = () => {
     });
   };
 
-  // Filter the listings based on selected neighborhood and property type
   const filteredListings = listings.filter((listing) => {
     const matchesNeighborhood =
       filteredNeighborhood === 'All' || listing.neighborhood === filteredNeighborhood;
@@ -87,12 +88,16 @@ const Analysis = () => {
         {/* Prediction Sidebar */}
         <PredictionSidebar selectedFavorites={selectedFavorites} />
 
+        {/* Main Content */}
         <div className="flex-1">
           <h1 className="text-2xl font-bold mb-4">Property Listings</h1>
 
           <div className="mb-4">
             <h2 className="text-xl font-bold mb-2">Calgary Communities Map</h2>
-            <MapComponent onSelectCommunity={onSelectCommunity} />
+            <MapComponent
+              onSelectCommunity={onSelectCommunity}
+              favoriteProperties={selectedFavorites}
+            />
           </div>
 
           <h2 className="text-lg font-bold mb-2">Favorites</h2>
@@ -148,8 +153,7 @@ const Analysis = () => {
             <p className="text-red-600">{error}</p>
           ) : (
             filteredListings.map((listing, index) => {
-              const prices = listing.prices?.map((priceObj) => priceObj.price) || []; // Parse prices array
-
+              const prices = listing.prices?.map((priceObj) => priceObj.price) || [];
               return (
                 <ListingCard
                   key={index}
@@ -164,6 +168,11 @@ const Analysis = () => {
               );
             })
           )}
+        </div>
+
+        {/* Add Property Manager on the side */}
+        <div className="ml-4 w-1/4">
+          <PropertyManager />
         </div>
       </div>
     </Layout>
