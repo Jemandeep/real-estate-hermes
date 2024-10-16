@@ -1,34 +1,46 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { onAuthStateChanged, signOut } from "firebase/auth"; 
-import { auth } from "../../firebase"; 
-import { FaUserCircle } from "react-icons/fa"; 
-import { useRouter } from "next/navigation";  // Import useRouter for navigation
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth, db } from "../../firebase"; // Ensure Firebase config is correct
+import { FaUserCircle } from "react-icons/fa";
+import { doc, getDoc } from "firebase/firestore";
+import { useRouter } from "next/navigation"; 
 
 const NavBar = () => {
   const [user, setUser] = useState(null); // Track logged-in user
+  const [userRole, setUserRole] = useState(""); // Track user's role
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Track dropdown state
   const dropdownRef = useRef(null); // Reference to the dropdown element
-  const router = useRouter();  // Initialize router
+  const router = useRouter(); 
 
-  // Monitor user's authentication state
+  // Monitor the user's authentication state and role
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user ? true : false); // Update user state
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+
+        // Fetch user role from Firestore
+        const userDoc = await getDoc(doc(db, "users", currentUser.email));
+        if (userDoc.exists()) {
+          setUserRole(userDoc.data().role); // Set the user's role
+        }
+      } else {
+        setUser(null);
+      }
     });
 
-    return () => unsubscribe(); // Cleanup listener on unmount
+    return () => unsubscribe(); // Cleanup the listener on unmount
   }, []);
 
-  // Close dropdown if clicked outside
+  // Close the dropdown if the user clicks outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false); // Close dropdown
+        setIsDropdownOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside); // Add listener
-    return () => document.removeEventListener("mousedown", handleClickOutside); // Cleanup listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Handle logout
@@ -36,16 +48,16 @@ const NavBar = () => {
     const confirmed = window.confirm("Are you sure you want to logout?");
     if (confirmed) {
       try {
-        await signOut(auth); // Log out the user
+        await signOut(auth);
         alert("Logged out successfully!");
-        router.push("/login"); // Redirect to login
+        router.push("/login");
       } catch (error) {
         console.error("Logout failed:", error);
       }
     }
   };
 
-  // Toggle dropdown menu
+  // Toggle dropdown
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
   return (
@@ -57,27 +69,36 @@ const NavBar = () => {
         </Link>
 
         <div className="flex items-center space-x-4">
-          {/* Navigation Links */}
+          {/* Common Links */}
           <Link href="/analysis" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Analysis Dashboard
           </Link>
-          <Link href="/ModListings" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-            New Listings
-          </Link>
+
           <Link href="/viewListings" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Recent Listings
           </Link>
+
           <Link href="/advice" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Advice
           </Link>
-          <Link href="/agent" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-            Agent
-          </Link>
+
           <Link href="/mortcalculator" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Mortgage Calculator
           </Link>
 
-          {/* Account Dropdown */}
+          {/* Conditionally render Admin or New Listings tab based on role */}
+          {userRole === "admin" && (
+            <Link href="/admin" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
+              Admin
+            </Link>
+          )}
+
+          {userRole === "agent" && (
+            <Link href="/ModListings" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
+              New Listing
+            </Link>
+          )}
+
           {user && (
             <div className="relative" ref={dropdownRef}>
               <button
@@ -111,7 +132,7 @@ const NavBar = () => {
             </div>
           )}
 
-          {/* Login Button */}
+          {/* Login Button for unauthenticated users */}
           {!user && (
             <Link href="/login" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
               Login

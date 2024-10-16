@@ -2,9 +2,11 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "./components/NavBar";
 import Header from "./components/Header";
-import ListingCard from "./listings/ListingCard";
+import Layout from "./components/Layout";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import Link from "next/link";
+import { FaBed, FaBath, FaMapMarkerAlt, FaHome } from "react-icons/fa";
 
 const HomePage = () => {
   const [listings, setListings] = useState([]);
@@ -27,7 +29,7 @@ const HomePage = () => {
         const listingsCollection = collection(db, "listings");
         const snapshot = await getDocs(listingsCollection);
         const data = snapshot.docs.map((doc) => ({
-          id: doc.id, // Include the ID of the listing
+          id: doc.id,
           ...doc.data(),
         }));
         const randomListings = pickRandomListings(data); // Get three random listings
@@ -52,24 +54,42 @@ const HomePage = () => {
         <h1 className="text-3xl font-bold text-gray-800 mb-6">Featured Listings</h1>
 
         {loading ? (
-          <p className="text-gray-600 text-center mt-8">
-            Please wait, data is being fetched...
-          </p>
+          <p className="text-gray-600 text-center mt-8">Loading listings, please wait...</p>
         ) : error ? (
           <p className="text-red-500 text-center mt-8">{error}</p>
         ) : listings.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {listings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                id={listing.id} // Pass ID to the ListingCard
-                address={listing.address}
-                neighborhood={listing.neighborhood}
-                propertyType={listing.property_type}
-                currentPrice={listing.current_price}
-                bedCount={listing.bed_count}
-                bathroomCount={listing.bathroom_count}
-              />
+              <Link key={listing.id} href={`/viewListings/detailedListing?id=${listing.id}`}>
+                <div className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transform hover:scale-105 transition duration-200 cursor-pointer">
+                  <div className="mb-4">
+                    <p className="text-lg font-bold text-gray-800 mb-2 flex items-center">
+                      <FaMapMarkerAlt className="mr-2 text-gray-700" />
+                      {listing.address}
+                    </p>
+                  </div>
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-700 mb-2 flex items-center">
+                      <FaBed className="mr-2 text-gray-600" />
+                      {listing.bed_count} Bedrooms
+                    </p>
+                    <p className="text-sm text-gray-700 mb-2 flex items-center">
+                      <FaBath className="mr-2 text-gray-600" />
+                      {listing.bathroom_count} Bathrooms
+                    </p>
+                    <p className="text-sm text-gray-700 mb-2 flex items-center">
+                      <FaHome className="mr-2 text-gray-600" />
+                      {listing.property_type}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold">Current Price:</p>
+                    <p className="text-lg font-semibold text-gray-800">
+                      ${listing.current_price ? listing.current_price.toLocaleString() : 'No price available'}
+                    </p>
+                  </div>
+                </div>
+              </Link>
             ))}
           </div>
         ) : (
