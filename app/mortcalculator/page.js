@@ -28,7 +28,25 @@ const MortgageCalculator = () => {
   const [showDownPaymentInfo, setShowDownPaymentInfo] = useState(false);
   const [investmentAdvice, setInvestmentAdvice] = useState("");
 
+ 
+  const [income, setIncome] = useState(0);
+  const [monthlyDebts, setMonthlyDebts] = useState(0);
+  const [monthlyExpenses, setMonthlyExpenses] = useState(0);
+  const [maxAffordablePayment, setMaxAffordablePayment] = useState(0);
+  const [maxAffordablePrice, setMaxAffordablePrice] = useState(0);
+
+  
+  const [monthlyRent, setMonthlyRent] = useState(0);
+  const [vacancyRate, setVacancyRate] = useState(0);
+  const [rentalYield, setRentalYield] = useState(0);
+
+ 
+  const [investmentAmount, setInvestmentAmount] = useState(0);
+  const [annualReturns, setAnnualReturns] = useState(0);
+  const [roi, setRoi] = useState(0);
+
   useEffect(() => {
+    
     const downPaymentAmount = price * (downPayment / 100);
     const loanAmount = price - downPaymentAmount;
     const insuranceRate = downPayment < 10 ? 0.04 : downPayment < 15 ? 0.031 : downPayment < 20 ? 0.028 : 0;
@@ -51,7 +69,30 @@ const MortgageCalculator = () => {
         "Great job saving for a larger down payment! You may want to invest in home improvements to increase property value over time."
       );
     }
-  }, [price, downPayment, interestRate, term]);
+
+   
+    const totalMonthlyDebt = monthlyDebts + monthlyExpenses;
+    const maxPayment = (income * 0.28) - totalMonthlyDebt; 
+    setMaxAffordablePayment(maxPayment > 0 ? maxPayment : 0);
+
+    if (maxPayment > 0) {
+      const maxPrice = (maxPayment * (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1)) / (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments));
+      setMaxAffordablePrice(maxPrice.toFixed(2));
+    } else {
+      setMaxAffordablePrice(0);
+    }
+
+   
+    const effectiveRent = monthlyRent * (1 - vacancyRate / 100);
+    const rentalYield = (effectiveRent * 12 / price) * 100; 
+    setRentalYield(rentalYield.toFixed(2));
+
+   
+    if (investmentAmount > 0) {
+      const calculatedRoi = (annualReturns / investmentAmount) * 100; 
+      setRoi(calculatedRoi.toFixed(2));
+    }
+  }, [price, downPayment, interestRate, term, income, monthlyDebts, monthlyExpenses, monthlyRent, vacancyRate, investmentAmount, annualReturns]);
 
   return (
     <Layout>
@@ -105,23 +146,105 @@ const MortgageCalculator = () => {
           placeholder="Enter loan term"
         />
 
-          <div className="mt-4 p-4 border-t border-gray-200">
+        <div className="mt-4 p-4 border-t border-gray-200">
           <p className="text-lg">CMHC Insurance: <span className="font-bold">${cmhcInsurance.toFixed(2)}</span></p>
           <p className="text-lg">Total Mortgage: <span className="font-bold">${totalMortgage.toFixed(2)}</span></p>
           <div className="mt-4 p-4 border-2 border-red-500 rounded">
-          <p className="text-lg">Monthly Payment: <span className="font-bold">${monthlyPayment}</span></p>
+            <p className="text-lg">Monthly Payment: <span className="font-bold">${monthlyPayment}</span></p>
           </div>
         </div>
-        <div className="mt-6 p-4 bg-blue-50 rounded">
+
+        <div className="mt-6 p-4 border rounded bg-blue-50">
           <h3 className="text-xl font-semibold mb-2">Investment Recommendations</h3>
           <p className="text-gray-700">{investmentAdvice}</p>
         </div>
 
-        <div className="mt-4">
-          <p className="text-sm text-gray-600">
-            The Canada Mortgage and Housing Corporation (CMHC) insurance is required for down payments less than 20%. Based on your current home price of <strong>${price}</strong> and a down payment of <strong>{downPayment}%</strong>, your CMHC insurance is calculated at <strong>${cmhcInsurance.toFixed(2)}</strong>.
-          </p>
+       
+        <div className="mt-10 p-6 bg-white shadow-md rounded">
+          <h2 className="text-2xl font-bold mb-6 text-center">Affordability Calculator</h2>
+          
+          <InputField
+            label="Monthly Income ($)"
+            type="number"
+            value={income}
+            onChange={(e) => setIncome(parseFloat(e.target.value))}
+            placeholder="Enter your monthly income"
+          />
+
+          <InputField
+            label="Monthly Debts ($)"
+            type="number"
+            value={monthlyDebts}
+            onChange={(e) => setMonthlyDebts(parseFloat(e.target.value))}
+            placeholder="Enter your monthly debts"
+          />
+
+          <InputField
+            label="Monthly Expenses ($)"
+            type="number"
+            value={monthlyExpenses}
+            onChange={(e) => setMonthlyExpenses(parseFloat(e.target.value))}
+            placeholder="Enter your monthly expenses"
+          />
+
+          <div className="mt-4 p-4 border border-gray-200 rounded">
+            <p className="text-lg">Maximum Affordable Monthly Payment: <span className="font-bold">${maxAffordablePayment.toFixed(2)}</span></p>
+            <p className="text-lg">Maximum Affordable Home Price: <span className="font-bold">${maxAffordablePrice}</span></p>
+          </div>
         </div>
+
+        
+        <div className="mt-10 p-6 bg-white shadow-md rounded">
+          <h2 className="text-2xl font-bold mb-6 text-center">Rental Income Calculator</h2>
+          
+          <InputField
+            label="Expected Monthly Rent ($)"
+            type="number"
+            value={monthlyRent}
+            onChange={(e) => setMonthlyRent(parseFloat(e.target.value))}
+            placeholder="Enter expected monthly rent"
+          />
+          
+          <InputField
+            label="Vacancy Rate (%)"
+            type="number"
+            value={vacancyRate}
+            onChange={(e) => setVacancyRate(parseFloat(e.target.value))}
+            placeholder="Enter vacancy rate percentage"
+          />
+
+          <div className="mt-4 p-4 border border-gray-200 rounded">
+            <p className="text-lg">Estimated Rental Yield: <span className="font-bold">{rentalYield}%</span></p>
+          </div>
+        </div>
+
+        
+        <div className="mt-10 p-6 bg-white shadow-md rounded">
+          <h2 className="text-2xl font-bold mb-6 text-center">ROI Analysis</h2>
+          
+          <InputField
+            label="Investment Amount ($)"
+            type="number"
+            value={investmentAmount}
+            onChange={(e) => setInvestmentAmount(parseFloat(e.target.value))}
+            placeholder="Enter investment amount"
+          />
+          
+          <InputField
+            label="Expected Annual Returns ($)"
+            type="number"
+            value={annualReturns}
+            onChange={(e) => setAnnualReturns(parseFloat(e.target.value))}
+            placeholder="Enter expected annual returns"
+          />
+
+          <div className="mt-4 p-4 border border-gray-200 rounded">
+            <p className="text-lg">Return on Investment (ROI): <span className="font-bold">{roi}%</span></p>
+          </div>
+        </div>
+
+       
+        
       </div>
     </Layout>
   );
