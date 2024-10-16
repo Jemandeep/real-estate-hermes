@@ -1,15 +1,13 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { db } from '../../firebase';
+import { db } from '../../firebase'; // Ensure this path is correct
 import { collection, getDocs } from 'firebase/firestore';
 import Layout from '../components/Layout';
-import Link from 'next/link'; // For linking to the detailed page
-import { FaBed, FaBath, FaMapMarkerAlt, FaHome } from 'react-icons/fa'; // Import icons
 
 const ViewListings = () => {
   const [listings, setListings] = useState([]);
 
-  // Fetch listings from Firebase
+  // Fetch listings from Firebase when component mounts
   useEffect(() => {
     const fetchListings = async () => {
       try {
@@ -24,59 +22,50 @@ const ViewListings = () => {
       }
     };
 
-    fetchListings();
+    fetchListings(); // Fetch listings when the component mounts
   }, []);
 
   return (
-    <Layout>
-      <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
-          View Listings
-        </h1>
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
+        View Listings
+      </h1>
 
-        {listings.length === 0 ? (
-          <p className="text-center text-gray-500 text-lg">
-            No listings found.
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {listings.map((listing) => (
-              // Update link to use query parameters to match the format you want
-              <Link key={listing.id} href={`/viewListings/detailedListing?id=${listing.id}`}>
-                <div className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transform hover:scale-105 transition duration-200 cursor-pointer">
-                  <div className="mb-4">
-                    <p className="text-lg font-bold text-gray-800 mb-2 flex items-center">
-                      <FaMapMarkerAlt className="mr-2 text-gray-700" />
-                      {listing.address}
-                    </p>
-                  </div>
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-700 mb-2 flex items-center">
-                      <FaBed className="mr-2 text-gray-600" />
-                      {listing.bed_count} Bedrooms
-                    </p>
-                    <p className="text-sm text-gray-700 mb-2 flex items-center">
-                      <FaBath className="mr-2 text-gray-600" />
-                      {listing.bathroom_count} Bathrooms
-                    </p>
-                    <p className="text-sm text-gray-700 mb-2 flex items-center">
-                      <FaHome className="mr-2 text-gray-600" />
-                      {listing.property_type}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold">Current Price:</p>
-                    <p className="text-lg font-semibold text-gray-800">
-                      ${listing.current_price ? listing.current_price.toLocaleString() : 'No price available'}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    </Layout>
+      {listings.length === 0 ? (
+        <p className="text-center text-gray-500 text-lg">
+          No listings found.
+        </p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="table-auto w-full shadow-lg rounded-lg">
+            <thead>
+              <tr className="bg-stone-500 text-white">
+                <th className="px-6 py-4 text-left">Listing ID</th>
+                <th className="px-6 py-4 text-left">Address</th>
+                <th className="px-6 py-4 text-left">Bathrooms</th>
+                <th className="px-6 py-4 text-left">Bedrooms</th>
+                <th className="px-6 py-4 text-left">Current Price</th>
+                <th className="px-6 py-4 text-left">Neighborhood</th>
+                <th className="px-6 py-4 text-left">Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              {listings.map((listing) => (
+                <tr key={listing.id} className="border-t even:bg-gray-100 hover:bg-stone-400 transition duration-200 ease-in-out">
+                  <td className="border px-6 py-4">{listing.id}</td>
+                  <td className="border px-6 py-4">{listing.address}</td>
+                  <td className="border px-6 py-4">{listing.bathroom_count}</td>
+                  <td className="border px-6 py-4">{listing.bed_count}</td>
+                  <td className="border px-6 py-4">${listing.current_price.toLocaleString()}</td>
+                  <td className="border px-6 py-4">{listing.neighborhood}</td>
+                  <td className="border px-6 py-4">{listing.property_type}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 };
 
