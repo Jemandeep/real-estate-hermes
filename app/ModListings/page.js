@@ -9,8 +9,8 @@ const ModifyListings = () => {
     bathroom_count: 1,
     bed_count: 1,
     current_price: 50000,
-    prices: [],
   });
+
   const [historicalPrices, setHistoricalPrices] = useState([{ month: 'Last month', price: 50000 }]);
 
   // Handle form input changes
@@ -25,53 +25,41 @@ const ModifyListings = () => {
   };
 
   // Remove commas for operations
-  const unformatPrice = (price) => {
-    return price.replace(/,/g, '');
-  };
+  const unformatPrice = (price) => price.replace(/,/g, '');
 
-  // Handle price input change (without commas)
+  // Handle price input change
   const handlePriceChange = (e) => {
-    const priceValue = unformatPrice(e.target.value);
+    const priceValue = parseInt(unformatPrice(e.target.value), 10) || 0;
     setFormValues({ ...formValues, current_price: priceValue });
   };
 
-  // Handle adding more input fields for historical prices with default current price
+  // Add a new historical price
   const handleAddPrice = () => {
-    const lastPriceCount = historicalPrices.length;
-    const nextMonth = `Last ${lastPriceCount + 1} month`;
+    const nextMonth = `Last ${historicalPrices.length + 1} month`;
     setHistoricalPrices([...historicalPrices, { month: nextMonth, price: formValues.current_price }]);
   };
 
-  // Handle the changes in historical prices inputs
+  // Handle historical price changes
   const handleHistoricalChange = (index, e) => {
     const { value } = e.target;
-    const newPrices = [...historicalPrices];
-    newPrices[index].price = unformatPrice(value);
-    setHistoricalPrices(newPrices);
+    const updatedPrices = [...historicalPrices];
+    updatedPrices[index].price = parseInt(unformatPrice(value), 10) || 0;
+    setHistoricalPrices(updatedPrices);
   };
 
-  // Handle form submission to add a new document with an auto-generated ID
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Ask for confirmation before submission
     const confirmed = window.confirm('Are you sure you want to add this new listing?');
     if (!confirmed) return;
 
     try {
-      // Add a new listing document with an auto-generated ID
       const docRef = await addDoc(collection(db, 'listings'), {
-        address: formValues.address,
-        bathroom_count: formValues.bathroom_count,
-        bed_count: formValues.bed_count,
-        current_price: formValues.current_price,
+        ...formValues,
         prices: historicalPrices,
       });
-
-      // Confirm the addition
       alert(`Listing added successfully with ID: ${docRef.id}`);
     } catch (error) {
-      // Log the error for debugging
       console.error('Error adding new listing: ', error);
       alert(`Error adding listing: ${error.message}`);
     }
@@ -158,13 +146,10 @@ const ModifyListings = () => {
             <label className="block text-gray-700">{price.month}</label>
             <input
               type="text"
-              name="price"
               value={formatPrice(price.price)}
               onChange={(e) => handleHistoricalChange(index, e)}
-              placeholder="Price"
               className="w-full p-2 border rounded"
             />
-            {/* Slider for adjusting historical prices */}
             <input
               type="range"
               min="50000"
@@ -175,42 +160,24 @@ const ModifyListings = () => {
               className="w-full"
             />
           </div>
+        ))}
 
+        {/* Add Historical Price Button */}
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={handleAddPrice}
+            className="block px-4 py-2 bg-stone-300 text-stone-600 rounded mb-4 hover:bg-gray-100"
+          >
+            + Add Previous Month Price
+          </button>
 
-          {/* Historical Prices */}
-          <h3 className="text-xl font-semibold">Historical Prices</h3>
-          {historicalPrices.map((price, index) => (
-            <div key={index} className="space-y-2">
-              <label className="block text-gray-700">{price.month}</label>
-              <input
-                type="text"
-                value={formatPrice(price.price)}
-                onChange={(e) => handleHistoricalChange(index, e)}
-                placeholder="Price"
-                className="w-full p-2 border rounded"
-              />
-            </div>
-          ))}
-
-          {/* Add Historical Price Button */}
-          <div className="mt-6">
-            <button
-              type="button"
-              onClick={handleAddPrice}
-              className="block px-4 py-2 bg-stone-300 text-stone-600 rounded mb-4 hover:bg-gray-100"
-            >
-              + Add Previous Month Price
-            </button>
-
-            <button type="submit" className="block px-4 py-2 bg-stone-300 text-stone-600 rounded hover:bg-gray-100">
-              Add New Listing
-            </button>
-          </div>
-        </form>
-      </div>
-      
-    </Layout>
-
+          <button type="submit" className="block px-4 py-2 bg-stone-300 text-stone-600 rounded hover:bg-gray-100">
+            Add New Listing
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 
