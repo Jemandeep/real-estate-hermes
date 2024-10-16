@@ -1,77 +1,118 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { onAuthStateChanged, signOut } from "firebase/auth"; // Import signOut for logging out
-import { auth } from "../../firebase"; // Ensure the path to your Firebase config is correct
+import { onAuthStateChanged, signOut } from "firebase/auth"; 
+import { auth } from "../../firebase"; 
+import { FaUserCircle } from "react-icons/fa"; 
+import { useRouter } from "next/navigation";  // Import useRouter for navigation
 
 const NavBar = () => {
-  const [user, setUser] = useState(null); // State to track logged-in user
+  const [user, setUser] = useState(null); // Track logged-in user
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Track dropdown state
+  const dropdownRef = useRef(null); // Reference to the dropdown element
+  const router = useRouter();  // Initialize router
 
-  // Monitor the user's authentication state
+  // Monitor user's authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(true); // Set to true if the user is logged in
-      } else {
-        setUser(false); // Set to false if the user is not logged in
-      }
+      setUser(user ? true : false); // Update user state
     });
 
-    return () => unsubscribe(); // Cleanup the listener on unmount
+    return () => unsubscribe(); // Cleanup listener on unmount
   }, []);
 
-  // Handle logout with confirmation
+  // Close dropdown if clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false); // Close dropdown
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside); // Add listener
+    return () => document.removeEventListener("mousedown", handleClickOutside); // Cleanup listener
+  }, []);
+
+  // Handle logout
   const handleLogout = async () => {
     const confirmed = window.confirm("Are you sure you want to logout?");
     if (confirmed) {
       try {
-        await signOut(auth); // Log the user out
+        await signOut(auth); // Log out the user
         alert("Logged out successfully!");
+        router.push("/login"); // Redirect to login
       } catch (error) {
-        console.error("Logout failed", error);
+        console.error("Logout failed:", error);
       }
     }
   };
 
+  // Toggle dropdown menu
+  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
+
   return (
     <nav className="bg-white shadow-md py-4 fixed top-0 left-0 right-0 z-50">
       <div className="container mx-auto flex justify-between items-center px-4 lg:px-8">
-        {/* Brand / Logo */}
+        {/* Logo */}
         <Link href="/" className="text-xl font-bold text-gray-800">
           Calgary Real Estate
         </Link>
 
-        <div className="flex space-x-4">
-          {/* Links for Analysis Dashboard and Mortgage Calculator */}
+        <div className="flex items-center space-x-4">
+          {/* Navigation Links */}
           <Link href="/analysis" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Analysis Dashboard
           </Link>
           <Link href="/ModListings" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-          New Listings
+            New Listings
           </Link>
           <Link href="/viewListings" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-                Recent   Listings
+            Recent Listings
           </Link>
           <Link href="/advice" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-                Advice
+            Advice
           </Link>
           <Link href="/agent" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
-                Agent
+            Agent
           </Link>
-
-
           <Link href="/mortcalculator" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Mortgage Calculator
           </Link>
 
-          {/* If user is logged in, show Logout button, else show Login button */}
-          {user ? (
-            <button
-              onClick={handleLogout}
-              className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100"
-            >
-              Logout
-            </button>
-          ) : (
+          {/* Account Dropdown */}
+          {user && (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={toggleDropdown}
+                className="flex items-center space-x-2 focus:outline-none"
+              >
+                <FaUserCircle className="text-2xl text-stone-600" />
+                <span>Account</span>
+              </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 bg-white border rounded shadow-lg w-48">
+                  <Link href="/accounts/info" className="block px-4 py-2 hover:bg-gray-100">
+                    Account Info
+                  </Link>
+                  <Link href="/accounts/saved" className="block px-4 py-2 hover:bg-gray-100">
+                    Saved Listings
+                  </Link>
+                  <Link href="/accounts/settings" className="block px-4 py-2 hover:bg-gray-100">
+                    Settings
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Login Button */}
+          {!user && (
             <Link href="/login" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
               Login
             </Link>
