@@ -1,14 +1,15 @@
-"use client"; // Next.js directive to specify that this component runs on the client-side
+// analysis/page.js
+""use client";
 
-import React, { useState, useEffect } from 'react'; // Import React and hooks for managing state and side effects
-import Layout from '../components/Layout'; // Import the Layout component to wrap the content
-import ListingCard from '../components/ListingCard'; // Import the ListingCard component for each property listing
-import MapComponent from '../components/MapComponent'; // Import the MapComponent for displaying the map
-import PredictionSidebar from '../components/PredictionsSidebar'; // Import the PredictionSidebar for price predictions
-import Filters from '../components/Filters';  // Import the Filters component for filtering listings by neighborhood and property type
-
-// URL to the Mockaroo API (simulated data source) for fetching property listings
-const MOCKAROO_URL = 'https://api.mockaroo.com/api/3b6f9270?count=1000&key=9e007e70';
+import React, { useState, useEffect } from 'react';
+import { getDocs, collection } from 'firebase/firestore';
+import { db } from '../../firebase';
+import Layout from '../components/Layout';
+import ListingCard from '../components/ListingCard';
+import MapComponent from '../components/MapComponent';
+import PredictionSidebar from '../components/PredictionsSidebar';
+import Filters from '../components/Filters';
+import PropertyManager from '../components/PropertyManager'; // Import Property Manager
 
 const Analysis = () => {
   // State hooks to manage various pieces of data within the component
@@ -23,34 +24,17 @@ const Analysis = () => {
   const [selectedFavorites, setSelectedFavorites] = useState([]); // Holds the list of properties selected for price prediction
   const [selectedCommunity, setSelectedCommunity] = useState('All'); // Tracks the selected community on the map
 
-  // useEffect hook runs once when the component is mounted to fetch the data
+  // useEffect hook to fetch data from Firebase once when the component is mounted
   useEffect(() => {
-    // Fetch property listings from the API
     const fetchData = async () => {
       try {
-        const response = await fetch(MOCKAROO_URL, {
-          headers: { 'Content-Type': 'application/json' }, // Specify that we're expecting JSON
-        });
-
-        // Check if the response is not OK and throw an error if needed
-        if (!response.ok) {
-          throw new Error('Failed to fetch data: ' + response.statusText);
-        }
-
-        const text = await response.text(); // Get the response text
-        const data = JSON.parse(text); // Parse the JSON data
-
+        const querySnapshot = await getDocs(collection(db, 'listings'));
+        const data = querySnapshot.docs.map((doc) => doc.data());
         setListings(data.slice(0, 250)); // Set the listings state with a subset of the data (first 250)
 
         // Extract unique neighborhoods and property types for filtering
-        const uniqueNeighborhoods = [
-          'All',
-          ...new Set(data.map((item) => item.neighborhood)), // Use Set to get unique values
-        ];
-        const uniquePropertyTypes = [
-          'All',
-          ...new Set(data.map((item) => item.property_type)),
-        ];
+        const uniqueNeighborhoods = ['All', ...new Set(data.map((item) => item.neighborhood))];
+        const uniquePropertyTypes = ['All', ...new Set(data.map((item) => item.property_type))];
 
         setNeighborhoods(uniqueNeighborhoods); // Set the neighborhoods state
         setPropertyTypes(uniquePropertyTypes); // Set the property types state
@@ -77,28 +61,18 @@ const Analysis = () => {
         address: listing.address,
         neighborhood: listing.neighborhood,
         propertyType: listing.property_type,
-        // Store the price history for the property (up to 12 months)
-        prices: [
-          listing.price_1_month,
-          listing.price_2_months,
-          listing.price_3_months,
-          listing.price_4_months,
-          listing.price_5_months,
-          listing.price_6_months,
-          listing.price_7_months,
-          listing.price_8_months,
-          listing.price_9_months,
-          listing.price_10_months,
-          listing.price_11_months,
-          listing.price_12_months,
-        ],
-        currentPrice: listing.price_1_month, // Set the current price as the price for the first month
+        prices: listing.prices || [],
+        currentPrice: listing.current_price,
       },
     ]);
   };
 
   // Function to handle selecting and deselecting properties for price predictions
   const handleFavoriteSelection = (property) => {
+    if (!property.latitude || !property.longitude) {
+      console.warn('Property is missing latitude or longitude:', property);
+      return;
+    }
     setSelectedFavorites((prevSelectedFavorites) => {
       if (prevSelectedFavorites.includes(property)) {
         // If the property is already in the favorites list, remove it
@@ -193,22 +167,7 @@ const Analysis = () => {
             <p className="text-red-600">{error}</p> // Display error message if fetching fails
           ) : (
             filteredListings.map((listing, index) => {
-              // Extract the price history for each listing
-              const prices = [
-                listing.price_1_month,
-                listing.price_2_months,
-                listing.price_3_months,
-                listing.price_4_months,
-                listing.price_5_months,
-                listing.price_6_months,
-                listing.price_7_months,
-                listing.price_8_months,
-                listing.price_9_months,
-                listing.price_10_months,
-                listing.price_11_months,
-                listing.price_12_months,
-              ];
-
+              const prices = listing.prices?.map((priceObj) => priceObj.price) || [];
               return (
                 <ListingCard
                   key={index} // Unique key for each listing
@@ -217,12 +176,17 @@ const Analysis = () => {
                   propertyType={listing.property_type}
                   prices={prices}
                   maxMonth={maxMonth} // Pass the selected number of months to the ListingCard
-                  currentPrice={listing.price_1_month}
+                  currentPrice={listing.current_price}
                   onSelect={() => onSelect(listing)} // Handle property selection
                 />
               );
             })
           )}
+        </div>
+
+        {/* Add Property Manager on the side */}
+        <div className="ml-4 w-1/4">
+          <PropertyManager />
         </div>
       </div>
     </Layout>
