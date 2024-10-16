@@ -49,26 +49,28 @@ const ViewListings = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {listings.map((listing) => (
               <Link key={listing.id} href={`/viewListings/detailedListing?id=${listing.id}`}>
-                <div className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transform hover:scale-105 transition duration-200 cursor-pointer">
-                  <div className="mb-4">
-                    <p className="text-lg font-bold text-gray-800 mb-2 flex items-center">
-                      <FaMapMarkerAlt className="mr-2 text-gray-700" />
-                      {listing.address}
-                    </p>
-                  </div>
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-700 mb-2 flex items-center">
-                      <FaBed className="mr-2 text-gray-600" />
-                      {listing.bed_count} Bedrooms
-                    </p>
-                    <p className="text-sm text-gray-700 mb-2 flex items-center">
-                      <FaBath className="mr-2 text-gray-600" />
-                      {listing.bathroom_count} Bathrooms
-                    </p>
-                    <p className="text-sm text-gray-700 mb-2 flex items-center">
-                      <FaHome className="mr-2 text-gray-600" />
-                      {listing.property_type}
-                    </p>
+                <div className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transform hover:scale-105 transition duration-200 cursor-pointer min-h-[350px] flex flex-col justify-between">
+                  <div>
+                    <div className="mb-4">
+                      <p className="text-lg font-bold text-gray-800 mb-2 flex items-center">
+                        <FaMapMarkerAlt className="mr-2 text-gray-700" />
+                        {listing.address}
+                      </p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-700 mb-2 flex items-center">
+                        <FaBed className="mr-2 text-gray-600" />
+                        {listing.bed_count} Bedrooms
+                      </p>
+                      <p className="text-sm text-gray-700 mb-2 flex items-center">
+                        <FaBath className="mr-2 text-gray-600" />
+                        {listing.bathroom_count} Bathrooms
+                      </p>
+                      <p className="text-sm text-gray-700 mb-2 flex items-center">
+                        <FaHome className="mr-2 text-gray-600" />
+                        {listing.property_type}
+                      </p>
+                    </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold">Current Price:</p>
