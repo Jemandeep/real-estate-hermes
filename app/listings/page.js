@@ -8,16 +8,19 @@ const MOCKAROO_URL = 'https://api.mockaroo.com/api/3b6f9270?count=1000&key=9e007
 
 const Listings = () => {
   const [listings, setListings] = useState([]);
-  const [filteredNeighborhoods, setFilteredNeighborhoods] = useState([]); // Track selected neighborhoods
-  const [filteredPropertyTypes, setFilteredPropertyTypes] = useState([]); // Track selected property types
+  const [filteredNeighborhoods, setFilteredNeighborhoods] = useState([]); 
+  const [filteredPropertyTypes, setFilteredPropertyTypes] = useState([]);
+  const [priceRange, setPriceRange] = useState([0, 1000000]); // Default range
+  const [filteredBeds, setFilteredBeds] = useState([]); // Track selected bed counts
+  const [filteredBathrooms, setFilteredBathrooms] = useState([]); // Track selected bathroom counts
   const [neighborhoods, setNeighborhoods] = useState([]);
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); // Start loading
+      setLoading(true); 
       try {
         const response = await fetch(MOCKAROO_URL, {
           headers: {
@@ -31,16 +34,16 @@ const Listings = () => {
         const data = JSON.parse(text);
         setListings(data.slice(0, 250));
 
-        // Extract unique neighborhoods and property types
-        const uniqueNeighborhoods = [...new Set(data.map((item) => item.neighboorhood))];
+
+
         const uniquePropertyTypes = [...new Set(data.map((item) => item.property_type))];
 
         setNeighborhoods(uniqueNeighborhoods);
         setPropertyTypes(uniquePropertyTypes);
-        setLoading(false); // End loading after data is fetched
+        setLoading(false); 
       } catch (error) {
         setError(error.message);
-        setLoading(false); // End loading even if there's an error
+        setLoading(false); 
         console.error('Error fetching data:', error);
       }
     };
@@ -48,42 +51,80 @@ const Listings = () => {
     fetchData();
   }, []);
 
-  // Update the selected neighborhoods based on checkbox interactions
   const handleNeighborhoodChange = (e) => {
     const neighborhood = e.target.value;
     const selectedNeighborhoods = [...filteredNeighborhoods];
 
     if (e.target.checked) {
-      selectedNeighborhoods.push(neighborhood); // Add neighborhood if checked
+      selectedNeighborhoods.push(neighborhood); 
     } else {
       const index = selectedNeighborhoods.indexOf(neighborhood);
       if (index > -1) {
-        selectedNeighborhoods.splice(index, 1); // Remove neighborhood if unchecked
+        selectedNeighborhoods.splice(index, 1); 
       }
     }
     setFilteredNeighborhoods(selectedNeighborhoods);
   };
 
-  // Update the selected property types based on checkbox interactions
   const handlePropertyTypeChange = (e) => {
     const propertyType = e.target.value;
     const selectedPropertyTypes = [...filteredPropertyTypes];
 
     if (e.target.checked) {
-      selectedPropertyTypes.push(propertyType); // Add property type if checked
+      selectedPropertyTypes.push(propertyType); 
     } else {
       const index = selectedPropertyTypes.indexOf(propertyType);
       if (index > -1) {
-        selectedPropertyTypes.splice(index, 1); // Remove property type if unchecked
+        selectedPropertyTypes.splice(index, 1); 
       }
     }
     setFilteredPropertyTypes(selectedPropertyTypes);
   };
 
+  const handlePriceChange = (e) => {
+    const value = e.target.value.split(',').map(Number);
+    setPriceRange(value);
+  };
+
+  const handleBedChange = (e) => {
+    const bedCount = Number(e.target.value);
+    const selectedBeds = [...filteredBeds];
+
+    if (e.target.checked) {
+      selectedBeds.push(bedCount);
+    } else {
+      const index = selectedBeds.indexOf(bedCount);
+      if (index > -1) {
+        selectedBeds.splice(index, 1);
+      }
+    }
+    setFilteredBeds(selectedBeds);
+  };
+
+  const handleBathroomChange = (e) => {
+    const bathroomCount = Number(e.target.value);
+    const selectedBathrooms = [...filteredBathrooms];
+
+    if (e.target.checked) {
+      selectedBathrooms.push(bathroomCount);
+    } else {
+      const index = selectedBathrooms.indexOf(bathroomCount);
+      if (index > -1) {
+        selectedBathrooms.splice(index, 1);
+      }
+    }
+    setFilteredBathrooms(selectedBathrooms);
+  };
+
   const filteredListings = listings.filter((listing) => {
     return (
-      (filteredNeighborhoods.length === 0 || filteredNeighborhoods.includes(listing.neighboorhood)) &&
-      (filteredPropertyTypes.length === 0 || filteredPropertyTypes.includes(listing.property_type))
+
+      (filteredNeighborhoods.length === 0 || filteredNeighborhoods.includes(listing.neighborhood)) &&
+      (filteredPropertyTypes.length === 0 || filteredPropertyTypes.includes(listing.property_type)) &&
+      (listing.current_price >= priceRange[0] && listing.current_price <= priceRange[1]) &&
+      (filteredBeds.length === 0 || filteredBeds.includes(listing.bed_count)) &&
+      (filteredBathrooms.length === 0 || filteredBathrooms.includes(listing.bathroom_count))
+
     );
   });
 
@@ -104,7 +145,7 @@ const Listings = () => {
                     type="checkbox"
                     value={neighborhood}
                     onChange={handleNeighborhoodChange}
-                    checked={filteredNeighborhoods.includes(neighborhood)} // Show as checked if already selected
+                    checked={filteredNeighborhoods.includes(neighborhood)} 
                   />
                   <span>{neighborhood}</span>
                 </label>
@@ -122,17 +163,64 @@ const Listings = () => {
                     type="checkbox"
                     value={propertyType}
                     onChange={handlePropertyTypeChange}
-                    checked={filteredPropertyTypes.includes(propertyType)} // Show as checked if already selected
+                    checked={filteredPropertyTypes.includes(propertyType)} 
                   />
                   <span>{propertyType}</span>
                 </label>
               ))}
             </div>
           </div>
+
+          {/* Price Range Filter */}
+          <div className="col-span-2">
+            <label className="block text-sm font-semibold mb-2">Filter by Price Range:</label>
+            <input
+              type="text"
+              placeholder="Min,Max"
+              onChange={handlePriceChange}
+              className="p-2 border rounded w-full"
+            />
+          </div>
+
+          {/* Bed Count Filters */}
+          <div className="col-span-2">
+            <label className="block text-sm font-semibold mb-2">Filter by Bed Count:</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[1, 2, 3, 4].map((bedCount) => (
+                <label key={bedCount} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    value={bedCount}
+                    onChange={handleBedChange}
+                    checked={filteredBeds.includes(bedCount)}
+                  />
+                  <span>{bedCount} Bed{bedCount > 1 ? 's' : ''}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Bathroom Count Filters */}
+          <div className="col-span-2">
+            <label className="block text-sm font-semibold mb-2">Filter by Bathroom Count:</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[1, 2, 3, 4].map((bathroomCount) => (
+                <label key={bathroomCount} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    value={bathroomCount}
+                    onChange={handleBathroomChange}
+                    checked={filteredBathrooms.includes(bathroomCount)}
+                  />
+                  <span>{bathroomCount} Bath{bathroomCount > 1 ? 's' : ''}</span>
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Show loading message while data is being fetched */}
-        {loading ? (
+         {/* Show loading message while data is being fetched */}
+         {loading ? (
           <p className="text-gray-600 text-center mt-8">Please wait, data is being fetched...</p>
         ) : (
           /* Show message if no checkbox is selected */

@@ -175,24 +175,42 @@ const ModifyListings = () => {
               className="w-full"
             />
           </div>
-        ))}
 
-        {/* Buttons with App Colors */}
-        <div className="mt-6">
-          <button
-            type="button"
-            onClick={handleAddPrice}
-            className="block px-4 py-2 bg-stone-300 text-stone-600 rounded mb-4 hover:bg-gray-100"
-          >
-            + Add Previous Month Price
-          </button>
-          
-          <button type="submit" className="block px-4 py-2 bg-stone-300 text-stone-600 rounded hover:bg-gray-100">
-            Add New Listing
-          </button>
-        </div>
-      </form>
-    </div>
+
+          {/* Historical Prices */}
+          <h3 className="text-xl font-semibold">Historical Prices</h3>
+          {historicalPrices.map((price, index) => (
+            <div key={index} className="space-y-2">
+              <label className="block text-gray-700">{price.month}</label>
+              <input
+                type="text"
+                value={formatPrice(price.price)}
+                onChange={(e) => handleHistoricalChange(index, e)}
+                placeholder="Price"
+                className="w-full p-2 border rounded"
+              />
+            </div>
+          ))}
+
+          {/* Add Historical Price Button */}
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={handleAddPrice}
+              className="block px-4 py-2 bg-stone-300 text-stone-600 rounded mb-4 hover:bg-gray-100"
+            >
+              + Add Previous Month Price
+            </button>
+
+            <button type="submit" className="block px-4 py-2 bg-stone-300 text-stone-600 rounded hover:bg-gray-100">
+              Add New Listing
+            </button>
+          </div>
+        </form>
+      </div>
+      
+    </Layout>
+
   );
 };
 
