@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "./components/NavBar";
 import Header from "./components/Header";
-import ListingCard from "./listings/ListingCard";
+import ListingCard from "./components/ListingCard";
+
+
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -10,6 +12,13 @@ const HomePage = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({
+    minPrice: "",
+    maxPrice: "",
+    beds: "",
+    baths: "",
+  });
+  const [showModal, setShowModal] = useState(false);
 
   // Function to shuffle array and pick the first three
   const pickRandomListings = (listingsArray) => {
@@ -26,9 +35,9 @@ const HomePage = () => {
       try {
         const listingsCollection = collection(db, "listings");
         const snapshot = await getDocs(listingsCollection);
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id, // Include the ID of the listing
-          ...doc.data(),
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
         }));
         const randomListings = pickRandomListings(data); // Get three random listings
         setListings(randomListings);
@@ -43,13 +52,25 @@ const HomePage = () => {
     fetchData();
   }, []);
 
+  // Handle filter change
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters({
+      ...filters,
+      [name]: value,
+    });
+  };
+
   return (
     <div className="overflow-y-auto h-screen bg-stone-100">
       <NavBar />
       <Header />
 
       <div className="container mx-auto py-10 px-4">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Featured Listings</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-800">Featured Listings</h1>
+          
+        </div>
 
         {loading ? (
           <p className="text-gray-600 text-center mt-8">
@@ -59,10 +80,9 @@ const HomePage = () => {
           <p className="text-red-500 text-center mt-8">{error}</p>
         ) : listings.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {listings.map((listing) => (
+            {listings.map((listing, index) => (
               <ListingCard
-                key={listing.id}
-                id={listing.id} // Pass ID to the ListingCard
+                key={index}
                 address={listing.address}
                 neighborhood={listing.neighborhood}
                 propertyType={listing.property_type}
@@ -74,6 +94,96 @@ const HomePage = () => {
           </div>
         ) : (
           <p className="text-gray-600">No listings to display.</p>
+        )}
+
+        {/* Modal */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white p-8 rounded-lg max-w-2xl w-full relative">
+              <button
+                className="absolute top-3 right-3 text-gray-600 hover:text-gray-800"
+                onClick={() => setShowModal(false)}
+              >
+                ✕
+              </button>
+              <h2 className="text-2xl font-bold mb-4">Filter Listings</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="transactionType" className="block text-sm font-medium text-gray-700">Transaction Type</label>
+                  <select id="transactionType" name="transactionType" className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm">
+                    <option value="forSale">For Sale</option>
+                    <option value="forRent">For Rent</option>
+                    <option value="sold">Sold</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="propertyType" className="block text-sm font-medium text-gray-700">Property Type</label>
+                  <select id="propertyType" name="propertyType" className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm">
+                    <option value="residential">Residential</option>
+                    <option value="commercial">Commercial</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="minPrice" className="block text-sm font-medium text-gray-700">Min Price</label>
+                  <input
+                    type="number"
+                    id="minPrice"
+                    name="minPrice"
+                    value={filters.minPrice}
+                    onChange={handleFilterChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="maxPrice" className="block text-sm font-medium text-gray-700">Max Price</label>
+                  <input
+                    type="number"
+                    id="maxPrice"
+                    name="maxPrice"
+                    value={filters.maxPrice}
+                    onChange={handleFilterChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="beds" className="block text-sm font-medium text-gray-700">Beds</label>
+                  <input
+                    type="number"
+                    id="beds"
+                    name="beds"
+                    value={filters.beds}
+                    onChange={handleFilterChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="baths" className="block text-sm font-medium text-gray-700">Baths</label>
+                  <input
+                    type="number"
+                    id="baths"
+                    name="baths"
+                    value={filters.baths}
+                    onChange={handleFilterChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm"
+                  />
+                </div>
+              </div>
+              <div className="mt-4 flex justify-between">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="bg-red-500 text-white py-2 px-4 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="bg-green-500 text-white py-2 px-4 rounded"
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
