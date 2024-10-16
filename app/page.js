@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "./components/NavBar";
 import Header from "./components/Header";
+import ListingCard from "./components/ListingCard";
+
 
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
