@@ -308,6 +308,7 @@ const ModifyListings = () => {
           </div>
         </form>
       </div>
+      
     </Layout>
   );
 };
