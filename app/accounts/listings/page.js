@@ -4,6 +4,7 @@ import { db, auth } from '../../../firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import Layout from '../../components/Layout';
+
 const UserListings = () => {
   const [listings, setListings] = useState([]);
   const [user, setUser] = useState(null);
