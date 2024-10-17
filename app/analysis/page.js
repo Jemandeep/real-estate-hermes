@@ -1,4 +1,3 @@
-// analysis/page.js
 "use client"; // Instructs Next.js to render this file on the client-side, allowing access to hooks like useState and useEffect
 
 import React, { useState, useEffect } from 'react'; // Import React and hooks for state management and side-effects
@@ -10,6 +9,7 @@ import MapComponent from '../components/MapComponent'; // Component to render an
 import PredictionSidebar from '../components/PredictionsSidebar'; // Sidebar for displaying predictions related to favorite properties
 import Filters from '../components/Filters'; // Component to filter listings by neighborhood and property type
 import PropertyManager from '../components/PropertyManager'; // Component to manage properties, imported but not yet functional
+
 
 const Analysis = () => {
   // React state hooks for managing data and UI state across the component

@@ -1,89 +1,109 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import { db } from '../../firebase'; // Firebase configuration
+import { collection, getDocs } from 'firebase/firestore';
 import Layout from '../components/Layout';
-import ListingCard from './ListingCard';
-
-// URL for fetching mock data
-const MOCKAROO_URL = 'https://api.mockaroo.com/api/3b6f9270?count=1000&key=9e007e70';
+import ListingCard from './ListingCard'; // Component to display individual listing cards
 
 const Listings = () => {
   const [listings, setListings] = useState([]);
-  const [filteredNeighborhoods, setFilteredNeighborhoods] = useState([]); // Track selected neighborhoods
-  const [filteredPropertyTypes, setFilteredPropertyTypes] = useState([]); // Track selected property types
-  const [neighborhoods, setNeighborhoods] = useState([]);
+  const [filteredPropertyTypes, setFilteredPropertyTypes] = useState([]);
+  const [priceRange, setPriceRange] = useState([0, 1000000]); // Default price range
+  const [filteredBeds, setFilteredBeds] = useState([]);
+  const [filteredBathrooms, setFilteredBathrooms] = useState([]);
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
 
+  // Fetch listings from Firebase
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true); // Start loading
+    const fetchListings = async () => {
+      setLoading(true);
       try {
-        const response = await fetch(MOCKAROO_URL, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`Failed to fetch data: ${response.statusText}`);
-        }
-        const text = await response.text();
-        const data = JSON.parse(text);
-        setListings(data.slice(0, 250));
+        const querySnapshot = await getDocs(collection(db, 'listings'));
+        const fetchedListings = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-        // Extract unique neighborhoods and property types
-        const uniqueNeighborhoods = [...new Set(data.map((item) => item.neighboorhood))];
-        const uniquePropertyTypes = [...new Set(data.map((item) => item.property_type))];
-
-        setNeighborhoods(uniqueNeighborhoods);
+        setListings(fetchedListings);
+        const uniquePropertyTypes = [...new Set(fetchedListings.map((item) => item.property_type))];
         setPropertyTypes(uniquePropertyTypes);
-        setLoading(false); // End loading after data is fetched
+        setLoading(false);
       } catch (error) {
-        setError(error.message);
-        setLoading(false); // End loading even if there's an error
-        console.error('Error fetching data:', error);
+        setError('Failed to fetch listings. Please try again.');
+        console.error('Error fetching listings:', error);
+        setLoading(false);
       }
     };
 
-    fetchData();
+    fetchListings();
   }, []);
 
-  // Update the selected neighborhoods based on checkbox interactions
-  const handleNeighborhoodChange = (e) => {
-    const neighborhood = e.target.value;
-    const selectedNeighborhoods = [...filteredNeighborhoods];
-
-    if (e.target.checked) {
-      selectedNeighborhoods.push(neighborhood); // Add neighborhood if checked
-    } else {
-      const index = selectedNeighborhoods.indexOf(neighborhood);
-      if (index > -1) {
-        selectedNeighborhoods.splice(index, 1); // Remove neighborhood if unchecked
-      }
-    }
-    setFilteredNeighborhoods(selectedNeighborhoods);
-  };
-
-  // Update the selected property types based on checkbox interactions
   const handlePropertyTypeChange = (e) => {
     const propertyType = e.target.value;
     const selectedPropertyTypes = [...filteredPropertyTypes];
 
     if (e.target.checked) {
-      selectedPropertyTypes.push(propertyType); // Add property type if checked
+      selectedPropertyTypes.push(propertyType);
     } else {
       const index = selectedPropertyTypes.indexOf(propertyType);
       if (index > -1) {
-        selectedPropertyTypes.splice(index, 1); // Remove property type if unchecked
+        selectedPropertyTypes.splice(index, 1);
       }
     }
     setFilteredPropertyTypes(selectedPropertyTypes);
   };
 
+  const handlePriceChange = (e) => {
+    const value = e.target.value.split(',').map(Number);
+    setPriceRange(value);
+  };
+
+  const handleBedChange = (e) => {
+    const bedCount = Number(e.target.value);
+    const selectedBeds = [...filteredBeds];
+
+    if (e.target.checked) {
+      selectedBeds.push(bedCount);
+    } else {
+      const index = selectedBeds.indexOf(bedCount);
+      if (index > -1) {
+        selectedBeds.splice(index, 1);
+      }
+    }
+    setFilteredBeds(selectedBeds);
+  };
+
+  const handleBathroomChange = (e) => {
+    const bathroomCount = Number(e.target.value);
+    const selectedBathrooms = [...filteredBathrooms];
+
+    if (e.target.checked) {
+      selectedBathrooms.push(bathroomCount);
+    } else {
+      const index = selectedBathrooms.indexOf(bathroomCount);
+      if (index > -1) {
+        selectedBathrooms.splice(index, 1);
+      }
+    }
+    setFilteredBathrooms(selectedBathrooms);
+  };
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setFilteredPropertyTypes([]);
+    setPriceRange([0, 1000000]);
+    setFilteredBeds([]);
+    setFilteredBathrooms([]);
+  };
+
   const filteredListings = listings.filter((listing) => {
     return (
-      (filteredNeighborhoods.length === 0 || filteredNeighborhoods.includes(listing.neighboorhood)) &&
-      (filteredPropertyTypes.length === 0 || filteredPropertyTypes.includes(listing.property_type))
+      (filteredPropertyTypes.length === 0 || filteredPropertyTypes.includes(listing.property_type)) &&
+      (listing.current_price >= priceRange[0] && listing.current_price <= priceRange[1]) &&
+      (filteredBeds.length === 0 || filteredBeds.includes(listing.bed_count)) &&
+      (filteredBathrooms.length === 0 || filteredBathrooms.includes(listing.bathroom_count))
     );
   });
 
@@ -91,27 +111,9 @@ const Listings = () => {
     <Layout>
       <div className="max-w-full mx-auto p-4 bg-white rounded shadow mt-10">
         <h1 className="text-2xl font-bold mb-4">Property Listings</h1>
-        
+
         {/* Filters Section */}
         <div className="mb-4 grid grid-cols-2 gap-4">
-          {/* Neighborhood Filters */}
-          <div>
-            <label className="block text-sm font-semibold mb-2">Filter by Neighborhoods:</label>
-            <div className="grid grid-cols-2 gap-2">
-              {neighborhoods.map((neighborhood) => (
-                <label key={neighborhood} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    value={neighborhood}
-                    onChange={handleNeighborhoodChange}
-                    checked={filteredNeighborhoods.includes(neighborhood)} // Show as checked if already selected
-                  />
-                  <span>{neighborhood}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
           {/* Property Type Filters */}
           <div>
             <label className="block text-sm font-semibold mb-2">Filter by Property Types:</label>
@@ -122,41 +124,92 @@ const Listings = () => {
                     type="checkbox"
                     value={propertyType}
                     onChange={handlePropertyTypeChange}
-                    checked={filteredPropertyTypes.includes(propertyType)} // Show as checked if already selected
+                    checked={filteredPropertyTypes.includes(propertyType)}
                   />
                   <span>{propertyType}</span>
                 </label>
               ))}
             </div>
           </div>
+
+          {/* Price Range Filter */}
+          <div className="col-span-2">
+            <label className="block text-sm font-semibold mb-2">Filter by Price Range:</label>
+            <input
+              type="text"
+              placeholder="Min,Max"
+              onChange={handlePriceChange}
+              className="p-2 border rounded w-full"
+            />
+          </div>
+
+          {/* Bed Count Filters */}
+          <div className="col-span-2">
+            <label className="block text-sm font-semibold mb-2">Filter by Bed Count:</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[1, 2, 3, 4].map((bedCount) => (
+                <label key={bedCount} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    value={bedCount}
+                    onChange={handleBedChange}
+                    checked={filteredBeds.includes(bedCount)}
+                  />
+                  <span>{bedCount} Bed{bedCount > 1 ? 's' : ''}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Bathroom Count Filters */}
+          <div className="col-span-2">
+            <label className="block text-sm font-semibold mb-2">Filter by Bathroom Count:</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[1, 2, 3, 4].map((bathroomCount) => (
+                <label key={bathroomCount} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    value={bathroomCount}
+                    onChange={handleBathroomChange}
+                    checked={filteredBathrooms.includes(bathroomCount)}
+                  />
+                  <span>{bathroomCount} Bath{bathroomCount > 1 ? 's' : ''}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Clear Filters Button */}
+          <div className="col-span-2 text-right">
+            <button
+              onClick={handleClearFilters}
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            >
+              Clear All Filters
+            </button>
+          </div>
         </div>
 
-        {/* Show loading message while data is being fetched */}
+        {/* Show loading message */}
         {loading ? (
           <p className="text-gray-600 text-center mt-8">Please wait, data is being fetched...</p>
         ) : (
-          /* Show message if no checkbox is selected */
-          filteredNeighborhoods.length === 0 && filteredPropertyTypes.length === 0 ? (
-            <p className="text-gray-600 text-center mt-8">Please select a neighborhood and/or property type to view listings.</p>
+          filteredListings.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {filteredListings.map((listing) => (
+                <ListingCard
+                  key={listing.id}
+                  address={listing.address}
+                  neighborhood={listing.neighborhood}
+                  propertyType={listing.property_type}
+                  currentPrice={listing.current_price}
+                  bedCount={listing.bed_count}
+                  bathroomCount={listing.bathroom_count}
+                />
+              ))}
+            </div>
           ) : (
-            /* Listing Cards in a grid layout */
-            filteredListings.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredListings.map((listing, index) => (
-                  <ListingCard
-                    key={index}
-                    address={listing.adress}
-                    neighborhood={listing.neighboorhood}
-                    propertyType={listing.property_type}
-                    currentPrice={listing.current_price}
-                    bedCount={listing.bed_count} // Pass bed count from API
-                    bathroomCount={listing.bathroom_count} // Pass bathroom count from API
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-600">No listings to display.</p>
-            )
+            <p className="text-gray-600 text-center">No listings to display.</p>
           )
         )}
       </div>
