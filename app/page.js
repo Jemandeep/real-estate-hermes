@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import NavBar from "./components/NavBar";
 import Header from "./components/Header";
 import Layout from "./components/Layout";
+import ReviewCards from "./components/ReviewCards";
+
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import Link from "next/link";
@@ -96,7 +98,7 @@ const HomePage = () => {
           <p className="text-gray-600">No listings to display.</p>
         )}
       </div>
-
+      <ReviewCards/>
       <div className="bg-stone-500 text-white px-40 py-40 text-center">
         <h2 className="text-3xl font-bold mb-4 text-white-800">Our Vision</h2>
         <p className="text-lg text-white-600 max-w-3xl mx-auto">
