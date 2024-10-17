@@ -1,146 +1,186 @@
-// analysis/page.js
-"use client";
+"use client"; // Instructs Next.js to render this file on the client-side, allowing access to hooks like useState and useEffect
 
-import React, { useState, useEffect } from 'react';
-import { getDocs, collection } from 'firebase/firestore';
-import { db } from '../../firebase';
-import Layout from '../components/Layout';
-import ListingCard from '../components/ListingCard';
-import MapComponent from '../components/MapComponent';
-import PredictionSidebar from '../components/PredictionsSidebar';
-import Filters from '../components/Filters';
-import PropertyManager from '../components/PropertyManager'; // Import Property Manager
+import React, { useState, useEffect } from 'react'; // Import React and hooks for state management and side-effects
+import { getDocs, collection } from 'firebase/firestore'; // Firebase functions to fetch documents from Firestore
+import { db } from '../../firebase'; // Import Firebase configuration (database instance)
+import Layout from '../components/Layout'; // Custom layout component for consistent page structure
+import ListingCard from '../components/ListingCard'; // Component to display individual property listing details
+import MapComponent from '../components/MapComponent'; // Component to render an interactive map with community data
+import PredictionSidebar from '../components/PredictionsSidebar'; // Sidebar for displaying predictions related to favorite properties
+import Filters from '../components/Filters'; // Component to filter listings by neighborhood and property type
+import PropertyManager from '../components/PropertyManager'; // Component to manage properties, imported but not yet functional
+
 
 const Analysis = () => {
-  // State hooks to manage various pieces of data within the component
-  const [listings, setListings] = useState([]); // Holds the fetched property listings
-  const [filteredNeighborhood, setFilteredNeighborhood] = useState('All'); // Holds the selected neighborhood for filtering
-  const [filteredPropertyType, setFilteredPropertyType] = useState('All'); // Holds the selected property type for filtering
-  const [maxMonth, setMaxMonth] = useState(12); // Holds the number of months for which price data is shown
-  const [selectedProperties, setSelectedProperties] = useState([]); // Holds the properties that the user has selected as favorites
-  const [neighborhoods, setNeighborhoods] = useState([]); // Holds the list of unique neighborhoods for filtering
-  const [propertyTypes, setPropertyTypes] = useState([]); // Holds the list of unique property types for filtering
-  const [error, setError] = useState(null); // Holds any errors that occur during data fetching
-  const [selectedFavorites, setSelectedFavorites] = useState([]); // Holds the list of properties selected for price prediction
-  const [selectedCommunity, setSelectedCommunity] = useState('All'); // Tracks the selected community on the map
+  // React state hooks for managing data and UI state across the component
+  const [listings, setListings] = useState([]); // Store the list of property listings fetched from Firestore
+  const [filteredNeighborhood, setFilteredNeighborhood] = useState('All'); // Track the currently selected neighborhood filter
+  const [filteredPropertyType, setFilteredPropertyType] = useState('All'); // Track the selected property type filter
+  const [maxMonth, setMaxMonth] = useState(12); // Number of months to display price history, defaulting to 12
+  const [selectedProperties, setSelectedProperties] = useState([]); // Track properties selected by the user for predictions
+  const [neighborhoods, setNeighborhoods] = useState([]); // Store a list of unique neighborhoods to be used in the filter dropdown
+  const [propertyTypes, setPropertyTypes] = useState([]); // Store unique property types for filtering
+  const [error, setError] = useState(null); // Store any errors that may occur during data fetching
+  const [selectedFavorites, setSelectedFavorites] = useState([]); // Track properties selected as favorites by the user
+  const [selectedCommunity, setSelectedCommunity] = useState('All'); // Track the community selected via the map
 
-  // useEffect hook to fetch data from Firebase once when the component is mounted
+  // useEffect hook to fetch listings from Firestore when the component mounts
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'listings'));
-        const data = querySnapshot.docs.map((doc) => doc.data());
-        setListings(data.slice(0, 250)); // Set the listings state with a subset of the data (first 250)
-
-        // Extract unique neighborhoods and property types for filtering
-        const uniqueNeighborhoods = ['All', ...new Set(data.map((item) => item.neighborhood))];
-        const uniquePropertyTypes = ['All', ...new Set(data.map((item) => item.property_type))];
-
-        setNeighborhoods(uniqueNeighborhoods); // Set the neighborhoods state
-        setPropertyTypes(uniquePropertyTypes); // Set the property types state
+        const querySnapshot = await getDocs(collection(db, 'listings')); // Fetch all documents from the 'listings' collection in Firestore
+        const data = querySnapshot.docs.map((doc) => doc.data()); // Extract data from each document
+  
+        // Ensure latitude and longitude are included when setting the listings
+        setListings(data.slice(0, 250)); // Set the listings state, limiting the number of listings to 250 for performance
+  
+        const uniqueNeighborhoods = ['All', ...new Set(data.map((item) => item.neighborhood))]; // Extract unique neighborhoods from data
+        const uniquePropertyTypes = ['All', ...new Set(data.map((item) => item.property_type))]; // Extract unique property types from data
+        
+        setNeighborhoods(uniqueNeighborhoods); // Update the neighborhoods state with these unique values
+        setPropertyTypes(uniquePropertyTypes); // Update the property types state
       } catch (error) {
-        setError(error.message); // Catch any errors and set the error state
+        setError(error.message); // Set the error state in case of failure
         console.error('Error fetching data:', error); // Log the error to the console
       }
     };
+  
+    fetchData(); // Invoke fetchData to load the listings when the component mounts
+  }, []); // Empty dependency array ensures this effect runs only once, after the initial render
+  
 
-    fetchData(); // Invoke the fetchData function
-  }, []); // Empty dependency array ensures this effect runs only once after component mount
-
-  // Function to handle community selection from the map
-  const onSelectCommunity = (communityName) => {
-    setSelectedCommunity(communityName); // Set the selected community
-    setFilteredNeighborhood(communityName); // Set the filtered neighborhood based on the selected community
-  };
-
-  // Function to handle when a property is selected (added to favorites)
+  // Function to handle property selection for price predictions
   const onSelect = (listing) => {
     setSelectedProperties((prevSelected) => [
-      ...prevSelected,
+      ...prevSelected, // (...) spread operator: expands the elements into the new array.
       {
-        address: listing.address,
-        neighborhood: listing.neighborhood,
-        propertyType: listing.property_type,
-        prices: listing.prices || [],
-        currentPrice: listing.current_price,
+        address: listing.address, // Store the address of the selected property
+        neighborhood: listing.neighborhood, // Store the neighborhood of the selected property
+        propertyType: listing.property_type, // Store the property type
+        prices: listing.prices || [], // Store the price history or an empty array incase its missing
+        currentPrice: listing.current_price, // Store the current price of the property
+        latitude: listing.latitude, // Store the latitude of the selected property
+        longitude: listing.longitude // Store the longitude of the selected property
       },
     ]);
   };
 
-  // Function to handle selecting and deselecting properties for price predictions
+  // Function to toggle property selection as a favorite
   const handleFavoriteSelection = (property) => {
-    if (!property.latitude || !property.longitude) {
-      console.warn('Property is missing latitude or longitude:', property);
-      return;
+    // Check if the property is already in selectedFavorites based on its address (or use another unique identifier)
+    const isAlreadyFavorite = selectedFavorites.some(
+      (fav) => fav.address === property.address // Use a unique identifier like `address`
+    );
+  
+    if (isAlreadyFavorite) {
+      console.log('Property is already a favorite:', property.address);
+      return; // Exit early if the property is already in favorites
     }
-    setSelectedFavorites((prevSelectedFavorites) => {
-      if (prevSelectedFavorites.includes(property)) {
-        // If the property is already in the favorites list, remove it
-        return prevSelectedFavorites.filter((fav) => fav !== property);
-      } else {
-        // Otherwise, add the property to the favorites list
-        return [...prevSelectedFavorites, property];
-      }
-    });
+  
+    // If not already a favorite, add the property to favorites
+    setSelectedFavorites((prevSelectedFavorites) => [
+      ...prevSelectedFavorites.filter(fav => fav.address !== property.address), // Filter out any potential duplicates (if they exist)
+      property
+    ]);
   };
+  
+  const handleRemoveFavorite = (property) => {
+    // Remove from favorites and the price prediction list
+    setSelectedFavorites((prevSelectedFavorites) =>
+      prevSelectedFavorites.filter((fav) => fav.address !== property.address)
+    );
+  
+    setSelectedProperties((prevSelectedProperties) =>
+      prevSelectedProperties.filter((fav) => fav.address !== property.address)
+    );
+  };
+  
+  const handleRemoveFromFavoritesOnly = (property) => {
+    // Remove the property only from favorites, keep it in the price prediction list
+    setSelectedFavorites((prevSelectedFavorites) =>
+      prevSelectedFavorites.filter((fav) => fav.address !== property.address)
+    );
+  };
+  
 
-  // Filter the listings based on the selected neighborhood and property type
+  // Filter the listings based on selected neighborhood and property type
   const filteredListings = listings.filter((listing) => {
     const matchesNeighborhood =
-      filteredNeighborhood === 'All' || listing.neighborhood === filteredNeighborhood;
+      filteredNeighborhood === 'All' || listing.neighborhood === filteredNeighborhood; // Check if listing matches selected neighborhood
     const matchesPropertyType =
-      filteredPropertyType === 'All' || listing.property_type === filteredPropertyType;
-    return matchesNeighborhood && matchesPropertyType; // Return true only if both filters match
+      filteredPropertyType === 'All' || listing.property_type === filteredPropertyType; // Check if listing matches selected property type
+    return matchesNeighborhood && matchesPropertyType; // Return listings that match both filters
   });
+
 
   return (
     <Layout>
       <div className="max-w-7xl mx-auto p-4 bg-white rounded shadow mt-10 flex">
-        {/* Prediction Sidebar: Display selected properties for price predictions */}
-        <PredictionSidebar selectedFavorites={selectedFavorites} />
+        {/* Prediction Sidebar */}
+        <PredictionSidebar selectedFavorites={selectedFavorites} /> {/* Pass selected favorites to the prediction sidebar */}
 
         {/* Main content container for listings */}
         <div className="flex-1">
-          <h1 className="text-2xl font-bold mb-4">Property Listings</h1>
+          <h1 className="text-2xl font-bold mb-4">Property Listings</h1> {/* Heading for the property listings section */}
 
           {/* Map component displaying Calgary communities */}
           <div className="mb-4">
-            <h2 className="text-xl font-bold mb-2">Calgary Communities Map</h2>
-            <MapComponent onSelectCommunity={onSelectCommunity} /> {/* Map for selecting a community */}
+            <h2 className="text-xl font-bold mb-2">Calgary Communities Map</h2> {/* Subheading for the map */}
+            <MapComponent
+              favoriteProperties={selectedFavorites} // Pass selected favorites to the MapComponent
+              listings={filteredListings} // Pass filtered listings with coordinates to the MapComponent
+            />
           </div>
 
-          {/* Display the user's favorite properties */}
-          <h2 className="text-lg font-bold mb-2">Favorites</h2>
+          <h2 className="text-lg font-bold mb-2">Favorites</h2> {/* Subheading for the favorites section */}
           {selectedProperties.length > 0 ? (
             selectedProperties.map((property, index) => (
               <div key={index} className="favorite-property mb-2 border rounded p-2 bg-white">
-                <h3>{property.address || 'Address not available'}</h3>
-                <p>{property.neighborhood || 'Neighborhood not available'}</p>
-                <p>{property.propertyType || 'Property Type not available'}</p>
-                {/* Checkbox to allow the user to select the property for price prediction */}
+                <h3>{property.address || 'Address not available'}</h3> {/* Display property address */}
+                <p>{property.neighborhood || 'Neighborhood not available'}</p> {/* Display property neighborhood */}
+                <p>{property.propertyType || 'Property Type not available'}</p> {/* Display property type */}
+                
                 <input
                   type="checkbox"
-                  checked={selectedFavorites.includes(property)}
-                  onChange={() => handleFavoriteSelection(property)}
+                  checked={selectedFavorites.includes(property)} // Check if the property is selected as a favorite
+                  onChange={() => handleFavoriteSelection(property)} // Toggle favorite selection on checkbox change
                 />{' '}
                 Select for Price Prediction
+
+                {/* Delete button to remove the property from both favorites and price prediction */}
+                <button
+                  onClick={() => handleRemoveFavorite(property)} // Trigger the remove function when clicked
+                  className="ml-2 bg-red-500 text-white px-2 py-1 rounded"
+                >
+                  Remove from Favorites
+                </button>
+
+                {/* New Delete button to remove the property only from favorites */}
+                <button
+                  onClick={() => handleRemoveFromFavoritesOnly(property)} // Trigger the function to remove from favorites only
+                  className="ml-2 bg-red-500 text-white px-2 py-1 rounded"
+                >
+                  Remove from Prediction
+                </button>
               </div>
             ))
           ) : (
-            <p>No favorites selected.</p> // Message when no favorites are selected
+            <p>No favorites selected.</p> // Display message if no properties are selected as favorites
           )}
 
-          {/* Filters for selecting neighborhoods and property types */}
+
+
+          {/* Filters Component */}
           <Filters
-            neighborhoods={neighborhoods} // Pass unique neighborhoods to Filters component
-            propertyTypes={propertyTypes} // Pass unique property types to Filters component
-            filteredNeighborhood={filteredNeighborhood} // Currently selected neighborhood
-            setFilteredNeighborhood={setFilteredNeighborhood} // Function to update the selected neighborhood
-            filteredPropertyType={filteredPropertyType} // Currently selected property type
-            setFilteredPropertyType={setFilteredPropertyType} // Function to update the selected property type
+            neighborhoods={neighborhoods} // Pass the list of neighborhoods to the Filters component
+            propertyTypes={propertyTypes} // Pass the list of property types to the Filters component
+            filteredNeighborhood={filteredNeighborhood} // Pass the current neighborhood filter
+            setFilteredNeighborhood={setFilteredNeighborhood} // Pass the function to update the neighborhood filter
+            filteredPropertyType={filteredPropertyType} // Pass the current property type filter
+            setFilteredPropertyType={setFilteredPropertyType} // Pass the function to update the property type filter
           />
 
-          {/* Selector to choose the number of months for price data */}
+          {/* Month Selector for Price Prediction */}
           <div className="mb-4">
             <label className="block text-sm font-semibold mb-2" htmlFor="month-selector">
               Select Number of Months:
@@ -148,11 +188,11 @@ const Analysis = () => {
             <select
               id="month-selector"
               className="p-2 border rounded"
-              value={maxMonth} // The currently selected number of months
-              onChange={(e) => setMaxMonth(parseInt(e.target.value, 10))} // Update the number of months when selected
+              value={maxMonth}
+              onChange={(e) => setMaxMonth(parseInt(e.target.value, 10))} // Update maxMonth state when user selects a different value
             >
               {Array.from({ length: 12 }, (_, index) => {
-                const month = index + 1;
+                const month = index + 1; // Generate month numbers 1 through 12
                 return (
                   <option key={month} value={month}>
                     {month} Month{month > 1 ? 's' : ''} {/* Handle pluralization */}
@@ -162,31 +202,26 @@ const Analysis = () => {
             </select>
           </div>
 
-          {/* Render the filtered listings */}
+          {/* Display error message if data fetching fails */}
           {error ? (
-            <p className="text-red-600">{error}</p> // Display error message if fetching fails
+            <p className="text-red-600">{error}</p> // Render the error message in red if there's an error
           ) : (
             filteredListings.map((listing, index) => {
-              const prices = listing.prices?.map((priceObj) => priceObj.price) || [];
+              const prices = listing.prices?.map((priceObj) => priceObj.price) || []; // Extract price history or default to an empty array
               return (
                 <ListingCard
-                  key={index} // Unique key for each listing
-                  address={listing.address}
-                  neighborhood={listing.neighborhood}
-                  propertyType={listing.property_type}
-                  prices={prices}
-                  maxMonth={maxMonth} // Pass the selected number of months to the ListingCard
-                  currentPrice={listing.current_price}
-                  onSelect={() => onSelect(listing)} // Handle property selection
+                  key={index}
+                  address={listing.address} // Pass the listing address to the ListingCard component
+                  neighborhood={listing.neighborhood} // Pass the neighborhood
+                  propertyType={listing.property_type} // Pass the property type
+                  prices={prices} // Pass the price history
+                  maxMonth={maxMonth} // Pass the selected number of months for the price history
+                  currentPrice={listing.current_price} // Pass the current price
+                  onSelect={() => onSelect(listing)} // Pass the onSelect function to allow property selection
                 />
               );
             })
           )}
-        </div>
-
-        {/* Add Property Manager on the side */}
-        <div className="ml-4 w-1/4">
-          <PropertyManager />
         </div>
       </div>
     </Layout>
