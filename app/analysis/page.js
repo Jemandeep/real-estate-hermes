@@ -67,19 +67,41 @@ const Analysis = () => {
 
   // Function to toggle property selection as a favorite
   const handleFavoriteSelection = (property) => {
-    if (!property.latitude || !property.longitude) {
-      console.warn('Property is missing latitude or longitude:', property); // Warn if the property is missing geographic coordinates
-      return;
+    // Check if the property is already in selectedFavorites based on its address (or use another unique identifier)
+    const isAlreadyFavorite = selectedFavorites.some(
+      (fav) => fav.address === property.address // Use a unique identifier like `address`
+    );
+  
+    if (isAlreadyFavorite) {
+      console.log('Property is already a favorite:', property.address);
+      return; // Exit early if the property is already in favorites
     }
-    setSelectedFavorites((prevSelectedFavorites) => {
-      // Check if the property is already a favorite; if so, remove it; otherwise, add it
-      if (prevSelectedFavorites.includes(property)) {
-        return prevSelectedFavorites.filter((fav) => fav !== property); // Remove the property from favorites
-      } else {
-        return [...prevSelectedFavorites, property]; // Add the property to favorites
-      }
-    });
+  
+    // If not already a favorite, add the property to favorites
+    setSelectedFavorites((prevSelectedFavorites) => [
+      ...prevSelectedFavorites.filter(fav => fav.address !== property.address), // Filter out any potential duplicates (if they exist)
+      property
+    ]);
   };
+  
+  const handleRemoveFavorite = (property) => {
+    // Remove from favorites and the price prediction list
+    setSelectedFavorites((prevSelectedFavorites) =>
+      prevSelectedFavorites.filter((fav) => fav.address !== property.address)
+    );
+  
+    setSelectedProperties((prevSelectedProperties) =>
+      prevSelectedProperties.filter((fav) => fav.address !== property.address)
+    );
+  };
+  
+  const handleRemoveFromFavoritesOnly = (property) => {
+    // Remove the property only from favorites, keep it in the price prediction list
+    setSelectedFavorites((prevSelectedFavorites) =>
+      prevSelectedFavorites.filter((fav) => fav.address !== property.address)
+    );
+  };
+  
 
   // Filter the listings based on selected neighborhood and property type
   const filteredListings = listings.filter((listing) => {
@@ -117,17 +139,36 @@ const Analysis = () => {
                 <h3>{property.address || 'Address not available'}</h3> {/* Display property address */}
                 <p>{property.neighborhood || 'Neighborhood not available'}</p> {/* Display property neighborhood */}
                 <p>{property.propertyType || 'Property Type not available'}</p> {/* Display property type */}
+                
                 <input
                   type="checkbox"
                   checked={selectedFavorites.includes(property)} // Check if the property is selected as a favorite
                   onChange={() => handleFavoriteSelection(property)} // Toggle favorite selection on checkbox change
                 />{' '}
                 Select for Price Prediction
+
+                {/* Delete button to remove the property from both favorites and price prediction */}
+                <button
+                  onClick={() => handleRemoveFavorite(property)} // Trigger the remove function when clicked
+                  className="ml-2 bg-red-500 text-white px-2 py-1 rounded"
+                >
+                  Remove from Favorites
+                </button>
+
+                {/* New Delete button to remove the property only from favorites */}
+                <button
+                  onClick={() => handleRemoveFromFavoritesOnly(property)} // Trigger the function to remove from favorites only
+                  className="ml-2 bg-red-500 text-white px-2 py-1 rounded"
+                >
+                  Remove from Prediction
+                </button>
               </div>
             ))
           ) : (
             <p>No favorites selected.</p> // Display message if no properties are selected as favorites
           )}
+
+
 
           {/* Filters Component */}
           <Filters
@@ -181,11 +222,6 @@ const Analysis = () => {
               );
             })
           )}
-        </div>
-
-        {/* Add Property Manager on the side */}
-        <div className="ml-4 w-1/4">
-          <PropertyManager /> {/* Display the Property Manager component on the side */}
         </div>
       </div>
     </Layout>
