@@ -32,7 +32,7 @@ const Listings = () => {
         setListings(data.slice(0, 250));
 
         // Extract unique neighborhoods and property types
-        const uniqueNeighborhoods = [...new Set(data.map((item) => item.neighborhood))];
+        const uniqueNeighborhoods = [...new Set(data.map((item) => item.neighboorhood))];
         const uniquePropertyTypes = [...new Set(data.map((item) => item.property_type))];
 
         setNeighborhoods(uniqueNeighborhoods);
@@ -82,8 +82,7 @@ const Listings = () => {
 
   const filteredListings = listings.filter((listing) => {
     return (
-      (filteredNeighborhoods.length === 0 || filteredNeighborhoods.includes(listing.neighborhood)) &&
-      (filteredNeighborhoods.length === 0 || filteredNeighborhoods.includes(listing.neighborhood)) &&
+      (filteredNeighborhoods.length === 0 || filteredNeighborhoods.includes(listing.neighboorhood)) &&
       (filteredPropertyTypes.length === 0 || filteredPropertyTypes.includes(listing.property_type))
     );
   });
@@ -143,15 +142,15 @@ const Listings = () => {
             /* Listing Cards in a grid layout */
             filteredListings.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredListings.map((listing) => (
+                {filteredListings.map((listing, index) => (
                   <ListingCard
                     key={index}
-                    address={listing.address || 'N/A'}
-                    neighborhood={listing.neighborhood || 'Unknown'}
-                    propertyType={listing.property_type || 'Unknown'}
-                    currentPrice={listing.current_price || 0}
-                    bedCount={listing.bed_count || 0}
-                    bathroomCount={listing.bathroom_count || 0}
+                    address={listing.adress}
+                    neighborhood={listing.neighboorhood}
+                    propertyType={listing.property_type}
+                    currentPrice={listing.current_price}
+                    bedCount={listing.bed_count} // Pass bed count from API
+                    bathroomCount={listing.bathroom_count} // Pass bathroom count from API
                   />
                 ))}
               </div>
@@ -160,7 +159,6 @@ const Listings = () => {
             )
           )
         )}
-        {error && <p className="text-red-500">Error: {error}</p>}
       </div>
     </Layout>
   );

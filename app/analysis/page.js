@@ -97,10 +97,11 @@ const Analysis = () => {
         {/* Prediction Sidebar */}
         <PredictionSidebar selectedFavorites={selectedFavorites} /> {/* Pass selected favorites to the prediction sidebar */}
 
-        {/* Main Content */}
+        {/* Main content container for listings */}
         <div className="flex-1">
           <h1 className="text-2xl font-bold mb-4">Property Listings</h1> {/* Heading for the property listings section */}
 
+          {/* Map component displaying Calgary communities */}
           <div className="mb-4">
             <h2 className="text-xl font-bold mb-2">Calgary Communities Map</h2> {/* Subheading for the map */}
             <MapComponent
@@ -153,7 +154,7 @@ const Analysis = () => {
                 const month = index + 1; // Generate month numbers 1 through 12
                 return (
                   <option key={month} value={month}>
-                    {month} Month{month > 1 ? 's' : ''}
+                    {month} Month{month > 1 ? 's' : ''} {/* Handle pluralization */}
                   </option>
                 );
               })}
@@ -191,4 +192,4 @@ const Analysis = () => {
   );
 };
 
-export default Analysis;
+export default Analysis; // Export the Analysis component for use in the application

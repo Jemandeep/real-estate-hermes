@@ -9,9 +9,11 @@ const MapComponent = memo(({ favoriteProperties, listings }) => {
       zoom={11}
       center={[51.0447, -114.0719]} // Default center of the map
     >
+
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+
       />
 
       {/* Render favorite properties as CircleMarkers */}
