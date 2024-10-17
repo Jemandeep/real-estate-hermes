@@ -1,14 +1,44 @@
-import React from 'react'; // Import React to create functional components
+
+import React, { useState } from 'react'; // Import React and useState hook for managing state
 
 // PredictionSidebar component receives 'selectedFavorites' as a prop
 // 'selectedFavorites' is an array of properties that the user has selected for predictions
 const PredictionSidebar = ({ selectedFavorites }) => {
+  const [predictionYears, setPredictionYears] = useState(5); // State to track selected prediction years (default 5 years)
+  // Function to handle the dropdown selection change
+  const handleYearChange = (e) => {
+    setPredictionYears(parseInt(e.target.value, 10)); // Update the prediction years state
+  };
+  // Function to calculate predicted price based on the selected number of years
+  const calculatePredictedPrice = (currentPrice, years) => {
+    const appreciationRate = 0.03; // Assuming a 3% annual appreciation rate
+    return (currentPrice * Math.pow(1 + appreciationRate, years)).toFixed(2); // Compound annual growth
+  };
   return (
     // Sidebar container styled using Tailwind CSS classes
     <div className="w-1/4 bg-gray-100 rounded p-4 shadow-md mr-4">
       {/* Title for the sidebar */}
       <h2 className="text-lg font-bold mb-2">Price Predictions for Selected Favorites</h2>
 
+      {/* Dropdown for selecting prediction period (in years) */}
+      <div className="mb-4">
+        <label className="block text-sm font-semibold mb-2" htmlFor="year-selector">
+          Select Prediction Period (Years):
+        </label>
+        <select
+          id="year-selector"
+          className="p-2 border rounded"
+          value={predictionYears} // Current selected years
+          onChange={handleYearChange} // Update the state when selection changes
+        >
+          {/* Dropdown options for selecting prediction years */}
+          {[5, 10, 15, 20, 25, 30].map((year) => (
+            <option key={year} value={year}>
+              {year} Years
+            </option>
+          ))}
+        </select>
+      </div>
       {/* Check if the 'selectedFavorites' array is empty */}
       {selectedFavorites.length === 0 ? (
         // If no favorites are selected, show this message
@@ -22,9 +52,10 @@ const PredictionSidebar = ({ selectedFavorites }) => {
             (price) => price !== null && price !== undefined
           );
 
-          // Calculate the predicted price by multiplying the current price by 7 (simple prediction logic)
-          // If currentPrice is found, calculate the predicted price, otherwise set it to null
-          const predictedPrice = currentPrice ? currentPrice * 7 : null;
+          // Calculate the predicted price using the selected prediction period
+          const predictedPrice = currentPrice
+            ? calculatePredictedPrice(currentPrice, predictionYears)
+            : null;
 
           // Return a styled div for each property with its details
           return (
@@ -41,9 +72,9 @@ const PredictionSidebar = ({ selectedFavorites }) => {
                   : 'Not available'} {/* Fallback if no current price is available */}
               </p>
 
-              {/* Display the predicted price in 30 years (using a factor of 7 for prediction) */}
+              {/* Display the predicted price based on the selected number of years */}
               <p>
-                Predicted Price in 30 years:{' '}
+                Predicted Price in {predictionYears} years:{' '}
                 {predictedPrice
                   ? `$${parseFloat(predictedPrice).toLocaleString()}` // Format the predicted price as a currency string
                   : 'Unable to predict'} {/* Fallback if no prediction can be made */}
