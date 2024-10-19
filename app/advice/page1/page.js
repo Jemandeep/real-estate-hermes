@@ -8,22 +8,22 @@ const Page1 = () => {
     {
       title: "Rise in Remote Work",
       description: "With more companies adopting remote work, buyers are looking for homes with dedicated office spaces and good internet connectivity.",
-      imageSrc: "https://via.placeholder.com/300", // Placeholder image
+      imageSrc: "/images/p11.jpg", // Updated path
     },
     {
       title: "Increased Interest in Suburban Living",
       description: "Many buyers are moving away from urban centers to suburbs, seeking more space and a quieter lifestyle.",
-      imageSrc: "https://via.placeholder.com/300",
+      imageSrc: "/images/p12.jpg", // Updated path
     },
     {
       title: "Eco-Friendly Features",
       description: "Homebuyers are increasingly interested in properties with sustainable features, such as solar panels and energy-efficient appliances.",
-      imageSrc: "https://via.placeholder.com/300",
+      imageSrc: "/images/p13.jpg", // Updated path
     },
     {
       title: "Smart Home Technology",
       description: "Integrating technology into homes, such as smart thermostats and security systems, is becoming a major selling point.",
-      imageSrc: "https://via.placeholder.com/300",
+      imageSrc: "/images/p14.jpg", // Updated path
     },
   ];
 

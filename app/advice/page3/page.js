@@ -8,22 +8,17 @@ const Page3 = () => {
     {
       title: "Understand the Buying Process",
       description: "Familiarize yourself with the steps involved in buying a home, from searching to closing the deal.",
-      imageSrc: "https://via.placeholder.com/300", // Placeholder image
+      imageSrc: "/images/p31.jpg", // Updated path
     },
     {
       title: "Know Your Financing Options",
       description: "Explore different financing options, including FHA loans and first-time buyer programs that can help reduce your costs.",
-      imageSrc: "https://via.placeholder.com/300",
-    },
-    {
-      title: "Don't Skip the Home Inspection",
-      description: "A thorough home inspection can save you from unexpected repairs after purchase. Always have a professional inspect the property.",
-      imageSrc: "https://via.placeholder.com/300",
+      imageSrc: "/images/p32.jpg", // Updated path
     },
     {
       title: "Stay Within Your Budget",
       description: "It's easy to get carried away when house hunting. Stick to your budget to avoid financial strain.",
-      imageSrc: "https://via.placeholder.com/300",
+      imageSrc: "/images/p33.jpg", // Assuming another image for this tip
     },
   ];
 

@@ -8,22 +8,22 @@ const Page2 = () => {
     {
       title: "Buying a Home: Start with a Budget",
       description: "Before you begin house hunting, it's essential to determine your budget. Factor in your income, expenses, and potential mortgage rates.",
-      imageSrc: "https://via.placeholder.com/300", // Placeholder image
+      imageSrc: "/images/p21.jpg", // Updated path
     },
     {
       title: "Get Pre-Approved for a Mortgage",
       description: "A pre-approval gives you a clearer idea of what you can afford, streamlining the buying process when you find the right home.",
-      imageSrc: "https://via.placeholder.com/300",
+      imageSrc: "/images/p22.jpg", // Updated path
     },
     {
       title: "Research Neighborhoods",
       description: "Take the time to research different neighborhoods. Consider factors like schools, amenities, and proximity to work.",
-      imageSrc: "https://via.placeholder.com/300",
+      imageSrc: "/images/p23.jpg", // Assuming another image for this tip
     },
     {
       title: "Hire a Real Estate Agent",
       description: "An experienced agent can provide invaluable insights, negotiate on your behalf, and help navigate the complexities of the market.",
-      imageSrc: "https://via.placeholder.com/300",
+      imageSrc: "/images/p24.jpg", // Assuming another image for this tip
     },
   ];
 
