@@ -28,49 +28,49 @@ const MortgageCalculator = () => {
   const [showDownPaymentInfo, setShowDownPaymentInfo] = useState(false);
   const [investmentAdvice, setInvestmentAdvice] = useState("");
 
- 
   const [income, setIncome] = useState(0);
   const [monthlyDebts, setMonthlyDebts] = useState(0);
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);
   const [maxAffordablePayment, setMaxAffordablePayment] = useState(0);
   const [maxAffordablePrice, setMaxAffordablePrice] = useState(0);
 
-  
   const [monthlyRent, setMonthlyRent] = useState(0);
   const [vacancyRate, setVacancyRate] = useState(0);
   const [rentalYield, setRentalYield] = useState(0);
 
- 
   const [investmentAmount, setInvestmentAmount] = useState(0);
   const [annualReturns, setAnnualReturns] = useState(0);
   const [roi, setRoi] = useState(0);
 
   useEffect(() => {
+    const downPaymentAmount = downPayment; // Down payment as a dollar amount
+    const loanAmount = Math.max(price - downPaymentAmount, 0); // Ensure loan amount is not negative
+    const downPaymentPercentage = (downPaymentAmount / price) * 100;
     
-    const downPaymentAmount = price * (downPayment / 100);
-    const loanAmount = price - downPaymentAmount;
-    const insuranceRate = downPayment < 10 ? 0.04 : downPayment < 15 ? 0.031 : downPayment < 20 ? 0.028 : 0;
-    const cmhcInsurance = downPayment < 20 ? loanAmount * insuranceRate : 0;
+    const insuranceRate = downPaymentPercentage < 10 ? 0.04 : downPaymentPercentage < 15 ? 0.031 : downPaymentPercentage < 20 ? 0.028 : 0;
+    const cmhcInsurance = downPaymentPercentage < 20 ? loanAmount * insuranceRate : 0;
+
     setCmhcInsurance(cmhcInsurance);
     const totalMortgage = loanAmount + cmhcInsurance;
     setTotalMortgage(totalMortgage);
 
     const monthlyInterestRate = (interestRate / 100) / 12;
     const numberOfPayments = term * 12;
-    const payment = totalMortgage * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments) / (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
-    setMonthlyPayment(payment.toFixed(2));
-
-    if (downPayment < 20) {
-      setInvestmentAdvice(
-        "Since your down payment is less than 20%, you'll need CMHC insurance. Consider building an emergency savings fund to cover potential homeownership costs."
-      );
+    
+    if (totalMortgage > 0 && interestRate > 0) {
+      const payment = totalMortgage * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments) /
+                      (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
+      setMonthlyPayment(payment.toFixed(2));
     } else {
-      setInvestmentAdvice(
-        "Great job saving for a larger down payment! You may want to invest in home improvements to increase property value over time."
-      );
+      setMonthlyPayment(0);
     }
 
-   
+    if (downPayment < 20) {
+      setInvestmentAdvice("Since your down payment is less than 20%, you'll need CMHC insurance. Consider building an emergency savings fund to cover potential homeownership costs.");
+    } else {
+      setInvestmentAdvice("Great job saving for a larger down payment! You may want to invest in home improvements to increase property value over time.");
+    }
+
     const totalMonthlyDebt = monthlyDebts + monthlyExpenses;
     const maxPayment = (income * 0.28) - totalMonthlyDebt; 
     setMaxAffordablePayment(maxPayment > 0 ? maxPayment : 0);
@@ -82,12 +82,10 @@ const MortgageCalculator = () => {
       setMaxAffordablePrice(0);
     }
 
-   
     const effectiveRent = monthlyRent * (1 - vacancyRate / 100);
     const rentalYield = (effectiveRent * 12 / price) * 100; 
     setRentalYield(rentalYield.toFixed(2));
 
-   
     if (investmentAmount > 0) {
       const calculatedRoi = (annualReturns / investmentAmount) * 100; 
       setRoi(calculatedRoi.toFixed(2));
@@ -110,7 +108,7 @@ const MortgageCalculator = () => {
         <InputField
           label={
             <div className="flex items-center">
-              <span>Down Payment (%)</span>
+              <span>Down Payment ($)</span>
               <span
                 className="ml-2 cursor-pointer text-blue-500"
                 onClick={() => setShowDownPaymentInfo(!showDownPaymentInfo)}
@@ -127,7 +125,7 @@ const MortgageCalculator = () => {
           type="number"
           value={downPayment}
           onChange={(e) => setDownPayment(parseFloat(e.target.value))}
-          placeholder="Enter down payment percentage"
+          placeholder="Enter down payment amount"
         />
 
         <InputField
@@ -159,7 +157,6 @@ const MortgageCalculator = () => {
           <p className="text-gray-700">{investmentAdvice}</p>
         </div>
 
-       
         <div className="mt-10 p-6 bg-white shadow-md rounded">
           <h2 className="text-2xl font-bold mb-6 text-center">Affordability Calculator</h2>
           
@@ -193,7 +190,6 @@ const MortgageCalculator = () => {
           </div>
         </div>
 
-        
         <div className="mt-10 p-6 bg-white shadow-md rounded">
           <h2 className="text-2xl font-bold mb-6 text-center">Rental Income Calculator</h2>
           
@@ -218,7 +214,6 @@ const MortgageCalculator = () => {
           </div>
         </div>
 
-        
         <div className="mt-10 p-6 bg-white shadow-md rounded">
           <h2 className="text-2xl font-bold mb-6 text-center">ROI Analysis</h2>
           
@@ -242,9 +237,6 @@ const MortgageCalculator = () => {
             <p className="text-lg">Return on Investment (ROI): <span className="font-bold">{roi}%</span></p>
           </div>
         </div>
-
-       
-        
       </div>
     </Layout>
   );
