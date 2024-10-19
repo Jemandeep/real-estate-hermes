@@ -86,6 +86,11 @@ const NavBar = () => {
             Mortgage Calculator
           </Link>
 
+          {/* Rent Link */}
+          <Link href="/rent" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
+            Rent
+          </Link>
+
           {/* Conditionally render Admin or New Listings tab based on role */}
           {userRole === "admin" && (
             <Link href="/admin" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
