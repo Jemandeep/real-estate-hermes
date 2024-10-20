@@ -61,7 +61,7 @@ const NavBar = () => {
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
   return (
-    <nav className="bg-white shadow-md py-4 fixed top-0 left-0 right-0 z-50">
+    <nav className="bg-white shadow-md py-2 fixed top-0 left-0 right-0 z-50 mb-6"> {/* Added mb-2 for bottom margin */}
       <div className="container mx-auto flex justify-between items-center px-4 lg:px-8">
         {/* Logo */}
         <Link href="/" className="text-xl font-bold text-gray-800">
@@ -89,6 +89,11 @@ const NavBar = () => {
           {/* Rent Link */}
           <Link href="/rent" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
             Rent
+          </Link>
+
+          {/* Add Book Appointment Link */}
+          <Link href="/bookappointment" className="bg-stone-300 text-stone-600 font-bold px-6 py-3 rounded-md hover:bg-gray-100">
+            Book Appointment
           </Link>
 
           {/* Conditionally render Admin or New Listings tab based on role */}
