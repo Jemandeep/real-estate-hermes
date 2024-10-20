@@ -1,10 +1,45 @@
 "use client";
+import { useState } from "react";
 import NavBar from "../components/NavBar";
+import { useRouter } from "next/navigation"; 
 
 const BookAppointment = () => {
+  const [selectedBroker, setSelectedBroker] = useState(null);
+  const [selectedTime, setSelectedTime] = useState("");
+  const [timeOptions, setTimeOptions] = useState([]);
+  const [showTimeSelector, setShowTimeSelector] = useState(false);
+  const router = useRouter(); // Initialize router for navigation
+
+  // Generate appointment times for the next 3, 6, and 9 days
+  const generateTimeOptions = () => {
+    const currentDate = new Date();
+    const options = [];
+    [3, 6, 9].forEach((day) => {
+      const appointmentDate = new Date(currentDate);
+      appointmentDate.setDate(currentDate.getDate() + day);
+      options.push(appointmentDate.toDateString());
+    });
+    setTimeOptions(options);
+    setShowTimeSelector(true); // Show the time selector modal
+  };
+
+  const handleBookAppointment = () => {
+    if (selectedBroker && selectedTime) {
+      alert(`Appointment with ${selectedBroker} booked successfully for ${selectedTime}!`);
+      // Reset the state after booking
+      setSelectedBroker(null);
+      setSelectedTime("");
+      setTimeOptions([]);
+      setShowTimeSelector(false); // Hide the modal
+      router.push("/"); // Redirect to the home page
+    } else {
+      alert("Please select a broker and a time.");
+    }
+  };
+
   return (
     <>
-      <NavBar /> {/* Add the NavBar here */}
+      <NavBar />
       <div className="container mx-auto p-6 pt-32">
         <h1 className="text-3xl font-bold mb-4">Book an Appointment</h1>
 
@@ -34,10 +69,54 @@ const BookAppointment = () => {
               <h3 className="font-bold">{broker.name}</h3>
               <p className="text-sm">{broker.contact}</p>
               <p className="text-sm mb-2">{broker.description}</p>
-              <button className="mt-2 bg-blue-500 text-white py-1 px-4 rounded">Book Appointment</button>
+              <button
+                className="mt-2 bg-blue-500 text-white py-1 px-4 rounded"
+                onClick={() => {
+                  setSelectedBroker(broker.name);
+                  generateTimeOptions();
+                }}
+              >
+                Book Appointment
+              </button>
             </div>
           ))}
         </div>
+
+        {/* Overlay for Time Selection */}
+        {showTimeSelector && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white rounded-lg p-6 shadow-lg">
+              <h2 className="text-xl font-semibold mb-2">Select Appointment Time with {selectedBroker}</h2>
+              <form className="mb-4">
+                {timeOptions.map((time, index) => (
+                  <div key={index} className="flex items-center mb-2">
+                    <input
+                      type="radio" // Changed to radio to allow single selection
+                      id={`time-${index}`}
+                      name="appointmentTime" // Ensure only one can be selected
+                      className="mr-2"
+                      checked={selectedTime === time} // Control checked state
+                      onChange={() => setSelectedTime(time)} // Set selected time on change
+                    />
+                    <label htmlFor={`time-${index}`} className="text-sm">{time}</label>
+                  </div>
+                ))}
+              </form>
+              <button
+                className="bg-green-500 text-white py-1 px-4 rounded mr-2"
+                onClick={handleBookAppointment}
+              >
+                Confirm Appointment
+              </button>
+              <button
+                className="bg-red-500 text-white py-1 px-4 rounded"
+                onClick={() => setShowTimeSelector(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
