@@ -4,8 +4,10 @@ import { db } from '../../firebase'; // Firebase configuration
 import { collection, getDocs } from 'firebase/firestore';
 import Layout from '../components/Layout';
 import ListingCard from './ListingCard'; // Component to display individual listing cards
+import { useRouter } from 'next/navigation'; // Updated import
 
 const Listings = () => {
+  const router = useRouter();
   const [listings, setListings] = useState([]);
   const [filteredPropertyTypes, setFilteredPropertyTypes] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 1000000]); // Default price range
@@ -14,6 +16,7 @@ const Listings = () => {
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [compareList, setCompareList] = useState([]);
 
   // Fetch listings from Firebase
   useEffect(() => {
@@ -39,6 +42,21 @@ const Listings = () => {
 
     fetchListings();
   }, []);
+
+  const handleCompare = (id) => {
+    if (compareList.includes(id)) {
+      setCompareList(compareList.filter((item) => item !== id)); // Remove if already selected
+    } else {
+      if (compareList.length < 2) {
+        setCompareList([...compareList, id]); // Add to compare list
+      }
+    }
+
+    if (compareList.length === 1) {
+      // Redirect to compare page if one property was previously selected
+      router.push(`/compare?ids=${compareList[0]},${id}`);
+    }
+  };
 
   const handlePropertyTypeChange = (e) => {
     const propertyType = e.target.value;
@@ -199,12 +217,15 @@ const Listings = () => {
               {filteredListings.map((listing) => (
                 <ListingCard
                   key={listing.id}
+                  id={listing.id} // Pass the id here
                   address={listing.address}
                   neighborhood={listing.neighborhood}
                   propertyType={listing.property_type}
                   currentPrice={listing.current_price}
                   bedCount={listing.bed_count}
                   bathroomCount={listing.bathroom_count}
+                  onCompare={handleCompare} // Pass the compare function
+                  compareList={compareList} // Pass the compareList to highlight selected items
                 />
               ))}
             </div>
