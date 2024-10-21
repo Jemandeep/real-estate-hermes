@@ -36,14 +36,20 @@ const MapComponent = memo(({ favoriteProperties = [], listings = [], userPropert
   };
 
   return (
-    <div className="map-layout" style={{ display: 'flex', height: '100vh' }}>
+    <div className="map-layout" style={{ display: 'flex', gap: '20px', justifyContent: 'center', alignItems: 'flex-start' }}>
       {/* Sidebar for user properties */}
       <PropertySidebar userProperties={userProperties} onAddProperty={onAddProperty} /> {/* Pass props */}
 
-      {/* Main Map Section */}
-      <div style={{ flexGrow: 1 }}>
+      {/* Box for the Map */}
+      <div style={{ 
+        padding: '20px', 
+        backgroundColor: '#fff', 
+        border: '1px solid #ddd', 
+        borderRadius: '8px', // Box around the map
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' // Slight shadow for depth
+      }}>
         <MapContainer
-          style={{ height: '100%' }}
+          style={{ width: '400px', height: '250px' }} // Map container as a rectangle
           zoom={11}
           center={[51.0447, -114.0719]} // Center on Calgary
         >

@@ -34,32 +34,31 @@ const Analysis = () => {
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto p-4 bg-white rounded shadow mt-10 flex">
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold mb-4">Property Listings</h1>
+      {/* Remove the box styling */}
+      <div className="flex-1">
+        <h1 className="text-2xl font-bold mb-4">Property Listings</h1>
 
-          {/* Map component displaying communities and listings */}
-          <div className="mb-4">
-            <h2 className="text-xl font-bold mb-2">Calgary Communities Map</h2>
-            <MapComponent listings={listings} /> {/* Pass listings to the MapComponent */}
-          </div>
-
-          {/* Display error message if data fetching fails */}
-          {error ? (
-            <p className="text-red-600">{error}</p> // Render the error message in red if there's an error
-          ) : (
-            listings.map((listing) => (
-              <ListingCard
-                key={listing.id} // Use the listing ID as a key for better performance
-                address={listing.address || 'Address not available'} // Provide a fallback for missing address
-                neighborhood={listing.neighborhood || 'Neighborhood not available'} // Provide a fallback for missing neighborhood
-                propertyType={listing.property_type || 'Type not available'} // Provide a fallback for missing property type
-                prices={listing.prices?.map((priceObj) => priceObj.price) || []} // Extract prices or default to an empty array
-                currentPrice={listing.current_price || 'Price not available'} // Provide a fallback for missing current price
-              />
-            ))
-          )}
+        {/* Map component displaying communities and listings */}
+        <div className="mb-4">
+          <h2 className="text-xl font-bold mb-2">Calgary Communities Map</h2>
+          <MapComponent listings={listings} /> {/* Pass listings to the MapComponent */}
         </div>
+
+        {/* Display error message if data fetching fails */}
+        {error ? (
+          <p className="text-red-600">{error}</p> // Render the error message in red if there's an error
+        ) : (
+          listings.map((listing) => (
+            <ListingCard
+              key={listing.id} // Use the listing ID as a key for better performance
+              address={listing.address || 'Address not available'} // Provide a fallback for missing address
+              neighborhood={listing.neighborhood || 'Neighborhood not available'} // Provide a fallback for missing neighborhood
+              propertyType={listing.property_type || 'Type not available'} // Provide a fallback for missing property type
+              prices={listing.prices?.map((priceObj) => priceObj.price) || []} // Extract prices or default to an empty array
+              currentPrice={listing.current_price || 'Price not available'} // Provide a fallback for missing current price
+            />
+          ))
+        )}
       </div>
     </Layout>
   );
