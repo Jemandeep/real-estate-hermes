@@ -1,7 +1,8 @@
-    "use client";
-    import React from 'react';
+"use client";
+import React from 'react';
+import NavBar from '../components/NavBar'; // Adjust the path if needed
 
-    const realEstateInvestments = [
+const realEstateInvestments = [
     {
         id: 1,
         propertyType: 'Single Family Home',
@@ -50,35 +51,36 @@
         description: 'Prime commercial space available in the bustling business district of City D. This property is suitable for retail, office space, or mixed-use development. High visibility and foot traffic make it an ideal investment opportunity.',
         image: 'https://dummyimage.com/400x250/333/fff',
     },
-    ];
+];
 
-    const RealEstateInvestmentsPage = () => {
-        return (
-        <div className="container mx-auto p-6">
-            <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-8">Real Estate Investment Opportunities</h1>
-            <div className="grid grid-cols-1 gap-6">
-            {realEstateInvestments.map((investment) => (
-                <div key={investment.id} className="bg-white shadow-lg rounded-lg p-6 flex items-start hover:shadow-xl transform hover:scale-105 transition duration-200">
-                <div className="flex-1">
-                    <h2 className="text-xl font-bold text-gray-800">{investment.propertyType}</h2>
-                    <p className="text-gray-700"><strong>Location:</strong> {investment.location}</p>
-                    <p className="text-gray-700"><strong>Square Footage:</strong> {investment.squareFootage}</p>
-                    <p className="text-gray-700"><strong>Bedrooms:</strong> {investment.bedrooms} <strong>Bathrooms:</strong> {investment.bathrooms}</p>
-                    <p className="text-gray-700"><strong>Potential Return:</strong> {investment.potentialReturn}</p>
-                    <p className="text-gray-700"><strong>Projected Appreciation:</strong> {investment.projectedAppreciation}</p>
-                    <p className="text-gray-600 mb-4">{investment.description}</p>
-                    <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                    View Details
-                    </button>
+const RealEstateInvestmentsPage = () => {
+    return (
+        <div>
+            <NavBar /> {/* Add the NavBar here */}
+            <div className="container mx-auto p-6 pt-16">
+                <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-8">Real Estate Investment Opportunities</h1>
+                <div className="grid grid-cols-1 gap-6">
+                    {realEstateInvestments.map((investment) => (
+                        <div key={investment.id} className="bg-white shadow-lg rounded-lg p-6 flex items-start hover:shadow-xl transform hover:scale-105 transition duration-200">
+                            <div className="flex-1">
+                                <h2 className="text-xl font-bold text-gray-800">{investment.propertyType}</h2>
+                                <p className="text-gray-700"><strong>Location:</strong> {investment.location}</p>
+                                <p className="text-gray-700"><strong>Square Footage:</strong> {investment.squareFootage}</p>
+                                <p className="text-gray-700"><strong>Bedrooms:</strong> {investment.bedrooms} <strong>Bathrooms:</strong> {investment.bathrooms}</p>
+                                <p className="text-gray-700"><strong>Potential Return:</strong> {investment.potentialReturn}</p>
+                                <p className="text-gray-700"><strong>Projected Appreciation:</strong> {investment.projectedAppreciation}</p>
+                                <p className="text-gray-600 mb-4">{investment.description}</p>
+                                <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                    View Details
+                                </button>
+                            </div>
+                            <img src={investment.image} alt={investment.propertyType} className="w-72 h-auto object-cover rounded-md ml-4" />
+                        </div>
+                    ))}
                 </div>
-                <img src={investment.image} alt={investment.propertyType} className="w-72 h-auto object-cover rounded-md ml-4" /> {/* Increased width to w-72 */}
-                </div>
-            ))}
             </div>
         </div>
-        );
-    };
-    
-    export default RealEstateInvestmentsPage;
-    
+    );
+};
 
+export default RealEstateInvestmentsPage;
