@@ -34,7 +34,6 @@ const Analysis = () => {
 
   return (
     <Layout>
-      {/* Remove the box styling */}
       <div className="flex-1">
         <h1 className="text-2xl font-bold mb-4">Property Listings</h1>
 
@@ -44,21 +43,35 @@ const Analysis = () => {
           <MapComponent listings={listings} /> {/* Pass listings to the MapComponent */}
         </div>
 
-        {/* Display error message if data fetching fails */}
-        {error ? (
-          <p className="text-red-600">{error}</p> // Render the error message in red if there's an error
-        ) : (
-          listings.map((listing) => (
-            <ListingCard
-              key={listing.id} // Use the listing ID as a key for better performance
-              address={listing.address || 'Address not available'} // Provide a fallback for missing address
-              neighborhood={listing.neighborhood || 'Neighborhood not available'} // Provide a fallback for missing neighborhood
-              propertyType={listing.property_type || 'Type not available'} // Provide a fallback for missing property type
-              prices={listing.prices?.map((priceObj) => priceObj.price) || []} // Extract prices or default to an empty array
-              currentPrice={listing.current_price || 'Price not available'} // Provide a fallback for missing current price
-            />
-          ))
-        )}
+        {/* Scrollable property listings box */}
+        <div 
+          style={{ 
+            maxHeight: '400px',  // Set the height of the box to a finite size
+            overflowY: 'auto',   // Enable vertical scrolling when content exceeds the box height
+            padding: '10px',
+            border: '1px solid #ddd', // Add border for a defined box look
+            borderRadius: '8px',   // Optional: rounded corners for better appearance
+            width: '1065px',        // Set the width to match the map and sidebar
+            backgroundColor: 'white',  // Give it a white background
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Optional: Add a subtle shadow
+          }}
+        >
+          {/* Display error message if data fetching fails */}
+          {error ? (
+            <p className="text-red-600">{error}</p> // Render the error message in red if there's an error
+          ) : (
+            listings.map((listing) => (
+              <ListingCard
+                key={listing.id} // Use the listing ID as a key for better performance
+                address={listing.address || 'Address not available'} // Provide a fallback for missing address
+                neighborhood={listing.neighborhood || 'Neighborhood not available'} // Provide a fallback for missing neighborhood
+                propertyType={listing.property_type || 'Type not available'} // Provide a fallback for missing property type
+                prices={listing.prices?.map((priceObj) => priceObj.price) || []} // Extract prices or default to an empty array
+                currentPrice={listing.current_price || 'Price not available'} // Provide a fallback for missing current price
+              />
+            ))
+          )}
+        </div>
       </div>
     </Layout>
   );
