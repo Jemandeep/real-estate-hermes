@@ -31,8 +31,8 @@ const AddProperty = () => {
     maintenance: '',
     taxes: '',
     insurance: '',
-    latitude: '',  // New latitude field
-    longitude: '', // New longitude field
+    latitude: '',
+    longitude: '',
   });
 
   const router = useRouter();
@@ -128,7 +128,8 @@ const AddProperty = () => {
       <div className="container mx-auto p-6">
         <h2 className="text-2xl font-bold mb-4">Add New Property</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Address Section with Autocomplete */}
+          
+          {/* Address Section with Autocomplete - Full Width */}
           <div>
             <label className="block text-gray-700">Address</label>
             <input
@@ -143,116 +144,127 @@ const AddProperty = () => {
             />
           </div>
 
-          <div>
-            <label className="block text-gray-700">Neighborhood</label>
-            <input
-              type="text"
-              name="neighborhood"
-              value={formValues.neighborhood}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-              placeholder="Enter neighborhood"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-700">Neighborhood</label>
+              <input
+                type="text"
+                name="neighborhood"
+                value={formValues.neighborhood}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+                placeholder="Enter neighborhood"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700">Postal Code</label>
+              <input
+                type="text"
+                name="postal_code"
+                value={formValues.postal_code}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+                placeholder="Enter postal code"
+              />
+            </div>
+
+            {/* Lat/Long Fields */}
+            <div>
+              <label className="block text-gray-700">Latitude</label>
+              <input
+                type="text"
+                name="latitude"
+                value={formValues.latitude}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700">Longitude</label>
+              <input
+                type="text"
+                name="longitude"
+                value={formValues.longitude}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-gray-700">Postal Code</label>
-            <input
-              type="text"
-              name="postal_code"
-              value={formValues.postal_code}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-              placeholder="Enter postal code"
-            />
-          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-700">Bathrooms</label>
+              <input
+                type="number"
+                name="bathroom_count"
+                value={formValues.bathroom_count}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
 
-          {/* Lat/Long Fields */}
-          <div>
-            <label className="block text-gray-700">Latitude</label>
-            <input
-              type="text"
-              name="latitude"
-              value={formValues.latitude}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
+            <div>
+              <label className="block text-gray-700">Bedrooms</label>
+              <input
+                type="number"
+                name="bed_count"
+                value={formValues.bed_count}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700">Longitude</label>
-            <input
-              type="text"
-              name="longitude"
-              value={formValues.longitude}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
+            <div>
+  <label className="block text-gray-700">Property Type</label>
+  <select
+    name="property_type"
+    value={formValues.property_type}
+    onChange={handleChange}
+    required
+    className="w-full p-2 border rounded"
+  >
+    <option value="" disabled>Select property type</option>
+    <option value="Mansion">Mansion</option>
+    <option value="Apartment">Apartment</option>
+    <option value="Condo">Condo</option>
+    <option value="Townhouse">Townhouse</option>
+    <option value="Detached House">Detached House</option>
+    <option value="Bungalow">Bungalow</option>
+  </select>
+</div>
 
-          {/* Room and Price Info */}
-          <div>
-            <label className="block text-gray-700">Bathrooms</label>
-            <input
-              type="number"
-              name="bathroom_count"
-              value={formValues.bathroom_count}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
 
-          <div>
-            <label className="block text-gray-700">Bedrooms</label>
-            <input
-              type="number"
-              name="bed_count"
-              value={formValues.bed_count}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
+            <div>
+              <label className="block text-gray-700">Purchased Price</label>
+              <input
+                type="number"
+                name="purchased_price"
+                value={formValues.purchased_price}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700">Property Type</label>
-            <input
-              type="text"
-              name="property_type"
-              value={formValues.property_type}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700">Purchased Price</label>
-            <input
-              type="number"
-              name="purchased_price"
-              value={formValues.purchased_price}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700">Current Market Price</label>
-            <input
-              type="number"
-              name="current_price"
-              value={formValues.current_price}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
+            <div>
+              <label className="block text-gray-700">Current Market Price</label>
+              <input
+                type="number"
+                name="current_price"
+                value={formValues.current_price}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
           </div>
 
           {/* Past Price Data */}
@@ -334,114 +346,118 @@ const AddProperty = () => {
           )}
 
           {/* Mortgage Info */}
-          <div>
-            <label className="block text-gray-700">Mortgage Monthly Payment</label>
-            <input
-              type="number"
-              name="mortgage_monthly_payment"
-              value={formValues.mortgage_monthly_payment}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-700">Mortgage Monthly Payment</label>
+              <input
+                type="number"
+                name="mortgage_monthly_payment"
+                value={formValues.mortgage_monthly_payment}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700">Mortgage Amount</label>
-            <input
-              type="number"
-              name="mortgage_amount"
-              value={formValues.mortgage_amount}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
+            <div>
+              <label className="block text-gray-700">Mortgage Amount</label>
+              <input
+                type="number"
+                name="mortgage_amount"
+                value={formValues.mortgage_amount}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700">Mortgage Interest Rate (%)</label>
-            <input
-              type="number"
-              step="0.01"
-              name="mortgage_interest_rate"
-              value={formValues.mortgage_interest_rate}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
+            <div>
+              <label className="block text-gray-700">Mortgage Interest Rate (%)</label>
+              <input
+                type="number"
+                step="0.01"
+                name="mortgage_interest_rate"
+                value={formValues.mortgage_interest_rate}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700">Loan Term (Years)</label>
-            <input
-              type="number"
-              name="loan_term_years"
-              value={formValues.loan_term_years}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
+            <div>
+              <label className="block text-gray-700">Loan Term (Years)</label>
+              <input
+                type="number"
+                name="loan_term_years"
+                value={formValues.loan_term_years}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700">Equity</label>
-            <input
-              type="number"
-              name="equity"
-              value={formValues.equity}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
+            <div>
+              <label className="block text-gray-700">Equity</label>
+              <input
+                type="number"
+                name="equity"
+                value={formValues.equity}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700">Down Payment</label>
-            <input
-              type="number"
-              name="down_payment"
-              value={formValues.down_payment}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
+            <div>
+              <label className="block text-gray-700">Down Payment</label>
+              <input
+                type="number"
+                name="down_payment"
+                value={formValues.down_payment}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
           </div>
 
           {/* Other Expenses */}
-          <div>
-            <label className="block text-gray-700">Maintenance</label>
-            <input
-              type="number"
-              name="maintenance"
-              value={formValues.maintenance}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-700">Maintenance</label>
+              <input
+                type="number"
+                name="maintenance"
+                value={formValues.maintenance}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700">Taxes</label>
-            <input
-              type="number"
-              name="taxes"
-              value={formValues.taxes}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
+            <div>
+              <label className="block text-gray-700">Taxes</label>
+              <input
+                type="number"
+                name="taxes"
+                value={formValues.taxes}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700">Insurance</label>
-            <input
-              type="number"
-              name="insurance"
-              value={formValues.insurance}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
+            <div>
+              <label className="block text-gray-700">Insurance</label>
+              <input
+                type="number"
+                name="insurance"
+                value={formValues.insurance}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              />
+            </div>
           </div>
 
           <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
