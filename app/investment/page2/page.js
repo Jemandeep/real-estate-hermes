@@ -27,7 +27,7 @@ const InvestmentPage2 = () => {
     potentialReturn: '6%',
     projectedAppreciation: '4% per year',
     description: 'Experience upscale living in this luxury condo with breathtaking views of the skyline. Amenities include a fitness center, rooftop pool, and concierge services. Ideal for young professionals and investors alike.',
-    image: 'https://dummyimage.com/800x400/111/fff', // Adjusted image size
+    image: '/images/ih2.jpg', // Adjusted image size
     investmentReturns: [4, 5, 6, 7, 8, 9, 10, 11], // Investment returns for the last 8 years
     years: ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'], // Corresponding years
   };

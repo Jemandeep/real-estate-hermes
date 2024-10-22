@@ -27,7 +27,7 @@ const InvestmentPage3 = () => {
     potentialReturn: '7%',
     projectedAppreciation: '5% per year',
     description: 'This well-maintained duplex offers great rental potential with two separate units. Located in a family-friendly neighborhood, it’s perfect for investors looking for steady income. Recent upgrades include a new roof and renovated kitchens.',
-    image: 'https://dummyimage.com/800x400/222/fff', // Adjusted image size
+    image: '/images/ih3.jpg', // Adjusted image size
     investmentReturns: [5, 6, 7, 8, 9, 10, 11, 12], // Investment returns for the last 8 years
     years: ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'], // Corresponding years
   };

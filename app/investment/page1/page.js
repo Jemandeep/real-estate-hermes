@@ -27,7 +27,7 @@ const InvestmentPage1 = () => {
     potentialReturn: '8%',
     projectedAppreciation: '3% per year',
     description: 'This beautiful single-family home in downtown City A features modern amenities, a spacious backyard, and is within walking distance of schools and parks. Perfect for families or as a rental investment.',
-    image: 'https://dummyimage.com/800x400/000/fff', // Reduced image size
+    image: '/images/ih1.jpg', // Reduced image size
     investmentReturns: [5, 8, 6, 10, 7, 12, 9, 11], // Investment returns for the last 8 years
     years: ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'], // Corresponding years
   };

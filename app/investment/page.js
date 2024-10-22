@@ -14,7 +14,7 @@ const realEstateInvestments = [
         potentialReturn: '8%',
         projectedAppreciation: '3% per year',
         description: 'This beautiful single-family home in downtown City A features modern amenities, a spacious backyard, and is within walking distance of schools and parks. Perfect for families or as a rental investment.',
-        image: 'https://dummyimage.com/400x250/000/fff',
+        image: '/images/ih1.jpg', // Updated image path with .jpg extension
         page: 'page1' // Added page reference
     },
     {
@@ -27,7 +27,7 @@ const realEstateInvestments = [
         potentialReturn: '6%',
         projectedAppreciation: '4% per year',
         description: 'Experience upscale living in this luxury condo with breathtaking views of the skyline. Amenities include a fitness center, rooftop pool, and concierge services. Ideal for young professionals and investors alike.',
-        image: 'https://dummyimage.com/400x250/111/fff',
+        image: '/images/ih2.jpg', // Updated image path with .jpg extension
         page: 'page2' // Added page reference
     },
     {
@@ -40,7 +40,7 @@ const realEstateInvestments = [
         potentialReturn: '7%',
         projectedAppreciation: '5% per year',
         description: 'This well-maintained duplex offers great rental potential with two separate units. Located in a family-friendly neighborhood, it’s perfect for investors looking for steady income. Recent upgrades include a new roof and renovated kitchens.',
-        image: 'https://dummyimage.com/400x250/222/fff',
+        image: '/images/ih3.jpg', // Updated image path with .jpg extension
         page: 'page3' // Added page reference
     },
     {
@@ -53,10 +53,11 @@ const realEstateInvestments = [
         potentialReturn: '10%',
         projectedAppreciation: '2% per year',
         description: 'Prime commercial space available in the bustling business district of City D. This property is suitable for retail, office space, or mixed-use development. High visibility and foot traffic make it an ideal investment opportunity.',
-        image: 'https://dummyimage.com/400x250/333/fff',
+        image: '/images/ih4.jpg', // Updated image path with .jpg extension
         page: 'page4' // Added page reference
     },
 ];
+
 
 const RealEstateInvestmentsPage = () => {
     return (

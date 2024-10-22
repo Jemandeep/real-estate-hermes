@@ -27,7 +27,7 @@ const InvestmentPage4 = () => {
     potentialReturn: '10%',
     projectedAppreciation: '2% per year',
     description: 'Prime commercial space available in the bustling business district of City D. This property is suitable for retail, office space, or mixed-use development. High visibility and foot traffic make it an ideal investment opportunity.',
-    image: 'https://dummyimage.com/800x400/333/fff', // Adjusted image size
+    image: '/images/ih4.jpg', // Adjusted image size
     investmentReturns: [8, 9, 10, 9, 11, 12, 10, 13], // Investment returns for the last 8 years
     years: ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'], // Corresponding years
   };
