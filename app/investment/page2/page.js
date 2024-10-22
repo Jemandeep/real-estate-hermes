@@ -11,7 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import NavBar from '../../components/navbar'; // Updated path for NavBar
+import NavBar from '../../components/NavBar'; // Updated path for NavBar
 
 // Register the required components
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Legend);

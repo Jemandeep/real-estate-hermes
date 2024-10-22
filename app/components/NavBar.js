@@ -81,7 +81,7 @@ const NavBar = () => {
           <Link href="/bookappointment" className="bg-stone-300 text-stone-600 font-semibold px-2 py-1 text-sm rounded-md hover:bg-gray-100">
             Book Appointment
           </Link>
-          <Link href="/investment/page1" className="bg-stone-300 text-stone-600 font-semibold px-2 py-1 text-sm rounded-md hover:bg-gray-100">
+          <Link href="/investment" className="bg-stone-300 text-stone-600 font-semibold px-2 py-1 text-sm rounded-md hover:bg-gray-100">
             Investment
           </Link>
 

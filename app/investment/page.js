@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Link from 'next/link'; // Import the Link component from next/link
 import NavBar from '../components/NavBar'; // Adjust the path if needed
 
 const realEstateInvestments = [
@@ -14,6 +15,7 @@ const realEstateInvestments = [
         projectedAppreciation: '3% per year',
         description: 'This beautiful single-family home in downtown City A features modern amenities, a spacious backyard, and is within walking distance of schools and parks. Perfect for families or as a rental investment.',
         image: 'https://dummyimage.com/400x250/000/fff',
+        page: 'page1' // Added page reference
     },
     {
         id: 2,
@@ -26,6 +28,7 @@ const realEstateInvestments = [
         projectedAppreciation: '4% per year',
         description: 'Experience upscale living in this luxury condo with breathtaking views of the skyline. Amenities include a fitness center, rooftop pool, and concierge services. Ideal for young professionals and investors alike.',
         image: 'https://dummyimage.com/400x250/111/fff',
+        page: 'page2' // Added page reference
     },
     {
         id: 3,
@@ -38,6 +41,7 @@ const realEstateInvestments = [
         projectedAppreciation: '5% per year',
         description: 'This well-maintained duplex offers great rental potential with two separate units. Located in a family-friendly neighborhood, it’s perfect for investors looking for steady income. Recent upgrades include a new roof and renovated kitchens.',
         image: 'https://dummyimage.com/400x250/222/fff',
+        page: 'page3' // Added page reference
     },
     {
         id: 4,
@@ -50,6 +54,7 @@ const realEstateInvestments = [
         projectedAppreciation: '2% per year',
         description: 'Prime commercial space available in the bustling business district of City D. This property is suitable for retail, office space, or mixed-use development. High visibility and foot traffic make it an ideal investment opportunity.',
         image: 'https://dummyimage.com/400x250/333/fff',
+        page: 'page4' // Added page reference
     },
 ];
 
@@ -70,9 +75,13 @@ const RealEstateInvestmentsPage = () => {
                                 <p className="text-gray-700"><strong>Potential Return:</strong> {investment.potentialReturn}</p>
                                 <p className="text-gray-700"><strong>Projected Appreciation:</strong> {investment.projectedAppreciation}</p>
                                 <p className="text-gray-600 mb-4">{investment.description}</p>
-                                <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                                    View Details
-                                </button>
+                                
+                                {/* Corrected Link component */}
+                                <Link href={`/investment/${investment.page}`}>
+                                    <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                        View Details
+                                    </button>
+                                </Link>
                             </div>
                             <img src={investment.image} alt={investment.propertyType} className="w-72 h-auto object-cover rounded-md ml-4" />
                         </div>
