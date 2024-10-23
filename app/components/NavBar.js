@@ -84,6 +84,9 @@ const NavBar = () => {
           <Link href="/investment" className="bg-stone-300 text-stone-600 font-semibold px-2 py-1 text-sm rounded-md hover:bg-gray-100">
             Investment
           </Link>
+          <Link href="/faq" className="bg-stone-300 text-stone-600 font-semibold px-2 py-1 text-sm rounded-md hover:bg-gray-100">
+            FAQ
+          </Link>
 
           {userRole === "admin" && (
             <Link href="/admin" className="bg-stone-300 text-stone-600 font-semibold px-2 py-1 text-sm rounded-md hover:bg-gray-100">
