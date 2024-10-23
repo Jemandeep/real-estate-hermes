@@ -3,16 +3,17 @@ import { useState, useEffect } from 'react';
 import { db } from '../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import Layout from '../components/Layout';
-import Link from 'next/link'; // For linking to the detailed page
-import { useRouter } from 'next/navigation'; // For navigation
-import { FaBed, FaBath, FaMapMarkerAlt, FaHome } from 'react-icons/fa'; // Import icons
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { FaBed, FaBath, FaMapMarkerAlt, FaHome } from 'react-icons/fa';
 
 const ViewListings = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [compareList, setCompareList] = useState([]); // State for comparing listings
-  const router = useRouter(); // Router for navigation
+  const [compareList, setCompareList] = useState([]);
+  const [sortOrder, setSortOrder] = useState('low'); // State for sorting
+  const router = useRouter();
 
   // Fetch listings from Firebase
   useEffect(() => {
@@ -38,35 +39,51 @@ const ViewListings = () => {
   // Handle compare selection
   const handleCompare = (id) => {
     if (compareList.includes(id)) {
-      setCompareList(compareList.filter(item => item !== id)); // Remove if already selected
+      setCompareList(compareList.filter(item => item !== id));
     } else {
       if (compareList.length < 2) {
-        setCompareList([...compareList, id]); // Add to compare list
+        setCompareList([...compareList, id]);
       }
     }
 
-    // Redirect to compare page when two listings are selected
     if (compareList.length === 1) {
       router.push(`/compare?ids=${compareList[0]},${id}`);
     }
   };
 
+  // Sort listings based on selected order
+  const sortedListings = [...listings].sort((a, b) => {
+    if (sortOrder === 'low') {
+      return a.current_price - b.current_price;
+    } else {
+      return b.current_price - a.current_price;
+    }
+  });
+
   return (
     <Layout>
       <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
-          View Listings
-        </h1>
+        <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-8">View Listings</h1>
+
+        {/* Sort Button */}
+        <div className="text-right mb-4">
+          <select 
+            value={sortOrder} 
+            onChange={(e) => setSortOrder(e.target.value)} 
+            className="border p-2 rounded-lg"
+          >
+            <option value="low">Sort by Price: Low to High</option>
+            <option value="high">Sort by Price: High to Low</option>
+          </select>
+        </div>
 
         {loading ? (
-          <p className="text-gray-600 text-center mt-8">
-            Loading listings, please wait...
-          </p>
+          <p className="text-gray-600 text-center mt-8">Loading listings, please wait...</p>
         ) : error ? (
           <p className="text-red-500 text-center mt-8">{error}</p>
-        ) : listings.length > 0 ? (
+        ) : sortedListings.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {listings.map((listing) => (
+            {sortedListings.map((listing) => (
               <div key={listing.id} className="relative bg-white shadow-lg rounded-lg p-6 min-h-[350px] flex flex-col justify-between">
                 <Link href={`/viewListings/detailedListing?id=${listing.id}`}>
                   <div className="cursor-pointer">
