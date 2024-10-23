@@ -2,6 +2,7 @@
 
 import React from "react";
 import { FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
+import Link from "next/link";
 
 const Footer = () => {
   return (
@@ -12,6 +13,33 @@ const Footer = () => {
           <p className="text-gray-600">
             Helping you find your dream home with ease and confidence.
           </p>
+        </div>
+        <div className="flex justify-center space-x-4 mb-6">
+          {/* Navigation Links */}
+          <Link href="/analysis" className="text-gray-600 hover:text-blue-500 transition duration-200">
+            Analysis
+          </Link>
+          <Link href="/viewListings" className="text-gray-600 hover:text-blue-500 transition duration-200">
+            Listings
+          </Link>
+          <Link href="/advice" className="text-gray-600 hover:text-blue-500 transition duration-200">
+            Advice
+          </Link>
+          <Link href="/mortcalculator" className="text-gray-600 hover:text-blue-500 transition duration-200">
+            Calculator
+          </Link>
+          <Link href="/rent" className="text-gray-600 hover:text-blue-500 transition duration-200">
+            Rent
+          </Link>
+          <Link href="/bookappointment" className="text-gray-600 hover:text-blue-500 transition duration-200">
+            Book Appointment
+          </Link>
+          <Link href="/investment" className="text-gray-600 hover:text-blue-500 transition duration-200">
+            Investment
+          </Link>
+          <Link href="/faq" className="text-gray-600 hover:text-blue-500 transition duration-200">
+            FAQ
+          </Link>
         </div>
         <div className="flex justify-center space-x-4 mb-6">
           <a
