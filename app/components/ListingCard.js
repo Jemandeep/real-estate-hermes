@@ -55,7 +55,7 @@ const ListingCard = ({
       </div>
 
       <div className="flex items-center">
-        <ResponsiveContainer width={450} height={70}>
+        <ResponsiveContainer width={650} height={70}>
           <LineChart data={priceData}>
             <XAxis dataKey="name" hide />
             <YAxis

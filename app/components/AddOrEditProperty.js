@@ -1,12 +1,15 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { db } from '../../firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore'; // Add updateDoc and getDoc
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation'; // Only import once
 import Layout from '../components/Layout';
+import SelfCompleteButton from '../components/SelfComplete'; // Import only relevant components
 
-const AddProperty = () => {
+// Remove the import of AddOrEditProperty here (it's already inside this file)
+
+const AddOrEditProperty = ({ propertyId }) => {  // Add propertyId for edit mode
   const [formValues, setFormValues] = useState({
     address: '',
     neighborhood: '',
@@ -35,7 +38,7 @@ const AddProperty = () => {
     longitude: '',
   });
 
-  const router = useRouter();
+  const router = useRouter(); // Use the router for navigation
   const auth = getAuth();
   const [user, setUser] = useState(null);
 
@@ -49,6 +52,21 @@ const AddProperty = () => {
     });
     return () => unsubscribe();
   }, [auth, router]);
+
+  // Check if we are in edit mode
+  useEffect(() => {
+    if (propertyId) {
+      // Fetch existing property data if we're in edit mode
+      const fetchProperty = async () => {
+        const docRef = doc(db, 'properties', propertyId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setFormValues({ ...formValues, ...docSnap.data() }); // Pre-fill form with existing property data
+        }
+      };
+      fetchProperty();
+    }
+  }, [propertyId]);
 
   // Set up Google Places Autocomplete for address input
   useEffect(() => {
@@ -110,23 +128,30 @@ const AddProperty = () => {
     if (!user) return;
 
     try {
-      // Save the property to the "properties" collection in Firestore with user email
-      await addDoc(collection(db, 'properties'), {
-        ...formValues,
-        userEmail: user.email, // Include user email with the property
-      });
-
-      alert('Property added successfully!');
+      if (propertyId) {
+        // If we are in edit mode, update the property
+        const docRef = doc(db, 'properties', propertyId);
+        await updateDoc(docRef, formValues);
+        alert('Property updated successfully!');
+      } else {
+        // Otherwise, add a new property
+        await addDoc(collection(db, 'properties'), {
+          ...formValues,
+          userEmail: user.email, // Include user email with the property
+        });
+        alert('Property added successfully!');
+      }
+      
       router.push('/analysis'); // Redirect back to analysis
     } catch (error) {
-      console.error('Error adding property: ', error);
+      console.error('Error submitting property: ', error);
     }
   };
 
   return (
     <Layout>
       <div className="container mx-auto p-6">
-        <h2 className="text-2xl font-bold mb-4">Add New Property</h2>
+        <h2 className="text-2xl font-bold mb-4">{propertyId ? 'Edit Property' : 'Add New Property'}</h2> {/* Dynamic Title */}
         <form onSubmit={handleSubmit} className="space-y-4">
           
           {/* Address Section with Autocomplete - Full Width */}
@@ -223,24 +248,23 @@ const AddProperty = () => {
             </div>
 
             <div>
-  <label className="block text-gray-700">Property Type</label>
-  <select
-    name="property_type"
-    value={formValues.property_type}
-    onChange={handleChange}
-    required
-    className="w-full p-2 border rounded"
-  >
-    <option value="" disabled>Select property type</option>
-    <option value="Mansion">Mansion</option>
-    <option value="Apartment">Apartment</option>
-    <option value="Condo">Condo</option>
-    <option value="Townhouse">Townhouse</option>
-    <option value="Detached House">Detached House</option>
-    <option value="Bungalow">Bungalow</option>
-  </select>
-</div>
-
+              <label className="block text-gray-700">Property Type</label>
+              <select
+                name="property_type"
+                value={formValues.property_type}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              >
+                <option value="" disabled>Select property type</option>
+                <option value="Mansion">Mansion</option>
+                <option value="Apartment">Apartment</option>
+                <option value="Condo">Condo</option>
+                <option value="Townhouse">Townhouse</option>
+                <option value="Detached House">Detached House</option>
+                <option value="Bungalow">Bungalow</option>
+              </select>
+            </div>
 
             <div>
               <label className="block text-gray-700">Purchased Price</label>
@@ -267,21 +291,20 @@ const AddProperty = () => {
             </div>
           </div>
 
+          {/* Self Complete Button */}
+          <SelfCompleteButton formValues={formValues} setFormValues={setFormValues} />
+
           {/* Past Price Data */}
           <div>
-            <label className="block text-gray-700">Price for the Past 6 Months</label>
-            {formValues.past_6_months_prices.map((price, index) => (
-              <input
-                key={index}
-                type="number"
-                name={`past_6_months_prices_${index}`}
-                value={price}
-                onChange={handleChange}
-                required
-                className="w-full p-2 border rounded mb-2"
-                placeholder={`Month ${index + 1} Price`}
-              />
-            ))}
+            <label className="block text-gray-700 mb-2">Price for the Past 6 Months</label>
+            <input
+              type="number"
+              name="past_6_months_prices"
+              value={formValues.past_6_months_prices}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              placeholder="Enter price for the past 6 months"
+            />
           </div>
 
           <div>
@@ -460,13 +483,18 @@ const AddProperty = () => {
             </div>
           </div>
 
-          <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
-            Add Property
-          </button>
+          <button 
+    type="submit" 
+    className="px-4 py-2 bg-blue-500 text-white rounded"
+  >
+    {propertyId ? 'Update Property' : 'Add Property'}
+  </button>
         </form>
-      </div>
+      </div> {/* Ensure this div is closed properly */}
     </Layout>
   );
 };
 
-export default AddProperty;
+export default AddOrEditProperty;
+
+

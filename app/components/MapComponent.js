@@ -1,14 +1,14 @@
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import { memo } from 'react';
 import 'leaflet/dist/leaflet.css';
-import PropertySidebar from './PropertySidebar'; // Import the new PropertySidebar component
+import PropertySidebar from './PropertySidebar'; // Import the PropertySidebar component
 
-const MapComponent = memo(({ favoriteProperties = [], listings = [], userProperties = [], onAddProperty }) => {
+const MapComponent = memo(({ userProperties = [], listings = [], onAddProperty }) => {
 
   return (
     <div className="map-layout" style={{ display: 'flex', gap: '20px', justifyContent: 'left', alignItems: 'flex-start' }}>
       {/* Sidebar for user properties */}
-      <PropertySidebar userProperties={userProperties} onAddProperty={onAddProperty} /> {/* Pass props */}
+      <PropertySidebar userProperties={userProperties} onAddProperty={onAddProperty} />
 
       {/* Box for the Map */}
       <div style={{ 
@@ -28,16 +28,16 @@ const MapComponent = memo(({ favoriteProperties = [], listings = [], userPropert
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
 
-          {/* Display favorite properties as red markers */}
-          {favoriteProperties.length > 0 && favoriteProperties.map((property, index) => {
+          {/* Display user properties as red markers */}
+          {userProperties.length > 0 && userProperties.map((property, index) => {
             if (!property.latitude || !property.longitude) {
-              console.warn('Favorite property missing latitude or longitude:', property);
+              console.warn('User property missing latitude or longitude:', property);
               return null;
             }
 
             return (
               <CircleMarker
-                key={`fav-${index}`}
+                key={`user-property-${index}`}
                 center={[property.latitude, property.longitude]}
                 radius={8}
                 pathOptions={{ color: 'red', fillColor: 'red', fillOpacity: 0.7 }}
@@ -61,7 +61,7 @@ const MapComponent = memo(({ favoriteProperties = [], listings = [], userPropert
               <CircleMarker
                 key={`listing-${index}`}
                 center={[property.latitude, property.longitude]}
-                radius={6}
+                radius={0.5}
                 pathOptions={{ color: 'blue', fillColor: 'blue', fillOpacity: 0.5 }}
               >
                 <Popup>
