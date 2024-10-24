@@ -10,6 +10,7 @@ import MapComponent from '../components/MapComponent'; // Component to display a
 
 const Analysis = () => {
   const [userProperties, setUserProperties] = useState([]); // Store fetched properties belonging to the user
+  const [listings, setListings] = useState([]); // Store public property listings (those for sale)
   const [error, setError] = useState(null); // Store any potential errors
   const [metrics, setMetrics] = useState({
     totalInvestment: 0,
@@ -21,7 +22,7 @@ const Analysis = () => {
 
   const auth = getAuth(); // Get Firebase auth instance
 
-  // Fetch property data for the logged-in user
+  // Fetch personal properties and public listings from Firestore
   useEffect(() => {
     const fetchUserProperties = async (userEmail) => {
       try {
@@ -80,6 +81,22 @@ const Analysis = () => {
       }
     };
 
+    const fetchListings = async () => {
+      try {
+        // Fetch public listings from Firestore (those that are for sale)
+        const querySnapshot = await getDocs(collection(db, 'listings')); // Adjust the collection name if needed
+        const data = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setListings(data); // Set public property listings
+      } catch (error) {
+        setError(error.message); // Set any errors
+        console.error('Error fetching listings:', error); // Log the error
+      }
+    };
+
     // Check for the authenticated user and fetch their properties
     const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
       if (loggedUser) {
@@ -90,68 +107,63 @@ const Analysis = () => {
       }
     });
 
+    fetchListings(); // Fetch public property listings
     return () => unsubscribe(); // Cleanup listener on unmount
   }, [auth]);
 
   return (
     <Layout>
       <div className="flex-1">
-        <h1 className="text-2xl font-bold mb-4">Your Property Portfolio</h1>
+        <h1 className="text-3xl font-semibold mb-6 text-gray-800">Your Property Portfolio</h1>
 
         {/* Metrics Overview Boxes */}
-        <div className="flex justify-between mb-4">
-          <div className="bg-blue-100 p-4 rounded shadow-md text-center w-1/4">
-            <h3 className="font-bold text-lg">Total Investment</h3>
-            <p className="text-xl">${metrics.totalInvestment.toLocaleString()}</p>
+        <div className="grid grid-cols-4 gap-4 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
+            <h3 className="font-semibold text-lg text-gray-600">Total Investment</h3>
+            <p className="text-2xl font-bold text-gray-800 mt-2">${metrics.totalInvestment.toLocaleString()}</p>
           </div>
-          <div className="bg-green-100 p-4 rounded shadow-md text-center w-1/4">
-            <h3 className="font-bold text-lg">Current Portfolio Value</h3>
-            <p className="text-xl">${metrics.currentPortfolioValue.toLocaleString()}</p>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
+            <h3 className="font-semibold text-lg text-gray-600">Current Portfolio Value</h3>
+            <p className="text-2xl font-bold text-gray-800 mt-2">${metrics.currentPortfolioValue.toLocaleString()}</p>
           </div>
-          <div className="bg-yellow-100 p-4 rounded shadow-md text-center w-1/4">
-            <h3 className="font-bold text-lg">ROI</h3>
-            <p className="text-xl">{metrics.roi.toFixed(2)}%</p>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
+            <h3 className="font-semibold text-lg text-gray-600">ROI</h3>
+            <p className="text-2xl font-bold text-gray-800 mt-2">{metrics.roi.toFixed(2)}%</p>
           </div>
-          <div className="bg-red-100 p-4 rounded shadow-md text-center w-1/4">
-            <h3 className="font-bold text-lg">Cash Flow</h3>
-            <p className="text-xl">${metrics.cashFlow.toLocaleString()}</p>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
+            <h3 className="font-semibold text-lg text-gray-600">Cash Flow</h3>
+            <p className="text-2xl font-bold text-gray-800 mt-2">${metrics.cashFlow.toLocaleString()}</p>
           </div>
         </div>
 
-        {/* Map component displaying user's properties */}
-        <div className="mb-4">
-          <h2 className="text-xl font-bold mb-2">Your Properties Map</h2>
+        {/* Map Component */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4 text-gray-700">Your Properties Map</h2>
           <MapComponent listings={userProperties} /> {/* Pass user properties to the MapComponent */}
         </div>
 
-        {/* Scrollable property listings box */}
+        {/* Public Listings - Align below the map */}
         <div 
-          style={{ 
-            maxHeight: '400px',  // Set the height of the box to a finite size
-            overflowY: 'auto',   // Enable vertical scrolling when content exceeds the box height
-            padding: '10px',
-            border: '1px solid #ddd', // Add border for a defined box look
-            borderRadius: '8px',   // Optional: rounded corners for better appearance
-            width: '1065px',        // Set the width to match the map and sidebar
-            backgroundColor: 'white',  // Give it a white background
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Optional: Add a subtle shadow
-          }}
+          className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mt-6" 
+          style={{ maxWidth: '80%', marginLeft: 'auto', marginRight: '0' }}
         >
-          {/* Display error message if data fetching fails */}
-          {error ? (
-            <p className="text-red-600">{error}</p> // Render the error message in red if there's an error
-          ) : (
-            userProperties.map((property) => (
-              <ListingCard
-                key={property.id} // Use the property ID as a key for better performance
-                address={property.address || 'Address not available'} // Provide a fallback for missing address
-                neighborhood={property.neighborhood || 'Neighborhood not available'} // Provide a fallback for missing neighborhood
-                propertyType={property.property_type || 'Type not available'} // Provide a fallback for missing property type
-                prices={property.prices?.map((priceObj) => priceObj.price) || []} // Extract prices or default to an empty array
-                currentPrice={property.current_price || 'Price not available'} // Provide a fallback for missing current price
-              />
-            ))
-          )}
+          <h3 className="text-xl font-semibold mb-4 text-gray-700">Public Listings</h3>
+          <div className="max-h-96 overflow-y-auto space-y-4">
+            {error ? (
+              <p className="text-red-600">{error}</p> // Render the error message in red if there's an error
+            ) : (
+              listings.map((listing) => (
+                <ListingCard
+                  key={listing.id} // Use the listing ID as a key for better performance
+                  address={listing.address || 'Address not available'} // Provide a fallback for missing address
+                  neighborhood={listing.neighborhood || 'Neighborhood not available'} // Provide a fallback for missing neighborhood
+                  propertyType={listing.property_type || 'Type not available'} // Provide a fallback for missing property type
+                  prices={listing.prices?.map((priceObj) => priceObj.price) || []} // Extract prices or default to an empty array
+                  currentPrice={listing.current_price || 'Price not available'} // Provide a fallback for missing current price
+                />
+              ))
+            )}
+          </div>
         </div>
       </div>
     </Layout>
