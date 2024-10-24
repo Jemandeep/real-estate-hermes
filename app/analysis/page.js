@@ -245,7 +245,7 @@ const Analysis = () => {
 
         {/* Public Listings */}
         <div className="flex mt-6">
-         {/* Right: Rental Income vs Expenses Horizontal Bars */}
+        {/* Right: Rental Income vs Expenses Horizontal Bars */}
 <div
   className="w-1/4 bg-white p-6 rounded-lg shadow-sm border border-gray-200"
   style={{ maxHeight: '500px', overflowY: 'auto' }} // Ensure scrolling for multiple properties
@@ -274,8 +274,8 @@ const Analysis = () => {
           {/* Property Address Label */}
           <p className="text-sm font-medium text-gray-700">{property.address}</p>
 
-          {/* Rental Income Bar */}
-          <p className="text-xs font-semibold mt-2">Rental Income</p>
+          {/* Rental Income Bar with Amount */}
+          <p className="text-xs font-semibold mt-2">Rental Income: ${rent.toFixed(2)}</p>
           <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
             <div
               className="h-6 rounded-full bg-green-500" // Green for rental income
@@ -283,48 +283,50 @@ const Analysis = () => {
             />
           </div>
 
-          {/* Expenses Bar */}
-          <p className="text-xs font-semibold mt-2">Expenses</p>
+          {/* Expenses Label */}
+          <p className="text-xs font-semibold mt-2">Expenses (Total: ${totalExpenses.toFixed(2)})</p>
           <div className="w-full h-6 bg-gray-200 rounded-full mt-1 relative">
             {/* Mortgage Expense */}
             <div
               className="h-6 rounded-l-full bg-red-500 absolute left-0"
-              style={{ width: `${mortgageWidth}%` }}
-              title={`Mortgage: $${mortgage}`}
+              style={{ width: `${Math.min(mortgageWidth, 100)}%` }} // Restrict width to fit container
+              title={`Mortgage: $${mortgage.toFixed(2)}`}
             />
             {/* Maintenance Expense */}
             <div
-              className="h-6 bg-yellow-500 absolute left-[calc(${mortgageWidth}%)]"
-              style={{ width: `${maintenanceWidth}%` }}
-              title={`Maintenance: $${maintenance}`}
+              className="h-6 bg-yellow-500 absolute left-[calc(${Math.min(mortgageWidth, 100)}%)]"
+              style={{ width: `${Math.min(maintenanceWidth, 100)}%` }} // Restrict width to fit container
+              title={`Maintenance: $${maintenance.toFixed(2)}`}
             />
             {/* Insurance Expense */}
             <div
-              className="h-6 bg-blue-500 absolute left-[calc(${mortgageWidth + maintenanceWidth}%)]"
-              style={{ width: `${insuranceWidth}%` }}
-              title={`Insurance: $${insurance}`}
+              className="h-6 bg-blue-500 absolute left-[calc(${Math.min(mortgageWidth + maintenanceWidth, 100)}%)]"
+              style={{ width: `${Math.min(insuranceWidth, 100)}%` }} // Restrict width to fit container
+              title={`Insurance: $${insurance.toFixed(2)}`}
             />
             {/* Taxes Expense */}
             <div
-              className="h-6 bg-purple-500 absolute left-[calc(${mortgageWidth + maintenanceWidth + insuranceWidth}%)]"
-              style={{ width: `${taxesWidth}%` }}
-              title={`Taxes: $${taxes}`}
+              className="h-6 bg-purple-500 absolute left-[calc(${Math.min(mortgageWidth + maintenanceWidth + insuranceWidth, 100)}%)]"
+              style={{ width: `${Math.min(taxesWidth, 100)}%` }} // Restrict width to fit container
+              title={`Taxes: $${taxes.toFixed(2)}`}
             />
           </div>
 
           {/* Cash Flow Bar */}
-          <p className="text-xs font-semibold mt-2">Cash Flow</p>
+          <p className="text-xs font-semibold mt-2">
+            Cash Flow: ${((rent - totalExpenses) > 0 ? rent - totalExpenses : 0).toFixed(2)} (Profit)
+          </p>
           <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
             <div
               className={`h-6 rounded-full ${cashFlowWidth > 0 ? 'bg-green-500' : 'bg-red-500'}`} // Green for positive, red for negative
               style={{ width: `${Math.abs(cashFlowWidth)}%` }} // Cash flow bar
             />
           </div>
-          <p className="text-xs mt-1 text-gray-500">${(rent - totalExpenses).toFixed(2)} Cash Flow</p>
         </div>
       );
     })}
 </div>
+
 
 
 
