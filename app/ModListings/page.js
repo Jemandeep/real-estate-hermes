@@ -1,216 +1,239 @@
 "use client";
-import { useState } from 'react';
-import { db } from '../../firebase'; // Ensure this path is correct
-import { collection, addDoc } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
+import { db } from '../../firebase';
+import { collection, addDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
+import { useRouter } from 'next/navigation'; 
+import Layout from '../components/Layout';
 
 const ModifyListings = () => {
+  const router = useRouter();
+  const auth = getAuth(); 
+  const [user, setUser] = useState(null); 
   const [formValues, setFormValues] = useState({
     address: '',
     bathroom_count: 1,
     bed_count: 1,
     current_price: 50000,
-    prices: [],
+    postal_code: '',
+    latitude: '',
+    longitude: '',
+    neighborhood: '',
   });
-  const [historicalPrices, setHistoricalPrices] = useState([{ month: 'Last month', price: 50000 }]);
 
-  // Handle form input changes
+  const [historicalPrices, setHistoricalPrices] = useState([
+    { month: 'Last month', price: 50000 },
+  ]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
+      if (loggedUser) {
+        setUser(loggedUser);
+      } else {
+        router.push('/login');
+      }
+    });
+    return () => unsubscribe();
+  }, [auth, router]);
+
+  useEffect(() => {
+    const loadAutocomplete = () => {
+      const autocomplete = new window.google.maps.places.Autocomplete(
+        document.getElementById('address-input'),
+        { types: ['address'] }
+      );
+
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (!place.geometry) return;
+
+        const { lat, lng } = place.geometry.location;
+        const postalCodeComponent = place.address_components.find((component) =>
+          component.types.includes('postal_code')
+        );
+        const neighborhoodComponent = place.address_components.find((component) =>
+          component.types.includes('neighborhood') || component.types.includes('sublocality')
+        );
+
+        setFormValues((prev) => ({
+          ...prev,
+          address: place.formatted_address,
+          postal_code: postalCodeComponent ? postalCodeComponent.short_name : '',
+          latitude: lat(),
+          longitude: lng(),
+          neighborhood: neighborhoodComponent ? neighborhoodComponent.long_name : '',
+        }));
+      });
+    };
+
+    if (window.google && window.google.maps) {
+      loadAutocomplete();
+    } else {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAkhw-ajGfapfGKUYblHstW85TIm-IjKSU&libraries=places`;
+      script.onload = () => loadAutocomplete();
+      document.body.appendChild(script);
+    }
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
   };
 
-  // Format numbers with commas for price input
-  const formatPrice = (price) => {
-    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  };
-
-  // Remove commas for operations
-  const unformatPrice = (price) => {
-    return price.replace(/,/g, '');
-  };
-
-  // Handle price input change (without commas)
   const handlePriceChange = (e) => {
-    const priceValue = unformatPrice(e.target.value);
+    const priceValue = e.target.value.replace(/,/g, '');
     setFormValues({ ...formValues, current_price: priceValue });
   };
 
-  // Handle adding more input fields for historical prices with default current price
   const handleAddPrice = () => {
-    const lastPriceCount = historicalPrices.length;
-    const nextMonth = `Last ${lastPriceCount + 1} month`;
-    setHistoricalPrices([...historicalPrices, { month: nextMonth, price: formValues.current_price }]);
+    const newPrice = { month: `Last ${historicalPrices.length + 1} month`, price: formValues.current_price };
+    setHistoricalPrices([...historicalPrices, newPrice]);
   };
 
-  // Handle the changes in historical prices inputs
   const handleHistoricalChange = (index, e) => {
-    const { value } = e.target;
-    const newPrices = [...historicalPrices];
-    newPrices[index].price = unformatPrice(value);
-    setHistoricalPrices(newPrices);
+    const updatedPrices = [...historicalPrices];
+    updatedPrices[index].price = e.target.value.replace(/,/g, '');
+    setHistoricalPrices(updatedPrices);
   };
 
-  // Handle form submission to add a new document with an auto-generated ID
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Ask for confirmation before submission
-    const confirmed = window.confirm('Are you sure you want to add this new listing?');
-    if (!confirmed) return;
+    if (!user) return;
 
     try {
-      // Add a new listing document with an auto-generated ID
       const docRef = await addDoc(collection(db, 'listings'), {
-        address: formValues.address,
-        bathroom_count: formValues.bathroom_count,
-        bed_count: formValues.bed_count,
-        current_price: formValues.current_price,
+        ...formValues,
+        ...formValues,
         prices: historicalPrices,
       });
 
-      // Confirm the addition
+      const userDocRef = doc(db, 'users', user.email);
+      await updateDoc(userDocRef, {
+        listings: arrayUnion(docRef.id),
+      });
+
       alert(`Listing added successfully with ID: ${docRef.id}`);
+      router.push('/viewListings');
     } catch (error) {
-      // Log the error for debugging
+      console.error('Error adding listing: ', error);
+      alert(`Error: ${error.message}`);
       console.error('Error adding new listing: ', error);
       alert(`Error adding listing: ${error.message}`);
     }
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">Add New Listing</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Address Input */}
-        <div>
-          <label className="block text-gray-700">Address</label>
-          <input
-            type="text"
-            name="address"
-            value={formValues.address}
-            onChange={handleChange}
-            required
-            className="w-full p-2 border rounded"
-          />
-        </div>
-
-        {/* Bathroom Dropdown */}
-        <div>
-          <label className="block text-gray-700">Bathrooms</label>
-          <select
-            name="bathroom_count"
-            value={formValues.bathroom_count}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          >
-            {[...Array(6).keys()].map((num) => (
-              <option key={num + 1} value={num + 1}>
-                {num + 1} Bathroom(s)
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Bedroom Dropdown */}
-        <div>
-          <label className="block text-gray-700">Bedrooms</label>
-          <select
-            name="bed_count"
-            value={formValues.bed_count}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          >
-            {[...Array(6).keys()].map((num) => (
-              <option key={num + 1} value={num + 1}>
-                {num + 1} Bedroom(s)
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Current Price Input and Slider */}
-        <div>
-          <label className="block text-gray-700">Current Price</label>
-          <div className="flex items-center">
+    <Layout>
+      <div className="container mx-auto p-6">
+        <h2 className="text-2xl font-bold mb-4">Add New Listing</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-gray-700">Address</label>
             <input
               type="text"
-              name="current_price"
-              value={formatPrice(formValues.current_price)}
-              onChange={handlePriceChange}
-              className="w-1/3 p-2 border rounded mr-4"
-            />
-            <input
-              type="range"
-              min="50000"
-              max="20000000"
-              step="50000"
-              value={formValues.current_price}
-              onChange={(e) => handlePriceChange(e)}
-              className="w-2/3"
-            />
-          </div>
-        </div>
-
-        {/* Historical Prices */}
-        <h3 className="text-xl font-semibold">Historical Prices</h3>
-        {historicalPrices.map((price, index) => (
-          <div key={index} className="space-y-2">
-            <label className="block text-gray-700">{price.month}</label>
-            <input
-              type="text"
-              name="price"
-              value={formatPrice(price.price)}
-              onChange={(e) => handleHistoricalChange(index, e)}
-              placeholder="Price"
+              name="address"
+              id="address-input"
+              value={formValues.address}
+              onChange={handleChange}
+              required
               className="w-full p-2 border rounded"
-            />
-            {/* Slider for adjusting historical prices */}
-            <input
-              type="range"
-              min="50000"
-              max="20000000"
-              step="50000"
-              value={price.price}
-              onChange={(e) => handleHistoricalChange(index, e)}
-              className="w-full"
+              placeholder="Start typing an address..."
             />
           </div>
 
+          <div>
+            <label className="block text-gray-700">Bathrooms</label>
+            <select
+              name="bathroom_count"
+              value={formValues.bathroom_count}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+            >
+              {[...Array(6).keys()].map((num) => (
+                <option key={num + 1} value={num + 1}>
+                  {num + 1} Bathroom(s)
+                </option>
+              ))}
+            </select>
+          </div>
 
-          {/* Historical Prices */}
-          <h3 className="text-xl font-semibold">Historical Prices</h3>
+          <div>
+            <label className="block text-gray-700">Bedrooms</label>
+            <select
+              name="bed_count"
+              value={formValues.bed_count}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+            >
+              {[...Array(6).keys()].map((num) => (
+                <option key={num + 1} value={num + 1}>
+                  {num + 1} Bedroom(s)
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-gray-700">Current Price</label>
+            <div className="flex items-center">
+              <input
+                type="text"
+                name="current_price"
+                value={formValues.current_price}
+                onChange={handlePriceChange}
+                className="w-1/3 p-2 border rounded mr-4"
+              />
+              <input
+                type="range"
+                min="50000"
+                max="20000000"
+                step="50000"
+                value={formValues.current_price}
+                onChange={handlePriceChange}
+                className="w-2/3"
+              />
+            </div>
+          </div>
+
           {historicalPrices.map((price, index) => (
             <div key={index} className="space-y-2">
               <label className="block text-gray-700">{price.month}</label>
               <input
                 type="text"
-                value={formatPrice(price.price)}
+                value={price.price}
                 onChange={(e) => handleHistoricalChange(index, e)}
-                placeholder="Price"
                 className="w-full p-2 border rounded"
+              />
+              <input
+                type="range"
+                min="50000"
+                max="20000000"
+                step="50000"
+                value={price.price}
+                onChange={(e) => handleHistoricalChange(index, e)}
+                className="w-full"
               />
             </div>
           ))}
 
-          {/* Add Historical Price Button */}
-          <div className="mt-6">
-            <button
-              type="button"
-              onClick={handleAddPrice}
-              className="block px-4 py-2 bg-stone-300 text-stone-600 rounded mb-4 hover:bg-gray-100"
-            >
-              + Add Previous Month Price
-            </button>
+          <button
+            type="button"
+            onClick={handleAddPrice}
+            className="px-4 py-2 bg-gray-300 rounded"
+          >
+            + Add Previous Month Price
+          </button>
 
-            <button type="submit" className="block px-4 py-2 bg-stone-300 text-stone-600 rounded hover:bg-gray-100">
-              Add New Listing
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-500 text-white rounded"
+          >
+            Add New Listing
+          </button>
         </form>
       </div>
-      
     </Layout>
-
   );
 };
 
