@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import NavBar from "./components/NavBar";
 import Header from "./components/Header";
 import Layout from "./components/Layout";
+import Footer from "./components/Footer";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import Link from "next/link";
@@ -13,13 +14,12 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Function to shuffle array and pick the first three
   const pickRandomListings = (listingsArray) => {
     for (let i = listingsArray.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [listingsArray[i], listingsArray[j]] = [listingsArray[j], listingsArray[i]];
     }
-    return listingsArray.slice(0, 3); // Return the first three elements
+    return listingsArray.slice(0, 3);
   };
 
   useEffect(() => {
@@ -32,7 +32,7 @@ const HomePage = () => {
           id: doc.id,
           ...doc.data(),
         }));
-        const randomListings = pickRandomListings(data); // Get three random listings
+        const randomListings = pickRandomListings(data);
         setListings(randomListings);
         setLoading(false);
       } catch (error) {
@@ -46,7 +46,7 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="overflow-y-auto h-screen bg-stone-100">
+    <div className="bg-stone-100">
       <NavBar />
       <Header />
 
@@ -98,13 +98,9 @@ const HomePage = () => {
       </div>
 
       <div className="bg-stone-500 text-white px-40 py-40 text-center">
-        <h2 className="text-3xl font-bold mb-4 text-white-800">Our Vision</h2>
-        <p className="text-lg text-white-600 max-w-3xl mx-auto">
-          At Calgary Real Estate, our vision is to help you discover your dream home with ease
-          and confidence. We aim to provide you with the most accurate and up-to-date property
-          listings, ensuring that you have all the tools you need to make informed decisions
-          about your future home. With a wide range of properties in various locations, we are
-          dedicated to offering you the best real estate experience.
+        <h2 className="text-3xl font-bold mb-4">Our Vision</h2>
+        <p className="text-lg max-w-3xl mx-auto">
+          At Calgary Real Estate, our vision is to help you discover your dream home with ease and confidence. We aim to provide you with the most accurate and up-to-date property listings, ensuring that you have all the tools you need to make informed decisions about your future home. With a wide range of properties in various locations, we are dedicated to offering you the best real estate experience.
         </p>
       </div>
     </div>

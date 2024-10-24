@@ -48,21 +48,30 @@ const Header = () => {
   }, []);
 
   return (
-    <div className="bg-stone-500 text-white px-40 py-40 text-center">
-      <h1 className="text-4xl font-bold mb-4">
-        {userName ? `Welcome, ${userName}` : "Discover Your Dream Home"}
-      </h1>
-      <p className="text-lg mb-6">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum.
-      </p>
-      
-      {/* Action Buttons */}
-      <div className="space-x-4">
-        <a href="/listings" className="bg-white text-stone-600 font-semibold px-6 py-3 rounded-md hover:bg-gray-100">
-          Browse Listings
-        </a>
-      </div>
-    </div>
+    <div
+  className="bg-stone-500 text-white px-40 py-40 text-center"
+  style={{
+    backgroundImage: "url('/images/logo4.jpg')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat"
+  }}
+>
+  <h1 className="text-4xl font-bold mb-4">
+    {userName ? `Welcome, ${userName}` : "Discover Your Dream Home"}
+  </h1>
+  <p className="text-lg mb-6">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum.
+  </p>
+  
+  {/* Action Buttons */}
+  <div className="space-x-4">
+    <a href="/listings" className="bg-white text-stone-600 font-semibold px-6 py-3 rounded-md hover:bg-gray-100">
+      Browse Listings
+    </a>
+  </div>
+</div>
+
   );
 };
 
