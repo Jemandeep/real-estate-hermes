@@ -61,8 +61,8 @@ const MapComponent = memo(({ userProperties = [], listings = [], onAddProperty }
               <CircleMarker
                 key={`listing-${index}`}
                 center={[property.latitude, property.longitude]}
-                radius={0.5}
-                pathOptions={{ color: 'blue', fillColor: 'blue', fillOpacity: 0.5 }}
+                radius={6}
+                pathOptions={{ color: 'black', fillColor: 'red', fillOpacity: 0.5 }}
               >
                 <Popup>
                   <strong>{property.address}</strong><br />
