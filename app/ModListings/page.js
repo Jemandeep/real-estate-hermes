@@ -46,6 +46,7 @@ const ModifyListings = () => {
     longitude: '',
     neighborhood: '',
     property_type: '', // New property type field
+    agent_name: '', // New field to store the agent's name
   });
 
   const [monthlyPrices, setMonthlyPrices] = useState(Array(12).fill({ month: '', price: '' })); // Initialize with 12 months
@@ -54,6 +55,10 @@ const ModifyListings = () => {
     const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
       if (loggedUser) {
         setUser(loggedUser);
+        setFormValues((prevValues) => ({
+          ...prevValues,
+          agent_name: loggedUser.displayName || loggedUser.email, // Automatically set agent's name
+        }));
       } else {
         router.push('/login');
       }
@@ -128,6 +133,7 @@ const ModifyListings = () => {
           month: item.month,
           price: item.price.toString(), // Ensure prices are stored as strings
         })),
+        agent_name: formValues.agent_name, // Include the agent's name
       });
 
       const userDocRef = doc(db, 'users', user.email);
@@ -197,16 +203,16 @@ const ModifyListings = () => {
               />
             </div>
             <div>
-              <label className="block text-gray-700">Neighborhood</label>
-              <input
-                type="text"
-                name="neighborhood"
-                value={formValues.neighborhood}
-                onChange={handleChange}
-                readOnly
-                className="w-full p-2 border rounded"
-              />
-            </div>
+  <label className="block text-gray-700">Neighborhood</label>
+  <input
+    type="text"
+    name="neighborhood"
+    value={formValues.neighborhood}
+    onChange={handleChange}
+    className="w-full p-2 border rounded"
+  />
+</div>
+
             <div>
               <label className="block text-gray-700">Latitude</label>
               <input
