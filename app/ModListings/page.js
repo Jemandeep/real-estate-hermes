@@ -4,7 +4,7 @@ import { db } from '../../firebase';
 import { collection, addDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 import { useRouter } from 'next/navigation'; 
-import Layout from '../components/Layout';
+import Layout from '../components/Layout'; 
 
 const ModifyListings = () => {
   const router = useRouter();
@@ -35,46 +35,6 @@ const ModifyListings = () => {
     });
     return () => unsubscribe();
   }, [auth, router]);
-
-  useEffect(() => {
-    const loadAutocomplete = () => {
-      const autocomplete = new window.google.maps.places.Autocomplete(
-        document.getElementById('address-input'),
-        { types: ['address'] }
-      );
-
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        if (!place.geometry) return;
-
-        const { lat, lng } = place.geometry.location;
-        const postalCodeComponent = place.address_components.find((component) =>
-          component.types.includes('postal_code')
-        );
-        const neighborhoodComponent = place.address_components.find((component) =>
-          component.types.includes('neighborhood') || component.types.includes('sublocality')
-        );
-
-        setFormValues((prev) => ({
-          ...prev,
-          address: place.formatted_address,
-          postal_code: postalCodeComponent ? postalCodeComponent.short_name : '',
-          latitude: lat(),
-          longitude: lng(),
-          neighborhood: neighborhoodComponent ? neighborhoodComponent.long_name : '',
-        }));
-      });
-    };
-
-    if (window.google && window.google.maps) {
-      loadAutocomplete();
-    } else {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAkhw-ajGfapfGKUYblHstW85TIm-IjKSU&libraries=places`;
-      script.onload = () => loadAutocomplete();
-      document.body.appendChild(script);
-    }
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

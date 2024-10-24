@@ -1,25 +1,54 @@
+// components/AddProperty.js
 "use client";
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { db } from '../../firebase';
-import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore'; // Add updateDoc and getDoc
-import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
-import { useRouter } from 'next/navigation'; // Only import once
+import { collection, addDoc } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useRouter } from 'next/navigation'; 
 import Layout from '../components/Layout';
-import SelfCompleteButton from '../components/SelfComplete'; // Import only relevant components
+import SelfCompleteButton from '../components/SelfComplete';
 
-// Remove the import of AddOrEditProperty here (it's already inside this file)
+// Nominatim API URL
+const NominatimAPIURL = "https://nominatim.openstreetmap.org/search";
 
-const AddOrEditProperty = ({ propertyId }) => {  // Add propertyId for edit mode
+// Function to fetch geolocation data from Nominatim API
+const fetchGeolocationData = async (address) => {
+  try {
+    const response = await fetch(`${NominatimAPIURL}?q=${encodeURIComponent(address)}&format=json&addressdetails=1&limit=1`, {
+      headers: {
+        'User-Agent': 'YourAppName/1.0 (contact@yourapp.com)' // Replace with your app name and contact info
+      }
+    });
+    const data = await response.json();
+    if (data && data.length > 0) {
+      const result = data[0];
+      const { lat, lon } = result;
+      const { postcode, neighbourhood } = result.address;
+
+      return {
+        latitude: lat,
+        longitude: lon,
+        postal_code: postcode || '',
+        neighborhood: neighbourhood || ''
+      };
+    }
+  } catch (error) {
+    console.error("Error fetching geolocation data: ", error);
+  }
+  return null;
+};
+
+const AddProperty = () => {
   const [formValues, setFormValues] = useState({
     address: '',
     neighborhood: '',
     postal_code: '',
-    bathroom_count: 1,
-    bed_count: 1,
-    property_type: '',
-    purchased_price: '',
+    latitude: '',
+    longitude: '',
+    bathroom_count: '',
+    bed_count: '',
     current_price: '',
-    past_6_months_prices: Array(6).fill(''),
+    past_6_months_prices: '',
     past_5_year_price: '',
     past_10_year_price: '',
     past_15_year_price: '',
@@ -34,15 +63,14 @@ const AddOrEditProperty = ({ propertyId }) => {  // Add propertyId for edit mode
     maintenance: '',
     taxes: '',
     insurance: '',
-    latitude: '',
-    longitude: '',
   });
 
-  const router = useRouter(); // Use the router for navigation
+  const router = useRouter();
   const auth = getAuth();
   const [user, setUser] = useState(null);
 
-  useEffect(() => {
+  // Fetch user authentication status
+  useState(() => {
     const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
       if (loggedUser) {
         setUser(loggedUser);
@@ -53,74 +81,26 @@ const AddOrEditProperty = ({ propertyId }) => {  // Add propertyId for edit mode
     return () => unsubscribe();
   }, [auth, router]);
 
-  // Check if we are in edit mode
-  useEffect(() => {
-    if (propertyId) {
-      // Fetch existing property data if we're in edit mode
-      const fetchProperty = async () => {
-        const docRef = doc(db, 'properties', propertyId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setFormValues({ ...formValues, ...docSnap.data() }); // Pre-fill form with existing property data
-        }
-      };
-      fetchProperty();
-    }
-  }, [propertyId]);
+  // Handle address input and fetch geolocation data from Nominatim API
+  const handleAddressChange = async (e) => {
+    const { name, value } = e.target;
+    setFormValues({ ...formValues, [name]: value });
 
-  // Set up Google Places Autocomplete for address input
-  useEffect(() => {
-    const loadAutocomplete = () => {
-      const autocomplete = new window.google.maps.places.Autocomplete(
-        document.getElementById('address-input'),
-        { types: ['address'] }
-      );
-
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        if (!place.geometry) return;
-
-        const { lat, lng } = place.geometry.location;
-        const postalCodeComponent = place.address_components.find((component) =>
-          component.types.includes('postal_code')
-        );
-        const neighborhoodComponent = place.address_components.find((component) =>
-          component.types.includes('neighborhood') || component.types.includes('sublocality')
-        );
-
-        setFormValues((prev) => ({
-          ...prev,
-          address: place.formatted_address,
-          postal_code: postalCodeComponent ? postalCodeComponent.short_name : '',
-          latitude: lat(),
-          longitude: lng(),
-          neighborhood: neighborhoodComponent ? neighborhoodComponent.long_name : '',
+    if (name === 'address' && value.trim() !== '') {
+      const geolocationData = await fetchGeolocationData(value);
+      if (geolocationData) {
+        setFormValues((prevValues) => ({
+          ...prevValues,
+          ...geolocationData,
         }));
-      });
-    };
-
-    if (window.google && window.google.maps) {
-      loadAutocomplete();
-    } else {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAkhw-ajGfapfGKUYblHstW85TIm-IjKSU&libraries=places`;
-      script.onload = () => loadAutocomplete();
-      document.body.appendChild(script);
+      }
     }
-  }, []);
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    if (type === 'checkbox') {
-      setFormValues({ ...formValues, [name]: checked });
-    } else if (name.startsWith('past_6_months_prices')) {
-      const index = parseInt(name.split('_')[3]);
-      const updatedPrices = [...formValues.past_6_months_prices];
-      updatedPrices[index] = value;
-      setFormValues({ ...formValues, past_6_months_prices: updatedPrices });
-    } else {
-      setFormValues({ ...formValues, [name]: value });
-    }
+    const newValue = type === 'checkbox' ? checked : value;
+    setFormValues({ ...formValues, [name]: newValue });
   };
 
   const handleSubmit = async (e) => {
@@ -128,21 +108,12 @@ const AddOrEditProperty = ({ propertyId }) => {  // Add propertyId for edit mode
     if (!user) return;
 
     try {
-      if (propertyId) {
-        // If we are in edit mode, update the property
-        const docRef = doc(db, 'properties', propertyId);
-        await updateDoc(docRef, formValues);
-        alert('Property updated successfully!');
-      } else {
-        // Otherwise, add a new property
-        await addDoc(collection(db, 'properties'), {
-          ...formValues,
-          userEmail: user.email, // Include user email with the property
-        });
-        alert('Property added successfully!');
-      }
-      
-      router.push('/analysis'); // Redirect back to analysis
+      await addDoc(collection(db, 'properties'), {
+        ...formValues,
+        userEmail: user.email,
+      });
+      alert('Property added successfully!');
+      router.push('/analysis');
     } catch (error) {
       console.error('Error submitting property: ', error);
     }
@@ -151,18 +122,15 @@ const AddOrEditProperty = ({ propertyId }) => {  // Add propertyId for edit mode
   return (
     <Layout>
       <div className="container mx-auto p-6">
-        <h2 className="text-2xl font-bold mb-4">{propertyId ? 'Edit Property' : 'Add New Property'}</h2> {/* Dynamic Title */}
+        <h2 className="text-2xl font-bold mb-4">Add New Property</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {/* Address Section with Autocomplete - Full Width */}
           <div>
             <label className="block text-gray-700">Address</label>
             <input
               type="text"
               name="address"
-              id="address-input"
               value={formValues.address}
-              onChange={handleChange}
+              onChange={handleAddressChange}
               required
               className="w-full p-2 border rounded"
               placeholder="Start typing an address..."
@@ -179,10 +147,8 @@ const AddOrEditProperty = ({ propertyId }) => {  // Add propertyId for edit mode
                 onChange={handleChange}
                 required
                 className="w-full p-2 border rounded"
-                placeholder="Enter neighborhood"
               />
             </div>
-
             <div>
               <label className="block text-gray-700">Postal Code</label>
               <input
@@ -192,11 +158,11 @@ const AddOrEditProperty = ({ propertyId }) => {  // Add propertyId for edit mode
                 onChange={handleChange}
                 required
                 className="w-full p-2 border rounded"
-                placeholder="Enter postal code"
               />
             </div>
+          </div>
 
-            {/* Lat/Long Fields */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-gray-700">Latitude</label>
               <input
@@ -208,7 +174,6 @@ const AddOrEditProperty = ({ propertyId }) => {  // Add propertyId for edit mode
                 className="w-full p-2 border rounded"
               />
             </div>
-
             <div>
               <label className="block text-gray-700">Longitude</label>
               <input
@@ -234,7 +199,6 @@ const AddOrEditProperty = ({ propertyId }) => {  // Add propertyId for edit mode
                 className="w-full p-2 border rounded"
               />
             </div>
-
             <div>
               <label className="block text-gray-700">Bedrooms</label>
               <input
@@ -246,49 +210,19 @@ const AddOrEditProperty = ({ propertyId }) => {  // Add propertyId for edit mode
                 className="w-full p-2 border rounded"
               />
             </div>
+          </div>
 
-            <div>
-              <label className="block text-gray-700">Property Type</label>
-              <select
-                name="property_type"
-                value={formValues.property_type}
-                onChange={handleChange}
-                required
-                className="w-full p-2 border rounded"
-              >
-                <option value="" disabled>Select property type</option>
-                <option value="Mansion">Mansion</option>
-                <option value="Apartment">Apartment</option>
-                <option value="Condo">Condo</option>
-                <option value="Townhouse">Townhouse</option>
-                <option value="Detached House">Detached House</option>
-                <option value="Bungalow">Bungalow</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-gray-700">Purchased Price</label>
-              <input
-                type="number"
-                name="purchased_price"
-                value={formValues.purchased_price}
-                onChange={handleChange}
-                required
-                className="w-full p-2 border rounded"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700">Current Market Price</label>
-              <input
-                type="number"
-                name="current_price"
-                value={formValues.current_price}
-                onChange={handleChange}
-                required
-                className="w-full p-2 border rounded"
-              />
-            </div>
+          {/* Current Market Price Field */}
+          <div>
+            <label className="block text-gray-700">Current Market Price</label>
+            <input
+              type="number"
+              name="current_price"
+              value={formValues.current_price}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded"
+            />
           </div>
 
           {/* Self Complete Button */}
@@ -483,18 +417,13 @@ const AddOrEditProperty = ({ propertyId }) => {  // Add propertyId for edit mode
             </div>
           </div>
 
-          <button 
-    type="submit" 
-    className="px-4 py-2 bg-blue-500 text-white rounded"
-  >
-    {propertyId ? 'Update Property' : 'Add Property'}
-  </button>
+          <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
+            Add Property
+          </button>
         </form>
-      </div> {/* Ensure this div is closed properly */}
+      </div>
     </Layout>
   );
 };
 
-export default AddOrEditProperty;
-
-
+export default AddProperty;
