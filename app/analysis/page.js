@@ -1,231 +1,361 @@
-"use client"; // Instructs Next.js to render this file on the client-side, allowing access to hooks like useState and useEffect
+"use client"; // Ensure client-side rendering
 
-import React, { useState, useEffect } from 'react'; // Import React and hooks for state management and side-effects
-import { getDocs, collection } from 'firebase/firestore'; // Firebase functions to fetch documents from Firestore
-import { db } from '../../firebase'; // Import Firebase configuration (database instance)
-import Layout from '../components/Layout'; // Custom layout component for consistent page structure
-import ListingCard from '../components/ListingCard'; // Component to display individual property listing details
-import MapComponent from '../components/MapComponent'; // Component to render an interactive map with community data
-import PredictionSidebar from '../components/PredictionsSidebar'; // Sidebar for displaying predictions related to favorite properties
-import Filters from '../components/Filters'; // Component to filter listings by neighborhood and property type
-import PropertyManager from '../components/PropertyManager'; // Component to manage properties, imported but not yet functional
+import React, { useState, useEffect } from 'react';
+import { getDocs, collection, query, where } from 'firebase/firestore'; // Firestore functions
+import { db } from '../../firebase'; // Firebase configuration
+import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Firebase Auth to get the current user
+import Layout from '../components/Layout'; // Layout component for consistent structure
+import ListingCard from '../components/ListingCard'; // Component to display each listing
+import MapComponent from '../components/MapComponent'; // Component to display a map with listings
+import { Bar } from 'react-chartjs-2'; // Import Bar chart from react-chartjs-2
 
+// Import and register necessary components for Chart.js
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+// Register the components you are going to use
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const Analysis = () => {
-  // React state hooks for managing data and UI state across the component
-  const [listings, setListings] = useState([]); // Store the list of property listings fetched from Firestore
-  const [filteredNeighborhood, setFilteredNeighborhood] = useState('All'); // Track the currently selected neighborhood filter
-  const [filteredPropertyType, setFilteredPropertyType] = useState('All'); // Track the selected property type filter
-  const [maxMonth, setMaxMonth] = useState(12); // Number of months to display price history, defaulting to 12
-  const [selectedProperties, setSelectedProperties] = useState([]); // Track properties selected by the user for predictions
-  const [neighborhoods, setNeighborhoods] = useState([]); // Store a list of unique neighborhoods to be used in the filter dropdown
-  const [propertyTypes, setPropertyTypes] = useState([]); // Store unique property types for filtering
-  const [error, setError] = useState(null); // Store any errors that may occur during data fetching
-  const [selectedFavorites, setSelectedFavorites] = useState([]); // Track properties selected as favorites by the user
-  const [selectedCommunity, setSelectedCommunity] = useState('All'); // Track the community selected via the map
+  const [userProperties, setUserProperties] = useState([]); // Store fetched properties belonging to the user
+  const [listings, setListings] = useState([]); // Store public property listings (those for sale)
+  const [error, setError] = useState(null); // Store any potential errors
+  const [metrics, setMetrics] = useState({
+    totalInvestment: 0,
+    currentPortfolioValue: 0,
+    roi: 0,
+    cashFlow: 0,
+  }); // Store calculated metrics
+  const [user, setUser] = useState(null); // Store authenticated user
 
-  // useEffect hook to fetch listings from Firestore when the component mounts
+  const auth = getAuth(); // Get Firebase auth instance
+
+  // Fetch personal properties and public listings from Firestore
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUserProperties = async (userEmail) => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'listings')); // Fetch all documents from the 'listings' collection in Firestore
-        const data = querySnapshot.docs.map((doc) => doc.data()); // Extract data from each document
-  
-        // Ensure latitude and longitude are included when setting the listings
-        setListings(data.slice(0, 250)); // Set the listings state, limiting the number of listings to 250 for performance
-  
-        const uniqueNeighborhoods = ['All', ...new Set(data.map((item) => item.neighborhood))]; // Extract unique neighborhoods from data
-        const uniquePropertyTypes = ['All', ...new Set(data.map((item) => item.property_type))]; // Extract unique property types from data
+        // Query Firestore to get properties where 'userEmail' matches the logged-in user
+        const propertiesQuery = query(
+          collection(db, 'properties'),
+          where('userEmail', '==', userEmail)
+        );
+
+        const querySnapshot = await getDocs(propertiesQuery);
+        const data = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setUserProperties(data); // Set user's properties
+
+        // Calculate metrics based on the user's properties
+        let totalInvestment = 0;
+        let currentPortfolioValue = 0;
+        let cashFlow = 0;
         
-        setNeighborhoods(uniqueNeighborhoods); // Update the neighborhoods state with these unique values
-        setPropertyTypes(uniquePropertyTypes); // Update the property types state
+        data.forEach((property) => {
+          const purchasedPrice = parseFloat(property.purchased_price || 0);
+          const currentPrice = parseFloat(property.current_price || 0);
+          const rentPrice = parseFloat(property.rent_price || 0);
+          const mortgageMonthly = parseFloat(property.mortgage_monthly_payment || 0);
+          const maintenance = parseFloat(property.maintenance || 0) / 12;  // Monthly maintenance
+          const insurance = parseFloat(property.insurance || 0) / 12;  // Monthly insurance
+          const taxes = parseFloat(property.taxes || 0) / 12;  // Monthly taxes
+        
+          // Accumulate total investment and current portfolio value
+          totalInvestment += purchasedPrice;
+          currentPortfolioValue += currentPrice;
+        
+          // Calculate cash flow only for properties that are `is_for_rent: true`
+          if (property.is_for_rent) {
+            const totalExpenses = mortgageMonthly + maintenance + insurance + taxes;
+            const propertyCashFlow = rentPrice - totalExpenses;  // Cash Flow calculation
+            cashFlow += propertyCashFlow;
+          }
+        });
+        
+        // Calculate ROI (Return on Investment)
+        const roi = totalInvestment > 0 ? ((currentPortfolioValue - totalInvestment) / totalInvestment) * 100 : 0;
+        
+        // Set metrics with the calculated values
+        setMetrics({
+          totalInvestment,
+          currentPortfolioValue,
+          roi,
+          cashFlow,
+        });
+        
       } catch (error) {
-        setError(error.message); // Set the error state in case of failure
-        console.error('Error fetching data:', error); // Log the error to the console
+        setError(error.message); // Set any errors
+        console.error('Error fetching user properties:', error); // Log the error
       }
     };
-  
-    fetchData(); // Invoke fetchData to load the listings when the component mounts
-  }, []); // Empty dependency array ensures this effect runs only once, after the initial render
-  
 
-  // Function to handle property selection for price predictions
-  const onSelect = (listing) => {
-    setSelectedProperties((prevSelected) => [
-      ...prevSelected, // (...) spread operator: expands the elements into the new array.
-      {
-        address: listing.address, // Store the address of the selected property
-        neighborhood: listing.neighborhood, // Store the neighborhood of the selected property
-        propertyType: listing.property_type, // Store the property type
-        prices: listing.prices || [], // Store the price history or an empty array incase its missing
-        currentPrice: listing.current_price, // Store the current price of the property
-        latitude: listing.latitude, // Store the latitude of the selected property
-        longitude: listing.longitude // Store the longitude of the selected property
-      },
-    ]);
+    const fetchListings = async () => {
+      try {
+        // Fetch public listings from Firestore (those that are for sale)
+        const querySnapshot = await getDocs(collection(db, 'listings')); // Adjust the collection name if needed
+        const data = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setListings(data); // Set public property listings
+      } catch (error) {
+        setError(error.message); // Set any errors
+        console.error('Error fetching listings:', error); // Log the error
+      }
+    };
+
+    // Check for the authenticated user and fetch their properties
+    const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
+      if (loggedUser) {
+        setUser(loggedUser); // Set logged-in user
+        fetchUserProperties(loggedUser.email); // Fetch properties for this user
+      } else {
+        setUser(null); // User is not logged in
+      }
+    });
+
+    fetchListings(); // Fetch public property listings
+    return () => unsubscribe(); // Cleanup listener on unmount
+  }, [auth]);
+
+  // Function to generate Rental Income vs. Expenses bar chart data for user properties
+  const rentalIncomeVsExpensesData = (property) => {
+    const rent = parseFloat(property.rent_price || 0);
+    const mortgage = parseFloat(property.mortgage_monthly_payment || 0);
+    const maintenance = parseFloat(property.maintenance || 0) / 12;
+    const insurance = parseFloat(property.insurance || 0) / 12;
+    const taxes = parseFloat(property.taxes || 0) / 12;
+
+    return {
+      labels: ['Rent', 'Mortgage', 'Maintenance', 'Insurance', 'Taxes'],
+      datasets: [
+        {
+          label: 'Rental Income vs. Expenses',
+          data: [rent, mortgage, maintenance, insurance, taxes],
+          backgroundColor: ['#4CAF50', '#F44336', '#FFC107', '#2196F3', '#9C27B0'],
+          borderColor: ['#388E3C', '#D32F2F', '#FFA000', '#1976D2', '#7B1FA2'],
+          borderWidth: 1,
+        },
+      ],
+    };
   };
 
-  // Function to toggle property selection as a favorite
-  const handleFavoriteSelection = (property) => {
-    // Check if the property is already in selectedFavorites based on its address (or use another unique identifier)
-    const isAlreadyFavorite = selectedFavorites.some(
-      (fav) => fav.address === property.address // Use a unique identifier like `address`
-    );
-  
-    if (isAlreadyFavorite) {
-      console.log('Property is already a favorite:', property.address);
-      return; // Exit early if the property is already in favorites
-    }
-  
-    // If not already a favorite, add the property to favorites
-    setSelectedFavorites((prevSelectedFavorites) => [
-      ...prevSelectedFavorites.filter(fav => fav.address !== property.address), // Filter out any potential duplicates (if they exist)
-      property
-    ]);
-  };
-  
-  const handleRemoveFavorite = (property) => {
-    // Remove from favorites and the price prediction list
-    setSelectedFavorites((prevSelectedFavorites) =>
-      prevSelectedFavorites.filter((fav) => fav.address !== property.address)
-    );
-  
-    setSelectedProperties((prevSelectedProperties) =>
-      prevSelectedProperties.filter((fav) => fav.address !== property.address)
-    );
-  };
-  
-  const handleRemoveFromFavoritesOnly = (property) => {
-    // Remove the property only from favorites, keep it in the price prediction list
-    setSelectedFavorites((prevSelectedFavorites) =>
-      prevSelectedFavorites.filter((fav) => fav.address !== property.address)
-    );
-  };
-  
+  // Function to generate LTV Ratio bar chart data for user properties
+  const loanToValueData = (property) => {
+    const mortgage = parseFloat(property.mortgage_amount || 0);
+    const currentPrice = parseFloat(property.current_price || 0);
+    const ltvRatio = currentPrice > 0 ? (mortgage / currentPrice) * 100 : 0;
 
-  // Filter the listings based on selected neighborhood and property type
-  const filteredListings = listings.filter((listing) => {
-    const matchesNeighborhood =
-      filteredNeighborhood === 'All' || listing.neighborhood === filteredNeighborhood; // Check if listing matches selected neighborhood
-    const matchesPropertyType =
-      filteredPropertyType === 'All' || listing.property_type === filteredPropertyType; // Check if listing matches selected property type
-    return matchesNeighborhood && matchesPropertyType; // Return listings that match both filters
-  });
-
+    return {
+      labels: ['LTV Ratio'],
+      datasets: [
+        {
+          label: 'Loan-to-Value (LTV) Ratio',
+          data: [ltvRatio],
+          backgroundColor: ['#FF6384'],
+          borderColor: ['#FF6384'],
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto p-4 bg-white rounded shadow mt-10 flex">
-        {/* Prediction Sidebar */}
-        <PredictionSidebar selectedFavorites={selectedFavorites} /> {/* Pass selected favorites to the prediction sidebar */}
+      <div className="flex-1">
+        <h1 className="text-3xl font-semibold mb-6 text-gray-800">Your Property Portfolio</h1>
 
-        {/* Main content container for listings */}
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold mb-4">Property Listings</h1> {/* Heading for the property listings section */}
+        {/* Metrics Overview Boxes */}
+        <div className="grid grid-cols-4 gap-4 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
+            <h3 className="font-semibold text-lg text-gray-600">Total Investment</h3>
+            <p className="text-2xl font-bold text-gray-800 mt-2">${metrics.totalInvestment.toLocaleString()}</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
+            <h3 className="font-semibold text-lg text-gray-600">Current Portfolio Value</h3>
+            <p className="text-2xl font-bold text-gray-800 mt-2">${metrics.currentPortfolioValue.toLocaleString()}</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
+            <h3 className="font-semibold text-lg text-gray-600">ROI</h3>
+            <p className="text-2xl font-bold text-gray-800 mt-2">{metrics.roi.toFixed(2)}%</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
+            <h3 className="font-semibold text-lg text-gray-600">Cash Flow</h3>
+            <p className="text-2xl font-bold text-gray-800 mt-2">${metrics.cashFlow.toLocaleString()}</p>
+          </div>
+        </div>
 
-          {/* Map component displaying Calgary communities */}
-          <div className="mb-4">
-            <h2 className="text-xl font-bold mb-2">Calgary Communities Map</h2> {/* Subheading for the map */}
-            <MapComponent
-              favoriteProperties={selectedFavorites} // Pass selected favorites to the MapComponent
-              listings={filteredListings} // Pass filtered listings with coordinates to the MapComponent
+        {/* Flex layout for the map and charts */}
+        <div className="flex">
+{/* Left: LTV Ratio Horizontal Bar */}
+<div
+  className="w-1/4 bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+  style={{ maxHeight: '500px', overflowY: 'auto' }} // Ensure scrolling for multiple properties
+>
+  <h3 className="text-lg font-semibold mb-2">LTV Ratio</h3>
+  {userProperties.map((property) => {
+    const ltvRatio = (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) * 100;
+
+    // Determine bar color based on LTV ratio
+    const getColor = (ratio) => {
+      if (ratio < 60) return 'bg-green-500'; // Good: Green
+      if (ratio >= 60 && ratio <= 80) return 'bg-yellow-500'; // Okay: Yellow
+      return 'bg-red-500'; // Bad: Red
+    };
+
+    return (
+      <div key={property.id} className="mb-6">
+        {/* Property Address Label */}
+        <p className="text-sm font-medium text-gray-700">{property.address}</p>
+
+        {/* LTV Ratio Loading Bar */}
+        <div className="w-full h-6 bg-gray-200 rounded-full mt-2">
+          <div
+            className={`h-6 rounded-full ${getColor(ltvRatio)}`} // Dynamic bar color
+            style={{ width: `${ltvRatio}%` }} // Dynamic bar width based on LTV ratio
+          />
+        </div>
+        <p className="text-xs mt-1 text-gray-500">{ltvRatio.toFixed(2)}% LTV Ratio</p>
+      </div>
+    );
+  })}
+</div>
+
+          {/* Map Component */}
+          <div className="flex-1 mx-4 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">Your Properties Map</h2>
+            <MapComponent listings={userProperties} /> {/* Pass user properties to the MapComponent */}
+          </div>
+        </div>
+
+        {/* Public Listings */}
+        <div className="flex mt-6">
+        {/* Right: Rental Income vs Expenses Horizontal Bars */}
+<div
+  className="w-1/4 bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+  style={{ maxHeight: '500px', overflowY: 'auto' }} // Ensure scrolling for multiple properties
+>
+  <h3 className="text-lg font-semibold mb-2">Rental Income vs. Expenses</h3>
+  {userProperties
+    .filter((property) => property.is_for_rent) // Only show for rental properties
+    .map((property) => {
+      const rent = parseFloat(property.rent_price || 0);
+      const mortgage = parseFloat(property.mortgage_monthly_payment || 0);
+      const maintenance = parseFloat(property.maintenance || 0) / 12;
+      const insurance = parseFloat(property.insurance || 0) / 12;
+      const taxes = parseFloat(property.taxes || 0) / 12;
+
+      const totalExpenses = mortgage + maintenance + insurance + taxes;
+
+      // Calculate percentage width of each expense relative to the rent
+      const mortgageWidth = (mortgage / rent) * 100;
+      const maintenanceWidth = (maintenance / rent) * 100;
+      const insuranceWidth = (insurance / rent) * 100;
+      const taxesWidth = (taxes / rent) * 100;
+      const cashFlowWidth = ((rent - totalExpenses) / rent) * 100; // Cash flow relative to rent
+
+      return (
+        <div key={property.id} className="mb-6">
+          {/* Property Address Label */}
+          <p className="text-sm font-medium text-gray-700">{property.address}</p>
+
+          {/* Rental Income Bar with Amount */}
+          <p className="text-xs font-semibold mt-2">Rental Income: ${rent.toFixed(2)}</p>
+          <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
+            <div
+              className="h-6 rounded-full bg-green-500" // Green for rental income
+              style={{ width: '100%' }} // Full width represents 100% of rental income
             />
           </div>
 
-          <h2 className="text-lg font-bold mb-2">Favorites</h2> {/* Subheading for the favorites section */}
-          {selectedProperties.length > 0 ? (
-            selectedProperties.map((property, index) => (
-              <div key={index} className="favorite-property mb-2 border rounded p-2 bg-white">
-                <h3>{property.address || 'Address not available'}</h3> {/* Display property address */}
-                <p>{property.neighborhood || 'Neighborhood not available'}</p> {/* Display property neighborhood */}
-                <p>{property.propertyType || 'Property Type not available'}</p> {/* Display property type */}
-                
-                <input
-                  type="checkbox"
-                  checked={selectedFavorites.includes(property)} // Check if the property is selected as a favorite
-                  onChange={() => handleFavoriteSelection(property)} // Toggle favorite selection on checkbox change
-                />{' '}
-                Select for Price Prediction
-
-                {/* Delete button to remove the property from both favorites and price prediction */}
-                <button
-                  onClick={() => handleRemoveFavorite(property)} // Trigger the remove function when clicked
-                  className="ml-2 bg-red-500 text-white px-2 py-1 rounded"
-                >
-                  Remove from Favorites
-                </button>
-
-                {/* New Delete button to remove the property only from favorites */}
-                <button
-                  onClick={() => handleRemoveFromFavoritesOnly(property)} // Trigger the function to remove from favorites only
-                  className="ml-2 bg-red-500 text-white px-2 py-1 rounded"
-                >
-                  Remove from Prediction
-                </button>
-              </div>
-            ))
-          ) : (
-            <p>No favorites selected.</p> // Display message if no properties are selected as favorites
-          )}
-
-
-
-          {/* Filters Component */}
-          <Filters
-            neighborhoods={neighborhoods} // Pass the list of neighborhoods to the Filters component
-            propertyTypes={propertyTypes} // Pass the list of property types to the Filters component
-            filteredNeighborhood={filteredNeighborhood} // Pass the current neighborhood filter
-            setFilteredNeighborhood={setFilteredNeighborhood} // Pass the function to update the neighborhood filter
-            filteredPropertyType={filteredPropertyType} // Pass the current property type filter
-            setFilteredPropertyType={setFilteredPropertyType} // Pass the function to update the property type filter
-          />
-
-          {/* Month Selector for Price Prediction */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold mb-2" htmlFor="month-selector">
-              Select Number of Months:
-            </label>
-            <select
-              id="month-selector"
-              className="p-2 border rounded"
-              value={maxMonth}
-              onChange={(e) => setMaxMonth(parseInt(e.target.value, 10))} // Update maxMonth state when user selects a different value
-            >
-              {Array.from({ length: 12 }, (_, index) => {
-                const month = index + 1; // Generate month numbers 1 through 12
-                return (
-                  <option key={month} value={month}>
-                    {month} Month{month > 1 ? 's' : ''} {/* Handle pluralization */}
-                  </option>
-                );
-              })}
-            </select>
+          {/* Expenses Label */}
+          <p className="text-xs font-semibold mt-2">Expenses (Total: ${totalExpenses.toFixed(2)})</p>
+          <div className="w-full h-6 bg-gray-200 rounded-full mt-1 relative">
+            {/* Mortgage Expense */}
+            <div
+              className="h-6 rounded-l-full bg-red-500 absolute left-0"
+              style={{ width: `${Math.min(mortgageWidth, 100)}%` }} // Restrict width to fit container
+              title={`Mortgage: $${mortgage.toFixed(2)}`}
+            />
+            {/* Maintenance Expense */}
+            <div
+              className="h-6 bg-yellow-500 absolute left-[calc(${Math.min(mortgageWidth, 100)}%)]"
+              style={{ width: `${Math.min(maintenanceWidth, 100)}%` }} // Restrict width to fit container
+              title={`Maintenance: $${maintenance.toFixed(2)}`}
+            />
+            {/* Insurance Expense */}
+            <div
+              className="h-6 bg-blue-500 absolute left-[calc(${Math.min(mortgageWidth + maintenanceWidth, 100)}%)]"
+              style={{ width: `${Math.min(insuranceWidth, 100)}%` }} // Restrict width to fit container
+              title={`Insurance: $${insurance.toFixed(2)}`}
+            />
+            {/* Taxes Expense */}
+            <div
+              className="h-6 bg-purple-500 absolute left-[calc(${Math.min(mortgageWidth + maintenanceWidth + insuranceWidth, 100)}%)]"
+              style={{ width: `${Math.min(taxesWidth, 100)}%` }} // Restrict width to fit container
+              title={`Taxes: $${taxes.toFixed(2)}`}
+            />
           </div>
 
-          {/* Display error message if data fetching fails */}
-          {error ? (
-            <p className="text-red-600">{error}</p> // Render the error message in red if there's an error
-          ) : (
-            filteredListings.map((listing, index) => {
-              const prices = listing.prices?.map((priceObj) => priceObj.price) || []; // Extract price history or default to an empty array
-              return (
-                <ListingCard
-                  key={index}
-                  address={listing.address} // Pass the listing address to the ListingCard component
-                  neighborhood={listing.neighborhood} // Pass the neighborhood
-                  propertyType={listing.property_type} // Pass the property type
-                  prices={prices} // Pass the price history
-                  maxMonth={maxMonth} // Pass the selected number of months for the price history
-                  currentPrice={listing.current_price} // Pass the current price
-                  onSelect={() => onSelect(listing)} // Pass the onSelect function to allow property selection
-                />
-              );
-            })
-          )}
+          {/* Cash Flow Bar */}
+          <p className="text-xs font-semibold mt-2">
+            Cash Flow: ${((rent - totalExpenses) > 0 ? rent - totalExpenses : 0).toFixed(2)} (Profit)
+          </p>
+          <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
+            <div
+              className={`h-6 rounded-full ${cashFlowWidth > 0 ? 'bg-green-500' : 'bg-red-500'}`} // Green for positive, red for negative
+              style={{ width: `${Math.abs(cashFlowWidth)}%` }} // Cash flow bar
+            />
+          </div>
+        </div>
+      );
+    })}
+</div>
+
+
+
+
+          {/* Public Listings Container */}
+          <div className="flex-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-xl font-semibold mb-4 text-gray-700">Public Listings</h3>
+            <div className="max-h-96 overflow-y-auto space-y-4">
+              {error ? (
+                <p className="text-red-600">{error}</p>
+              ) : (
+                listings.map((listing) => (
+                  <ListingCard
+                    key={listing.id}
+                    address={listing.address || 'Address not available'}
+                    neighborhood={listing.neighborhood || 'Neighborhood not available'}
+                    propertyType={listing.property_type || 'Type not available'}
+                    prices={listing.prices?.map((priceObj) => priceObj.price) || []}
+                    currentPrice={listing.current_price || 'Price not available'}
+                  />
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </Layout>
   );
 };
 
-export default Analysis; // Export the Analysis component for use in the application
+export default Analysis;

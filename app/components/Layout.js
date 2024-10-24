@@ -1,9 +1,29 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Firebase Auth
+import { useRouter } from 'next/navigation'; // Next.js router for navigation
 import NavBar from './NavBar';
 
 const Layout = ({ children }) => {
+  const [user, setUser] = useState(null); // Track the logged-in user
+  const router = useRouter(); // Get the router instance for redirection
+  const auth = getAuth(); // Initialize Firebase Auth
+
+  useEffect(() => {
+    // Listen for authentication state changes
+    const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
+      if (loggedUser) {
+        setUser(loggedUser); // Set user if logged in
+      } else {
+        // If no user, redirect to login page
+        router.push('/login');
+      }
+    });
+
+    return () => unsubscribe(); // Clean up the listener on unmount
+  }, [auth, router]);
+
   useEffect(() => {
     // Ensure the chart-related functionality is only applied on pages that actually have a chart.
     const chart = document.getElementById('chart');
@@ -23,6 +43,10 @@ const Layout = ({ children }) => {
       return () => window.removeEventListener('resize', handleResize);
     }
   }, []);
+
+  if (!user) {
+    return null; // Optionally, return a loading spinner here while checking auth state
+  }
 
   return (
     <div>
