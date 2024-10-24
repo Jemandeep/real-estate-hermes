@@ -66,37 +66,39 @@ const Analysis = () => {
         let totalInvestment = 0;
         let currentPortfolioValue = 0;
         let cashFlow = 0;
-
+        
         data.forEach((property) => {
           const purchasedPrice = parseFloat(property.purchased_price || 0);
           const currentPrice = parseFloat(property.current_price || 0);
           const rentPrice = parseFloat(property.rent_price || 0);
           const mortgageMonthly = parseFloat(property.mortgage_monthly_payment || 0);
-          const maintenance = parseFloat(property.maintenance || 0);
-          const insurance = parseFloat(property.insurance || 0);
-          const taxes = parseFloat(property.taxes || 0);
-
+          const maintenance = parseFloat(property.maintenance || 0) / 12;  // Monthly maintenance
+          const insurance = parseFloat(property.insurance || 0) / 12;  // Monthly insurance
+          const taxes = parseFloat(property.taxes || 0) / 12;  // Monthly taxes
+        
+          // Accumulate total investment and current portfolio value
           totalInvestment += purchasedPrice;
           currentPortfolioValue += currentPrice;
-
+        
           // Calculate cash flow only for properties that are `is_for_rent: true`
           if (property.is_for_rent) {
-            const monthlyInsurance = insurance / 12;
-            const monthlyTaxes = taxes / 12;
-            const propertyCashFlow = rentPrice - mortgageMonthly - maintenance - monthlyInsurance - monthlyTaxes;
+            const totalExpenses = mortgageMonthly + maintenance + insurance + taxes;
+            const propertyCashFlow = rentPrice - totalExpenses;  // Cash Flow calculation
             cashFlow += propertyCashFlow;
           }
         });
-
+        
+        // Calculate ROI (Return on Investment)
         const roi = totalInvestment > 0 ? ((currentPortfolioValue - totalInvestment) / totalInvestment) * 100 : 0;
-
-        // Update the metrics
+        
+        // Set metrics with the calculated values
         setMetrics({
           totalInvestment,
           currentPortfolioValue,
           roi,
           cashFlow,
         });
+        
       } catch (error) {
         setError(error.message); // Set any errors
         console.error('Error fetching user properties:', error); // Log the error
@@ -202,39 +204,39 @@ const Analysis = () => {
 
         {/* Flex layout for the map and charts */}
         <div className="flex">
-          {/* Left: LTV Ratio Horizontal Bar */}
+{/* Left: LTV Ratio Horizontal Bar */}
+<div
+  className="w-1/4 bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+  style={{ maxHeight: '500px', overflowY: 'auto' }} // Ensure scrolling for multiple properties
+>
+  <h3 className="text-lg font-semibold mb-2">LTV Ratio</h3>
+  {userProperties.map((property) => {
+    const ltvRatio = (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) * 100;
+
+    // Determine bar color based on LTV ratio
+    const getColor = (ratio) => {
+      if (ratio < 60) return 'bg-green-500'; // Good: Green
+      if (ratio >= 60 && ratio <= 80) return 'bg-yellow-500'; // Okay: Yellow
+      return 'bg-red-500'; // Bad: Red
+    };
+
+    return (
+      <div key={property.id} className="mb-6">
+        {/* Property Address Label */}
+        <p className="text-sm font-medium text-gray-700">{property.address}</p>
+
+        {/* LTV Ratio Loading Bar */}
+        <div className="w-full h-6 bg-gray-200 rounded-full mt-2">
           <div
-            className="w-1/4 bg-white p-6 rounded-lg shadow-sm border border-gray-200"
-            style={{ maxHeight: '500px', overflowY: 'auto' }} // Ensure scrolling for multiple properties
-          >
-            <h3 className="text-lg font-semibold mb-2">LTV Ratio</h3>
-            {userProperties.map((property) => {
-              const ltvRatio = (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) * 100;
-
-              // Determine bar color based on LTV ratio
-              const getColor = (ratio) => {
-                if (ratio < 60) return 'bg-green-500'; // Good: Green
-                if (ratio >= 60 && ratio <= 80) return 'bg-yellow-500'; // Okay: Yellow
-                return 'bg-red-500'; // Bad: Red
-              };
-
-              return (
-                <div key={property.id} className="mb-6">
-                  {/* Property Address Label */}
-                  <p className="text-sm font-medium text-gray-700">{property.address}</p>
-
-                  {/* LTV Ratio Loading Bar */}
-                  <div className="w-full h-6 bg-gray-200 rounded-full mt-2">
-                    <div
-                      className={`h-6 rounded-full ${getColor(ltvRatio)}`} // Dynamic bar color
-                      style={{ width: `${ltvRatio}%` }} // Dynamic bar width based on LTV ratio
-                    />
-                  </div>
-                  <p className="text-xs mt-1 text-gray-500">{ltvRatio.toFixed(2)}% LTV Ratio</p>
-                </div>
-              );
-            })}
-          </div>
+            className={`h-6 rounded-full ${getColor(ltvRatio)}`} // Dynamic bar color
+            style={{ width: `${ltvRatio}%` }} // Dynamic bar width based on LTV ratio
+          />
+        </div>
+        <p className="text-xs mt-1 text-gray-500">{ltvRatio.toFixed(2)}% LTV Ratio</p>
+      </div>
+    );
+  })}
+</div>
 
           {/* Map Component */}
           <div className="flex-1 mx-4 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -245,87 +247,87 @@ const Analysis = () => {
 
         {/* Public Listings */}
         <div className="flex mt-6">
-          {/* Right: Rental Income vs Expenses Horizontal Bars */}
-          <div
-            className="w-1/4 bg-white p-6 rounded-lg shadow-sm border border-gray-200"
-            style={{ maxHeight: '500px', overflowY: 'auto' }} // Ensure scrolling for multiple properties
-          >
-            <h3 className="text-lg font-semibold mb-2">Rental Income vs. Expenses</h3>
-            {userProperties
-              .filter((property) => property.is_for_rent) // Only show for rental properties
-              .map((property) => {
-                const rent = parseFloat(property.rent_price || 0);
-                const mortgage = parseFloat(property.mortgage_monthly_payment || 0);
-                const maintenance = parseFloat(property.maintenance || 0) / 12;
-                const insurance = parseFloat(property.insurance || 0) / 12;
-                const taxes = parseFloat(property.taxes || 0) / 12;
+        {/* Right: Rental Income vs Expenses Horizontal Bars */}
+<div
+  className="w-1/4 bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+  style={{ maxHeight: '500px', overflowY: 'auto' }} // Ensure scrolling for multiple properties
+>
+  <h3 className="text-lg font-semibold mb-2">Rental Income vs. Expenses</h3>
+  {userProperties
+    .filter((property) => property.is_for_rent) // Only show for rental properties
+    .map((property) => {
+      const rent = parseFloat(property.rent_price || 0);
+      const mortgage = parseFloat(property.mortgage_monthly_payment || 0);
+      const maintenance = parseFloat(property.maintenance || 0) / 12;
+      const insurance = parseFloat(property.insurance || 0) / 12;
+      const taxes = parseFloat(property.taxes || 0) / 12;
 
-                const totalExpenses = mortgage + maintenance + insurance + taxes;
+      const totalExpenses = mortgage + maintenance + insurance + taxes;
 
-                // Calculate percentage width of each expense relative to the rent
-                const mortgageWidth = (mortgage / rent) * 100;
-                const maintenanceWidth = (maintenance / rent) * 100;
-                const insuranceWidth = (insurance / rent) * 100;
-                const taxesWidth = (taxes / rent) * 100;
-                const cashFlowWidth = ((rent - totalExpenses) / rent) * 100; // Cash flow relative to rent
+      // Calculate percentage width of each expense relative to the rent
+      const mortgageWidth = (mortgage / rent) * 100;
+      const maintenanceWidth = (maintenance / rent) * 100;
+      const insuranceWidth = (insurance / rent) * 100;
+      const taxesWidth = (taxes / rent) * 100;
+      const cashFlowWidth = ((rent - totalExpenses) / rent) * 100; // Cash flow relative to rent
 
-                return (
-                  <div key={property.id} className="mb-6">
-                    {/* Property Address Label */}
-                    <p className="text-sm font-medium text-gray-700">{property.address}</p>
+      return (
+        <div key={property.id} className="mb-6">
+          {/* Property Address Label */}
+          <p className="text-sm font-medium text-gray-700">{property.address}</p>
 
-                    {/* Rental Income Bar with Amount */}
-                    <p className="text-xs font-semibold mt-2">Rental Income: ${rent.toFixed(2)}</p>
-                    <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
-                      <div
-                        className="h-6 rounded-full bg-green-500" // Green for rental income
-                        style={{ width: '100%' }} // Full width represents 100% of rental income
-                      />
-                    </div>
-
-                    {/* Expenses Label */}
-                    <p className="text-xs font-semibold mt-2">Expenses (Total: ${totalExpenses.toFixed(2)})</p>
-                    <div className="w-full h-6 bg-gray-200 rounded-full mt-1 relative">
-                      {/* Mortgage Expense */}
-                      <div
-                        className="h-6 rounded-l-full bg-red-500 absolute left-0"
-                        style={{ width: `${Math.min(mortgageWidth, 100)}%` }} // Restrict width to fit container
-                        title={`Mortgage: $${mortgage.toFixed(2)}`}
-                      />
-                      {/* Maintenance Expense */}
-                      <div
-                        className="h-6 bg-yellow-500 absolute left-[calc(${Math.min(mortgageWidth, 100)}%)]"
-                        style={{ width: `${Math.min(maintenanceWidth, 100)}%` }} // Restrict width to fit container
-                        title={`Maintenance: $${maintenance.toFixed(2)}`}
-                      />
-                      {/* Insurance Expense */}
-                      <div
-                        className="h-6 bg-blue-500 absolute left-[calc(${Math.min(mortgageWidth + maintenanceWidth, 100)}%)]"
-                        style={{ width: `${Math.min(insuranceWidth, 100)}%` }} // Restrict width to fit container
-                        title={`Insurance: $${insurance.toFixed(2)}`}
-                      />
-                      {/* Taxes Expense */}
-                      <div
-                        className="h-6 bg-purple-500 absolute left-[calc(${Math.min(mortgageWidth + maintenanceWidth + insuranceWidth, 100)}%)]"
-                        style={{ width: `${Math.min(taxesWidth, 100)}%` }} // Restrict width to fit container
-                        title={`Taxes: $${taxes.toFixed(2)}`}
-                      />
-                    </div>
-
-                    {/* Cash Flow Bar */}
-                    <p className="text-xs font-semibold mt-2">
-                      Cash Flow: ${((rent - totalExpenses) > 0 ? rent - totalExpenses : 0).toFixed(2)} (Profit)
-                    </p>
-                    <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
-                      <div
-                        className={`h-6 rounded-full ${cashFlowWidth > 0 ? 'bg-green-500' : 'bg-red-500'}`} // Green for positive, red for negative
-                        style={{ width: `${Math.abs(cashFlowWidth)}%` }} // Cash flow bar
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+          {/* Rental Income Bar with Amount */}
+          <p className="text-xs font-semibold mt-2">Rental Income: ${rent.toFixed(2)}</p>
+          <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
+            <div
+              className="h-6 rounded-full bg-green-500" // Green for rental income
+              style={{ width: '100%' }} // Full width represents 100% of rental income
+            />
           </div>
+
+          {/* Expenses Label */}
+          <p className="text-xs font-semibold mt-2">Expenses (Total: ${totalExpenses.toFixed(2)})</p>
+          <div className="w-full h-6 bg-gray-200 rounded-full mt-1 relative">
+            {/* Mortgage Expense */}
+            <div
+              className="h-6 rounded-l-full bg-red-500 absolute left-0"
+              style={{ width: `${Math.min(mortgageWidth, 100)}%` }} // Restrict width to fit container
+              title={`Mortgage: $${mortgage.toFixed(2)}`}
+            />
+            {/* Maintenance Expense */}
+            <div
+              className="h-6 bg-yellow-500 absolute left-[calc(${Math.min(mortgageWidth, 100)}%)]"
+              style={{ width: `${Math.min(maintenanceWidth, 100)}%` }} // Restrict width to fit container
+              title={`Maintenance: $${maintenance.toFixed(2)}`}
+            />
+            {/* Insurance Expense */}
+            <div
+              className="h-6 bg-blue-500 absolute left-[calc(${Math.min(mortgageWidth + maintenanceWidth, 100)}%)]"
+              style={{ width: `${Math.min(insuranceWidth, 100)}%` }} // Restrict width to fit container
+              title={`Insurance: $${insurance.toFixed(2)}`}
+            />
+            {/* Taxes Expense */}
+            <div
+              className="h-6 bg-purple-500 absolute left-[calc(${Math.min(mortgageWidth + maintenanceWidth + insuranceWidth, 100)}%)]"
+              style={{ width: `${Math.min(taxesWidth, 100)}%` }} // Restrict width to fit container
+              title={`Taxes: $${taxes.toFixed(2)}`}
+            />
+          </div>
+
+          {/* Cash Flow Bar */}
+          <p className="text-xs font-semibold mt-2">
+            Cash Flow: ${((rent - totalExpenses) > 0 ? rent - totalExpenses : 0).toFixed(2)} (Profit)
+          </p>
+          <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
+            <div
+              className={`h-6 rounded-full ${cashFlowWidth > 0 ? 'bg-green-500' : 'bg-red-500'}`} // Green for positive, red for negative
+              style={{ width: `${Math.abs(cashFlowWidth)}%` }} // Cash flow bar
+            />
+          </div>
+        </div>
+      );
+    })}
+</div>
 
 
 
