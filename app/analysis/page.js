@@ -7,6 +7,28 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Firebase Auth to
 import Layout from '../components/Layout'; // Layout component for consistent structure
 import ListingCard from '../components/ListingCard'; // Component to display each listing
 import MapComponent from '../components/MapComponent'; // Component to display a map with listings
+import { Bar } from 'react-chartjs-2'; // Import Bar chart from react-chartjs-2
+
+// Import and register necessary components for Chart.js
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+// Register the components you are going to use
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const Analysis = () => {
   const [userProperties, setUserProperties] = useState([]); // Store fetched properties belonging to the user
@@ -111,6 +133,48 @@ const Analysis = () => {
     return () => unsubscribe(); // Cleanup listener on unmount
   }, [auth]);
 
+  // Function to generate Rental Income vs. Expenses bar chart data for user properties
+  const rentalIncomeVsExpensesData = (property) => {
+    const rent = parseFloat(property.rent_price || 0);
+    const mortgage = parseFloat(property.mortgage_monthly_payment || 0);
+    const maintenance = parseFloat(property.maintenance || 0) / 12;
+    const insurance = parseFloat(property.insurance || 0) / 12;
+    const taxes = parseFloat(property.taxes || 0) / 12;
+
+    return {
+      labels: ['Rent', 'Mortgage', 'Maintenance', 'Insurance', 'Taxes'],
+      datasets: [
+        {
+          label: 'Rental Income vs. Expenses',
+          data: [rent, mortgage, maintenance, insurance, taxes],
+          backgroundColor: ['#4CAF50', '#F44336', '#FFC107', '#2196F3', '#9C27B0'],
+          borderColor: ['#388E3C', '#D32F2F', '#FFA000', '#1976D2', '#7B1FA2'],
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
+
+  // Function to generate LTV Ratio bar chart data for user properties
+  const loanToValueData = (property) => {
+    const mortgage = parseFloat(property.mortgage_amount || 0);
+    const currentPrice = parseFloat(property.current_price || 0);
+    const ltvRatio = currentPrice > 0 ? (mortgage / currentPrice) * 100 : 0;
+
+    return {
+      labels: ['LTV Ratio'],
+      datasets: [
+        {
+          label: 'Loan-to-Value (LTV) Ratio',
+          data: [ltvRatio],
+          backgroundColor: ['#FF6384'],
+          borderColor: ['#FF6384'],
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
+
   return (
     <Layout>
       <div className="flex-1">
@@ -136,30 +200,74 @@ const Analysis = () => {
           </div>
         </div>
 
-        {/* Map Component */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">Your Properties Map</h2>
-          <MapComponent listings={userProperties} /> {/* Pass user properties to the MapComponent */}
+        {/* Flex layout for the map and charts */}
+        <div className="flex">
+          {/* Left: LTV Ratio Chart */}
+          <div className="w-1/4">
+            <h3 className="text-lg font-semibold mb-2">LTV Ratio</h3>
+            {userProperties.map((property) => (
+              <Bar
+                key={property.id}
+                data={loanToValueData(property)}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: true,
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      max: 100,
+                    },
+                  },
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Map Component */}
+          <div className="flex-1 mx-4">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">Your Properties Map</h2>
+            <MapComponent listings={userProperties} /> {/* Pass user properties to the MapComponent */}
+          </div>
+
+          {/* Right: Rental Income vs Expenses Chart */}
+          <div className="w-1/4">
+            <h3 className="text-lg font-semibold mb-2">Rental Income vs. Expenses</h3>
+            {userProperties
+              .filter((property) => property.is_for_rent) // Only show for rental properties
+              .map((property) => (
+                <Bar
+                  key={property.id}
+                  data={rentalIncomeVsExpensesData(property)}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                      },
+                    },
+                  }}
+                />
+              ))}
+          </div>
         </div>
 
-        {/* Public Listings - Align below the map */}
-        <div 
-          className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mt-6" 
-          style={{ maxWidth: '80%', marginLeft: 'auto', marginRight: '0' }}
-        >
+        {/* Public Listings */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mt-6" 
+          style={{ maxWidth: '80%', marginLeft: 'auto', marginRight: '0' }}>
           <h3 className="text-xl font-semibold mb-4 text-gray-700">Public Listings</h3>
           <div className="max-h-96 overflow-y-auto space-y-4">
             {error ? (
-              <p className="text-red-600">{error}</p> // Render the error message in red if there's an error
+              <p className="text-red-600">{error}</p>
             ) : (
               listings.map((listing) => (
                 <ListingCard
-                  key={listing.id} // Use the listing ID as a key for better performance
-                  address={listing.address || 'Address not available'} // Provide a fallback for missing address
-                  neighborhood={listing.neighborhood || 'Neighborhood not available'} // Provide a fallback for missing neighborhood
-                  propertyType={listing.property_type || 'Type not available'} // Provide a fallback for missing property type
-                  prices={listing.prices?.map((priceObj) => priceObj.price) || []} // Extract prices or default to an empty array
-                  currentPrice={listing.current_price || 'Price not available'} // Provide a fallback for missing current price
+                  key={listing.id}
+                  address={listing.address || 'Address not available'}
+                  neighborhood={listing.neighborhood || 'Neighborhood not available'}
+                  propertyType={listing.property_type || 'Type not available'}
+                  prices={listing.prices?.map((priceObj) => priceObj.price) || []}
+                  currentPrice={listing.current_price || 'Price not available'}
                 />
               ))
             )}
