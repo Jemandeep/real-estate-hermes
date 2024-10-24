@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth, db } from "../../firebase";
-import { FaUserCircle } from "react-icons/fa"; // Ensure correct import
+import { auth, db } from "../../firebase"; // Ensure Firebase config is correct
+import { FaUserCircle } from "react-icons/fa";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation"; 
 
@@ -13,6 +13,7 @@ const NavBar = () => {
   const dropdownRef = useRef(null);
   const router = useRouter();
 
+  // Monitor the user's authentication state and role
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
@@ -31,6 +32,7 @@ const NavBar = () => {
     return () => unsubscribe();
   }, []);
 
+  // Close the dropdown if the user clicks outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -41,6 +43,7 @@ const NavBar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Handle logout
   const handleLogout = async () => {
     const confirmed = window.confirm("Are you sure you want to logout?");
     if (confirmed) {
@@ -54,8 +57,9 @@ const NavBar = () => {
     }
   };
 
+  // Toggle dropdown
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
-
+//  chat gpt :create a navbar component that displays the  logo, common links, and user account options and use link tags
   return (
     <nav className="bg-white shadow-md py-4 fixed top-0 left-0 right-0 z-50">
       <div className="container mx-auto flex justify-between items-center px-4 lg:px-8">
