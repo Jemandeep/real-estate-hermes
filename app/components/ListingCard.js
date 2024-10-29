@@ -16,7 +16,6 @@ const ListingCard = ({
   prices = [], // Provide default value as an empty array
   maxMonth = 12,
   currentPrice,
-  onSelect,
 }) => {
   // Safeguard: Ensure `prices` is always an array
   const validPrices = Array.isArray(prices)
@@ -53,18 +52,10 @@ const ListingCard = ({
         <p className="text-sm text-gray-600">
           {address}, {neighborhood}
         </p>
-        <div className="flex items-center mt-2">
-          <button
-            onClick={onSelect}
-            className="select-button"
-          >
-            Add to Favorites
-          </button>
-        </div>
       </div>
 
       <div className="flex items-center">
-        <ResponsiveContainer width={450} height={70}>
+        <ResponsiveContainer width={650} height={70}>
           <LineChart data={priceData}>
             <XAxis dataKey="name" hide />
             <YAxis

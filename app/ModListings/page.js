@@ -6,6 +6,32 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'next/navigation'; 
 import Layout from '../components/Layout';
 
+// Nominatim API URL
+const NominatimAPIURL = "https://nominatim.openstreetmap.org/search";
+
+// Function to fetch geolocation data from Nominatim API
+const fetchGeolocationData = async (address) => {
+  try {
+    const response = await fetch(`${NominatimAPIURL}?q=${encodeURIComponent(address)}&format=json&addressdetails=1&limit=1`);
+    const data = await response.json();
+    if (data && data.length > 0) {
+      const result = data[0];
+      const { lat, lon } = result;
+      const { postcode, neighbourhood } = result.address;
+
+      return {
+        latitude: lat,
+        longitude: lon,
+        postal_code: postcode || '',
+        neighborhood: neighbourhood || ''
+      };
+    }
+  } catch (error) {
+    console.error("Error fetching geolocation data: ", error);
+  }
+  return null;
+};
+
 const ModifyListings = () => {
   const router = useRouter();
   const auth = getAuth(); 
@@ -19,16 +45,20 @@ const ModifyListings = () => {
     latitude: '',
     longitude: '',
     neighborhood: '',
+    property_type: '', // New property type field
+    agent_name: '', // New field to store the agent's name
   });
 
-  const [historicalPrices, setHistoricalPrices] = useState([
-    { month: 'Last month', price: 50000 },
-  ]);
+  const [monthlyPrices, setMonthlyPrices] = useState(Array(12).fill({ month: '', price: '' })); // Initialize with 12 months
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
       if (loggedUser) {
         setUser(loggedUser);
+        setFormValues((prevValues) => ({
+          ...prevValues,
+          agent_name: loggedUser.displayName || loggedUser.email, // Automatically set agent's name
+        }));
       } else {
         router.push('/login');
       }
@@ -36,45 +66,20 @@ const ModifyListings = () => {
     return () => unsubscribe();
   }, [auth, router]);
 
-  useEffect(() => {
-    const loadAutocomplete = () => {
-      const autocomplete = new window.google.maps.places.Autocomplete(
-        document.getElementById('address-input'),
-        { types: ['address'] }
-      );
+  const handleAddressChange = async (e) => {
+    const { name, value } = e.target;
+    setFormValues({ ...formValues, [name]: value });
 
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        if (!place.geometry) return;
-
-        const { lat, lng } = place.geometry.location;
-        const postalCodeComponent = place.address_components.find((component) =>
-          component.types.includes('postal_code')
-        );
-        const neighborhoodComponent = place.address_components.find((component) =>
-          component.types.includes('neighborhood') || component.types.includes('sublocality')
-        );
-
-        setFormValues((prev) => ({
-          ...prev,
-          address: place.formatted_address,
-          postal_code: postalCodeComponent ? postalCodeComponent.short_name : '',
-          latitude: lat(),
-          longitude: lng(),
-          neighborhood: neighborhoodComponent ? neighborhoodComponent.long_name : '',
+    if (name === 'address' && value.trim() !== '') {
+      const geolocationData = await fetchGeolocationData(value);
+      if (geolocationData) {
+        setFormValues((prevValues) => ({
+          ...prevValues,
+          ...geolocationData, // Update latitude, longitude, postal code, neighborhood
         }));
-      });
-    };
-
-    if (window.google && window.google.maps) {
-      loadAutocomplete();
-    } else {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAkhw-ajGfapfGKUYblHstW85TIm-IjKSU&libraries=places`;
-      script.onload = () => loadAutocomplete();
-      document.body.appendChild(script);
+      }
     }
-  }, []);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -86,15 +91,35 @@ const ModifyListings = () => {
     setFormValues({ ...formValues, current_price: priceValue });
   };
 
-  const handleAddPrice = () => {
-    const newPrice = { month: `Last ${historicalPrices.length + 1} month`, price: formValues.current_price };
-    setHistoricalPrices([...historicalPrices, newPrice]);
+  const handleMonthlyPriceChange = (index, e) => {
+    const newPrices = [...monthlyPrices];
+    newPrices[index].price = e.target.value;
+    setMonthlyPrices(newPrices);
   };
 
-  const handleHistoricalChange = (index, e) => {
-    const updatedPrices = [...historicalPrices];
-    updatedPrices[index].price = e.target.value.replace(/,/g, '');
-    setHistoricalPrices(updatedPrices);
+  // Function to auto-generate random variations for the 12 months' prices with 70% chance of increase
+  const autoCompleteMonthlyPrices = () => {
+    const randomPrices = [...monthlyPrices];
+    randomPrices[0] = { month: "Last month", price: formValues.current_price }; // First month based on current price
+
+    for (let i = 1; i < 12; i++) {
+      // 70% chance to increase, 30% chance to decrease
+      const shouldIncrease = Math.random() < 0.7;
+      const randomPercentage = (Math.random() * 5) / 100; // Variation between 0% and 5%
+      const previousPrice = parseFloat(randomPrices[i - 1].price);
+
+      // Apply increase or decrease
+      const newPrice = shouldIncrease
+        ? previousPrice * (1 + randomPercentage)
+        : previousPrice * (1 - randomPercentage);
+
+      randomPrices[i] = { 
+        month: `Last ${i + 1} month`, 
+        price: newPrice.toFixed(2) 
+      };
+    }
+
+    setMonthlyPrices(randomPrices);
   };
 
   const handleSubmit = async (e) => {
@@ -104,7 +129,11 @@ const ModifyListings = () => {
     try {
       const docRef = await addDoc(collection(db, 'listings'), {
         ...formValues,
-        prices: historicalPrices,
+        prices: monthlyPrices.map((item) => ({
+          month: item.month,
+          price: item.price.toString(), // Ensure prices are stored as strings
+        })),
+        agent_name: formValues.agent_name, // Include the agent's name
       });
 
       const userDocRef = doc(db, 'users', user.email);
@@ -125,6 +154,7 @@ const ModifyListings = () => {
       <div className="container mx-auto p-6">
         <h2 className="text-2xl font-bold mb-4">Add New Listing</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Address */}
           <div>
             <label className="block text-gray-700">Address</label>
             <input
@@ -132,13 +162,82 @@ const ModifyListings = () => {
               name="address"
               id="address-input"
               value={formValues.address}
-              onChange={handleChange}
+              onChange={handleAddressChange}
               required
               className="w-full p-2 border rounded"
               placeholder="Start typing an address..."
             />
           </div>
 
+          {/* Property Type */}
+          <div>
+            <label className="block text-gray-700">Property Type</label>
+            <select
+              name="property_type"
+              value={formValues.property_type}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              required
+            >
+              <option value="" disabled>Select property type</option>
+              <option value="Mansion">Mansion</option>
+              <option value="Apartment">Apartment</option>
+              <option value="Condo">Condo</option>
+              <option value="Townhouse">Townhouse</option>
+              <option value="Detached House">Detached House</option>
+              <option value="Bungalow">Bungalow</option>
+            </select>
+          </div>
+
+          {/* Display Postal Code, Latitude, Longitude, Neighborhood */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-700">Postal Code</label>
+              <input
+                type="text"
+                name="postal_code"
+                value={formValues.postal_code}
+                onChange={handleChange}
+                readOnly
+                className="w-full p-2 border rounded"
+              />
+            </div>
+            <div>
+  <label className="block text-gray-700">Neighborhood</label>
+  <input
+    type="text"
+    name="neighborhood"
+    value={formValues.neighborhood}
+    onChange={handleChange}
+    className="w-full p-2 border rounded"
+  />
+</div>
+
+            <div>
+              <label className="block text-gray-700">Latitude</label>
+              <input
+                type="text"
+                name="latitude"
+                value={formValues.latitude}
+                onChange={handleChange}
+                readOnly
+                className="w-full p-2 border rounded"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700">Longitude</label>
+              <input
+                type="text"
+                name="longitude"
+                value={formValues.longitude}
+                onChange={handleChange}
+                readOnly
+                className="w-full p-2 border rounded"
+              />
+            </div>
+          </div>
+
+          {/* Bathrooms and Bedrooms */}
           <div>
             <label className="block text-gray-700">Bathrooms</label>
             <select
@@ -146,6 +245,7 @@ const ModifyListings = () => {
               value={formValues.bathroom_count}
               onChange={handleChange}
               className="w-full p-2 border rounded"
+              required
             >
               {[...Array(6).keys()].map((num) => (
                 <option key={num + 1} value={num + 1}>
@@ -162,6 +262,7 @@ const ModifyListings = () => {
               value={formValues.bed_count}
               onChange={handleChange}
               className="w-full p-2 border rounded"
+              required
             >
               {[...Array(6).keys()].map((num) => (
                 <option key={num + 1} value={num + 1}>
@@ -171,6 +272,7 @@ const ModifyListings = () => {
             </select>
           </div>
 
+          {/* Current Price */}
           <div>
             <label className="block text-gray-700">Current Price</label>
             <div className="flex items-center">
@@ -180,6 +282,7 @@ const ModifyListings = () => {
                 value={formValues.current_price}
                 onChange={handlePriceChange}
                 className="w-1/3 p-2 border rounded mr-4"
+                required
               />
               <input
                 type="range"
@@ -189,42 +292,50 @@ const ModifyListings = () => {
                 value={formValues.current_price}
                 onChange={handlePriceChange}
                 className="w-2/3"
+                required
               />
             </div>
           </div>
 
-          {historicalPrices.map((price, index) => (
-            <div key={index} className="space-y-2">
-              <label className="block text-gray-700">{price.month}</label>
-              <input
-                type="text"
-                value={price.price}
-                onChange={(e) => handleHistoricalChange(index, e)}
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="range"
-                min="50000"
-                max="20000000"
-                step="50000"
-                value={price.price}
-                onChange={(e) => handleHistoricalChange(index, e)}
-                className="w-full"
-              />
-            </div>
-          ))}
+          {/* Monthly Price Inputs */}
+          <div className="space-y-4">
+            {monthlyPrices.map((price, index) => (
+              <div key={index} className="space-y-2">
+                <label className="block text-gray-700">{price.month || `Last ${index + 1} month`}</label>
+                <input
+                  type="text"
+                  value={price.price}
+                  onChange={(e) => handleMonthlyPriceChange(index, e)}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+                <input
+                  type="range"
+                  min="50000"
+                  max="20000000"
+                  step="50000"
+                  value={price.price}
+                  onChange={(e) => handleMonthlyPriceChange(index, e)}
+                  className="w-full"
+                  required
+                />
+              </div>
+            ))}
+          </div>
 
+          {/* Auto Complete Button */}
           <button
             type="button"
-            onClick={handleAddPrice}
-            className="px-4 py-2 bg-gray-300 rounded"
+            onClick={autoCompleteMonthlyPrices}
+            className="mt-2 px-4 py-2 bg-green-500 text-white rounded"
           >
-            + Add Previous Month Price
+            Auto Complete Monthly Prices
           </button>
 
+          {/* Submit Button */}
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded"
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
           >
             Add New Listing
           </button>
