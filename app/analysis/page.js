@@ -103,7 +103,7 @@ const Analysis = () => {
       try {
         const userDocRef = doc(db, 'users', userEmail); // Reference to the user's document
         const userDocSnapshot = await getDoc(userDocRef); // Fetch the single user document
-    
+
         if (userDocSnapshot.exists()) {
           const userData = userDocSnapshot.data();
           setWatchlist(userData.watchlist || []); // Set watchlist from Firestore
@@ -115,7 +115,7 @@ const Analysis = () => {
         console.error('Error fetching watchlist:', error);
       }
     };
-    
+
 
     // Check for the authenticated user and fetch their properties and watchlist
     const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
@@ -133,6 +133,7 @@ const Analysis = () => {
   }, [auth]);
 
   // Function to add a listing to the user's watchlist in Firestore
+  // Function to add listing to watchlist
   const addToWatchlist = async (listing) => {
     if (!user) {
       alert('You need to be logged in to add properties to your watchlist.');
@@ -140,17 +141,18 @@ const Analysis = () => {
     }
 
     try {
-      const userDocRef = doc(db, 'users', user.email); // Reference to the user's document in Firestore
+      const userDocRef = doc(db, 'users', user.email);
       await updateDoc(userDocRef, {
-        watchlist: arrayUnion(listing.id), // Add the listing ID to the user's watchlist
+        watchlist: arrayUnion(listing.id),
       });
-      setWatchlist([...watchlist, listing.id]); // Update local state
+      setWatchlist((prev) => [...prev, listing]); // Add to watchlist state
       alert(`Added ${listing.address} to your watchlist.`);
     } catch (error) {
       console.error('Error adding to watchlist:', error);
       alert('Error adding to watchlist.');
     }
   };
+
 
   return (
     <Layout>
@@ -320,19 +322,15 @@ const Analysis = () => {
                         propertyType={listing.property_type || 'Type not available'}
                         prices={listing.prices?.map((priceObj) => priceObj.price) || []}
                         currentPrice={listing.current_price || 'Price not available'}
+                        addToWatchlist={addToWatchlist} // Pass addToWatchlist function
+                        listing={listing} // Pass the listing object
                       />
-                      {/* Add to Watchlist Button */}
-                      <button
-                        onClick={() => addToWatchlist(listing)}
-                        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
-                      >
-                        Add to Watchlist
-                      </button>
                     </div>
                   ))
                 )}
               </div>
             </div>
+
 
             {/* Watchlist Container */}
             <div className="w-1/4 ml-4 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
