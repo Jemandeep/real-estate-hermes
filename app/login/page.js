@@ -16,6 +16,8 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError(""); // Clear any previous errors
+
     try {
       // Firebase authentication using email and password
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -25,7 +27,14 @@ export default function LoginPage() {
       router.push("/"); // Redirect to the main page or wherever you'd like
 
     } catch (error) {
-      setError("Failed to login. Please check your credentials.");
+      console.error("Login error:", error); // Log the full error
+      if (error.code === "auth/user-not-found") {
+        setError("No account found with this email.");
+      } else if (error.code === "auth/wrong-password") {
+        setError("Incorrect password.");
+      } else {
+        setError("Failed to login. Please check your credentials.");
+      }
     }
   };
 
@@ -91,4 +100,4 @@ export default function LoginPage() {
       </div>
     </Layout>
   );
-} 
+}
