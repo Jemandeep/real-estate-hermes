@@ -40,6 +40,9 @@ const Footer = () => {
           <Link href="/faq" className="text-gray-600 hover:text-blue-500 transition duration-200">
             FAQ
           </Link>
+          <Link href="/login" className="text-gray-600 hover:text-blue-500 transition duration-200">
+            login
+          </Link>
         </div>
         <div className="flex justify-center space-x-4 mb-6">
           <a

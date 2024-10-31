@@ -7,6 +7,7 @@ import NavBar from './NavBar';
 
 const Layout = ({ children }) => {
   const [user, setUser] = useState(null); // Track the logged-in user
+  const [loading, setLoading] = useState(true); // Track loading state for authentication check
   const router = useRouter(); // Get the router instance for redirection
   const auth = getAuth(); // Initialize Firebase Auth
 
@@ -16,16 +17,16 @@ const Layout = ({ children }) => {
       if (loggedUser) {
         setUser(loggedUser); // Set user if logged in
       } else {
-        // If no user, redirect to login page
-        router.push('/login');
+        router.push('/login'); // Redirect to login if no user is logged in
       }
+      setLoading(false); // Set loading to false once the check is complete
     });
 
     return () => unsubscribe(); // Clean up the listener on unmount
   }, [auth, router]);
 
   useEffect(() => {
-    // Ensure the chart-related functionality is only applied on pages that actually have a chart.
+    // Responsive chart resize functionality, applied only if chart exists on the page
     const chart = document.getElementById('chart');
     if (chart) {
       const handleResize = () => {
@@ -33,19 +34,17 @@ const Layout = ({ children }) => {
         chart.style.height = window.innerHeight * 0.5 + 'px';
       };
 
-      // Initial call when the component mounts
+      // Initial call and resize listener
       handleResize();
-
-      // Setup the resize event listener
       window.addEventListener('resize', handleResize);
 
-      // Cleanup the event listener on component unmount
+      // Cleanup listener on unmount
       return () => window.removeEventListener('resize', handleResize);
     }
   }, []);
 
-  if (!user) {
-    return null; // Optionally, return a loading spinner here while checking auth state
+  if (loading) {
+    return <div>Loading...</div>; // Display a loading message or spinner during auth check
   }
 
   return (

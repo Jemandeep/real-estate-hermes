@@ -16,6 +16,8 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError(""); // Clear any previous errors
+
     try {
       // Firebase authentication using email and password
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -25,20 +27,25 @@ export default function LoginPage() {
       router.push("/"); // Redirect to the main page or wherever you'd like
 
     } catch (error) {
-      setError("Failed to login. Please check your credentials.");
+      console.error("Login error:", error); // Log the full error
+      if (error.code === "auth/user-not-found") {
+        setError("No account found with this email.");
+      } else if (error.code === "auth/wrong-password") {
+        setError("Incorrect password.");
+      } else {
+        setError("Failed to login. Please check your credentials.");
+      }
     }
   };
 
   return (
     <Layout>
-      <div className="login-container">
-        <div className="login-box">
-          <h2 className="login-title">LOGIN</h2>
+      <div className="login-container min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="login-box max-w-md w-full bg-white p-8 rounded shadow">
+          <h2 className="login-title text-2xl font-semibold mb-6 text-center">LOGIN</h2>
           <form onSubmit={handleLogin} className="login-form">
-            <div>
-              <label htmlFor="email" className="login-input-label">
-                Email
-              </label>
+            <div className="mb-4">
+              <label htmlFor="email" className="login-input-label block text-gray-700">Email</label>
               <input
                 type="email"
                 id="email"
@@ -47,15 +54,13 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email"
                 required
-                className="login-input"
+                className="login-input w-full p-2 border rounded"
               />
             </div>
             
             {/* Password Field with Show/Hide */}
-            <div className="relative">
-              <label htmlFor="password" className="login-input-label">
-                Password
-              </label>
+            <div className="relative mb-4">
+              <label htmlFor="password" className="login-input-label block text-gray-700">Password</label>
               <input
                 type={showPassword ? "text" : "password"}
                 id="password"
@@ -64,7 +69,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
                 required
-                className="login-input"
+                className="login-input w-full p-2 border rounded"
               />
               {/* Show/Hide Button */}
               <button
@@ -76,10 +81,10 @@ export default function LoginPage() {
               </button>
             </div>
             
-            <button type="submit" className="login-button">
+            <button type="submit" className="login-button w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
               Login Now
             </button>
-            {error && <p className="error-message">{error}</p>}
+            {error && <p className="error-message text-red-500 text-sm mt-2">{error}</p>}
           </form>
           <div className="mt-4 text-center">
             <p>Don't have an account?</p>
@@ -91,4 +96,4 @@ export default function LoginPage() {
       </div>
     </Layout>
   );
-} 
+}
