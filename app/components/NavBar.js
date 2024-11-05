@@ -104,6 +104,12 @@ const NavBar = () => {
             Investment
           </Link>
           <Link
+            href="/community"
+            className="text-lg text-stone-600 font-semibold hover:text-gray-900"
+          >
+            Community
+          </Link>
+          <Link
             href="/faq"
             className="text-lg text-stone-600 font-semibold hover:text-gray-900"
           >
