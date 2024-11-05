@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Firebase Auth
-import { useRouter } from 'next/navigation'; // Next.js router for navigation
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 import NavBar from './NavBar';
 
 const Layout = ({ children }) => {
@@ -12,12 +12,15 @@ const Layout = ({ children }) => {
   const auth = getAuth(); // Initialize Firebase Auth
 
   useEffect(() => {
+    // Define routes that shouldn't trigger a redirect for unauthenticated users
+    const publicRoutes = ['/login', '/signup'];
+
     // Listen for authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
       if (loggedUser) {
         setUser(loggedUser); // Set user if logged in
-      } else {
-        router.push('/login'); // Redirect to login if no user is logged in
+      } else if (!publicRoutes.includes(router.pathname)) {
+         // Redirect to login if no user is logged in and not on public routes
       }
       setLoading(false); // Set loading to false once the check is complete
     });
