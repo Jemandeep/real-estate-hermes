@@ -1,3 +1,39 @@
+// Here’s a summary of the prompts and instructions that led to the creation of the NewDiscussion component:
+
+// Login Check and User Data Fetching:
+
+// You wanted to ensure that only logged-in users can access the "New Discussion" page.
+// I used Firebase Authentication (onAuthStateChanged) to check if a user is logged in.
+// If a user is logged in, I fetched additional user details (such as name, email, and role) from the Firestore users collection using the user's email as the document ID.
+// If the user is not logged in, the code redirects them to the /login page.
+// Auto-Fill User Details:
+
+// For each new discussion, certain fields like createdBy, createdByEmail, createdByName, and createdByRole are auto-filled based on the logged-in user's information.
+// I used state variables to store these values once fetched, so they could be easily included when creating a new discussion.
+// Form for Creating a New Discussion:
+
+// You requested a form for users to enter a discussion title and content.
+// The form includes two inputs:
+// Title: Text input for the discussion title.
+// Content: Textarea for the main discussion content.
+// Both fields are required to prevent empty submissions.
+// Firestore Submission:
+
+// On form submission (handleSubmit), a new document is added to the discussions collection in Firestore.
+// The document includes both user-filled fields (title, content) and auto-filled fields such as createdAt, createdBy, createdByEmail, etc.
+// I also initialized commentCount, likes, dislikedBy, and likedBy fields to keep track of interactions in future components.
+// Redirect to Detailed Discussion Page:
+
+// After a successful submission, the page redirects the user to the detailed view of the newly created discussion, using the document ID returned from Firestore.
+// Error Handling and Loading State:
+
+// Error messages are shown if something goes wrong during form submission.
+// A loading state is managed, and while submitting, the "Create Discussion" button is disabled and shows "Creating Discussion..." to provide feedback to the user.
+// Styling:
+
+// The form and button are styled to align with your design preferences, with a hover effect for the button to make it visually engaging.
+// The overall form is contained within a centered and padded layout, creating a user-friendly input area.
+
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';

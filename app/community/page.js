@@ -1,3 +1,15 @@
+
+// Here's a concise summary of the prompts used to create the CommunityPage:
+
+// User Authentication: Ensure only logged-in users can access the page; redirect unauthenticated users to /login.
+// Loading State: Display a "Loading..." message while verifying user authentication status.
+// Page Layout and Title: Add a prominent "Community Page" title at the top.
+// Interactive Section Cards:
+// Create cards for Discussion Forum, Reviews, and Activity Feed with icons, titles, and descriptions.
+// Make each card link to its respective page and add hover effects for engagement.
+// Responsive Design: Set up a responsive grid layout for the cards to adjust from one to three columns based on screen size.
+// Styling: Style the cards with rounded corners, shadows, and a scaling hover transition to make the page visually appealing and interactive.
+
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; // Import useRouter from next/navigation for App Router
@@ -43,7 +55,7 @@ const CommunityPage = () => {
             </div>
           </Link>
 
-          {/* Reviews Card */}
+          {/* Reviews Card
           <Link href="/community/reviews" aria-label="Reviews">
             <div className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl cursor-pointer transition duration-200 transform hover:scale-105">
               <div className="flex items-center mb-4">
@@ -52,10 +64,10 @@ const CommunityPage = () => {
               </div>
               <p className="text-gray-600">Read or leave reviews for agents and properties, helping others make informed decisions.</p>
             </div>
-          </Link>
+          </Link> */}
 
           {/* Activity Feed Card */}
-          <Link href="/community/activityFeed" aria-label="Activity Feed">
+          {/* <Link href="/community/activityFeed" aria-label="Activity Feed">
             <div className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl cursor-pointer transition duration-200 transform hover:scale-105">
               <div className="flex items-center mb-4">
                 <FiActivity className="text-2xl text-gray-800 mr-3" />
@@ -63,7 +75,7 @@ const CommunityPage = () => {
               </div>
               <p className="text-gray-600">Stay updated with trending posts, discussions, and community interactions.</p>
             </div>
-          </Link>
+          </Link> */}
         </div>
       </div>
     </Layout>
