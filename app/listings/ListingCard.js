@@ -40,9 +40,13 @@ const ListingCard = ({
               e.stopPropagation(); // Prevent onClick from triggering navigation
               if (onCompare) onCompare(id);
             }}
-            className={`px-4 py-2 rounded ${isSelected ? 'bg-red-500' : 'bg-blue-500'} text-white hover:bg-opacity-80`}
+            className={`px-2 py-1 mt-2 text-xs rounded ${
+              isSelected
+                ? 'bg-red-100 text-red-500 hover:bg-red-200'
+                : 'bg-blue-100 text-blue-500 hover:bg-blue-200'
+            } transition-all`}
           >
-            {isSelected ? 'Remove from Compare' : 'Compare'}
+            {isSelected ? 'Remove' : 'Compare'}
           </button>
         )}
       </div>
