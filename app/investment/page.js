@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link'; // Import the Link component from next/link
-import NavBar from '../components/NavBar'; // Adjust the path if needed
+import { Layout } from '@/app/components/Layout';
 
 const realEstateInvestments = [
     {
@@ -62,7 +62,7 @@ const realEstateInvestments = [
 const RealEstateInvestmentsPage = () => {
     return (
         <div>
-            <NavBar /> {/* Add the NavBar here */}
+            <Layout > {/* Add the NavBar here */}
             <div className="container mx-auto p-6 pt-16">
                 <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-8">Real Estate Investment Opportunities</h1>
                 <div className="grid grid-cols-1 gap-6">
@@ -89,6 +89,7 @@ const RealEstateInvestmentsPage = () => {
                     ))}
                 </div>
             </div>
+            </Layout>
         </div>
     );
 };
