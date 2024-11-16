@@ -11,8 +11,9 @@ const ViewListings = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [compareList, setCompareList] = useState([]); // Can now support multiple properties
-  const [sortOrder, setSortOrder] = useState('low'); // State for sorting
+  const [compareList, setCompareList] = useState([]); 
+  const [sortOrder, setSortOrder] = useState('low'); 
+  const [priceRange, setPriceRange] = useState([0, 1000000]); 
   const router = useRouter();
 
   // Fetch listings from Firebase
@@ -64,10 +65,38 @@ const ViewListings = () => {
     }
   });
 
+  // Filter listings based on selected price range
+  const filteredListings = sortedListings.filter((listing) => {
+    const price = listing.current_price || 0;
+    return price >= priceRange[0] && price <= priceRange[1];
+  });
+
   return (
     <Layout>
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-8">View Listings</h1>
+
+        {/* Price Filter */}
+        <div className="text-right mb-4">
+          <label htmlFor="minPrice" className="mr-2">Min Price:</label>
+          <input 
+            type="number" 
+            id="minPrice" 
+            value={priceRange[0]} 
+            onChange={(e) => setPriceRange([Math.max(0, +e.target.value), priceRange[1]])} 
+            className="border p-2 rounded-lg" 
+            min="0" 
+          />
+          <label htmlFor="maxPrice" className="ml-4 mr-2">Max Price:</label>
+          <input 
+            type="number" 
+            id="maxPrice" 
+            value={priceRange[1]} 
+            onChange={(e) => setPriceRange([priceRange[0], Math.max(priceRange[0], +e.target.value)])} 
+            className="border p-2 rounded-lg" 
+            min="0" 
+          />
+        </div>
 
         {/* Sort Button */}
         <div className="text-right mb-4">
@@ -85,9 +114,9 @@ const ViewListings = () => {
           <p className="text-gray-600 text-center mt-8">Loading listings, please wait...</p>
         ) : error ? (
           <p className="text-red-500 text-center mt-8">{error}</p>
-        ) : sortedListings.length > 0 ? (
+        ) : filteredListings.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {sortedListings.map((listing) => (
+            {filteredListings.map((listing) => (
               <div key={listing.id} className="relative bg-white shadow-lg rounded-lg p-6 min-h-[350px] flex flex-col justify-between">
                 <Link href={`/viewListings/detailedListing?id=${listing.id}`}>
                   <div className="cursor-pointer">
@@ -124,9 +153,7 @@ const ViewListings = () => {
                 <div className="mt-4">
                   <button
                     onClick={() => handleCompare(listing.id)}
-                    className={`w-full py-2 px-4 text-white font-semibold rounded-lg ${
-                      compareList.includes(listing.id) ? 'bg-red-500' : 'bg-blue-500'
-                    } hover:opacity-90 transition duration-200`}
+                    className={`w-full py-2 px-4 text-white font-semibold rounded-lg ${compareList.includes(listing.id) ? 'bg-red-500' : 'bg-blue-500'} hover:opacity-90 transition duration-200`}
                   >
                     {compareList.includes(listing.id) ? 'Remove from Compare' : 'Add to Compare'}
                   </button>
@@ -135,19 +162,20 @@ const ViewListings = () => {
             ))}
           </div>
         ) : (
-          <p className="text-gray-600 text-center">No listings found.</p>
+          <p className="text-gray-600 text-center">No listings found in the selected price range.</p>
         )}
 
-        {/* Compare Button to Navigate to Compare Page */}
-        <div className="mt-6 text-center">
-          <button 
-            onClick={handleCompareRedirect}
-            className={`py-2 px-4 text-white font-semibold rounded-lg ${compareList.length < 2 ? 'bg-gray-400' : 'bg-green-500'} hover:opacity-90 transition duration-200`}
-            disabled={compareList.length < 2}
-          >
-            Compare Selected Listings
-          </button>
-        </div>
+        {/* Compare Page Button */}
+        {compareList.length >= 2 && (
+          <div className="mt-6">
+            <button
+              onClick={handleCompareRedirect}
+              className="w-full py-2 px-4 bg-green-500 text-white font-semibold rounded-lg hover:opacity-90 transition duration-200"
+            >
+              Compare Selected Listings
+            </button>
+          </div>
+        )}
       </div>
     </Layout>
   );
