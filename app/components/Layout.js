@@ -52,11 +52,13 @@ const Layout = ({ children }) => {
 
   return (
     <div>
-      {/* Fixed NavBar at the top */}
-      <NavBar />
-      {/* Ensure the padding at the top accommodates the height of the NavBar */}
-      <main className="container mx-auto p-4 pt-20">{children}</main>
-    </div>
+    {/* Fixed NavBar at the top */}
+    <NavBar />
+    {/* Ensure the padding at the top accommodates the height of the NavBar */}
+    <main className="container mx-auto p-4" style={{ marginTop: '10rem' }}>
+      {children}
+    </main>
+  </div>
   );
 };
 
