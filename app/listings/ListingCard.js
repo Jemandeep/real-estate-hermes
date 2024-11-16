@@ -10,7 +10,7 @@ const ListingCard = ({
   bathroomCount = 0,
   id,
   onClick, // New prop to handle click actions
-  showCompareButton = false, // Hide compare button for discussions
+  showCompareButton = true, // Hide compare button for discussions
   onCompare,
   compareList = [],
 }) => {
