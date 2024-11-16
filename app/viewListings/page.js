@@ -11,7 +11,7 @@ const ViewListings = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [compareList, setCompareList] = useState([]);
+  const [compareList, setCompareList] = useState([]); // Can now support multiple properties
   const [sortOrder, setSortOrder] = useState('low'); // State for sorting
   const router = useRouter();
 
@@ -38,16 +38,20 @@ const ViewListings = () => {
 
   // Handle compare selection
   const handleCompare = (id) => {
+    // If the property is already in the compare list, remove it, otherwise add it
     if (compareList.includes(id)) {
       setCompareList(compareList.filter(item => item !== id));
     } else {
-      if (compareList.length < 2) {
-        setCompareList([...compareList, id]);
-      }
+      setCompareList([...compareList, id]);
     }
+  };
 
-    if (compareList.length === 1) {
-      router.push(`/compare?ids=${compareList[0]},${id}`);
+  // Navigate to compare page
+  const handleCompareRedirect = () => {
+    if (compareList.length >= 2) {
+      router.push(`/compare?ids=${compareList.join(',')}`);
+    } else {
+      alert('Please select at least two properties to compare.');
     }
   };
 
@@ -133,6 +137,17 @@ const ViewListings = () => {
         ) : (
           <p className="text-gray-600 text-center">No listings found.</p>
         )}
+
+        {/* Compare Button to Navigate to Compare Page */}
+        <div className="mt-6 text-center">
+          <button 
+            onClick={handleCompareRedirect}
+            className={`py-2 px-4 text-white font-semibold rounded-lg ${compareList.length < 2 ? 'bg-gray-400' : 'bg-green-500'} hover:opacity-90 transition duration-200`}
+            disabled={compareList.length < 2}
+          >
+            Compare Selected Listings
+          </button>
+        </div>
       </div>
     </Layout>
   );
