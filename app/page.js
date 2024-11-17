@@ -67,6 +67,16 @@ const HomePage = () => {
       rating: 4,
       review: "Great selection of properties and very helpful staff. Found a home in no time.",
     },
+    {
+      name: "Emma Watson",
+      rating: 5,
+      review: "Fantastic experience! The team really understood my needs and helped me find the perfect place.",
+    },
+    {
+      name: "Liam Brown",
+      rating: 3,
+      review: "Good service but there were a few issues with the communication. Overall, a decent experience.",
+    },
   ];
 
   return (
@@ -124,9 +134,9 @@ const HomePage = () => {
         {/* Reviews Section */}
         <div className="bg-gray-100 py-10 px-4">
           <h2 className="text-3xl font-bold text-gray-800 mb-6">What Our Clients Say</h2>
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {reviews.map((review, index) => (
-                <div key={index} className="bg-white p-6 shadow-lg rounded-lg">
+                <div key={index} className="bg-white p-6 shadow-lg rounded-lg max-w-sm mx-auto">
                   <div className="flex items-center mb-4">
                     <h3 className="text-lg font-semibold text-gray-800">{review.name}</h3>
                     <div className="flex ml-2">
