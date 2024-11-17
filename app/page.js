@@ -136,7 +136,7 @@ const HomePage = () => {
           <h2 className="text-3xl font-bold text-gray-800 mb-6">What Our Clients Say</h2>
 
           {/* Wrapper for scrolling content */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-hidden">
             <div className="whitespace-nowrap animate-scroll">
               {/* Reviews */}
               <div className="inline-block">
