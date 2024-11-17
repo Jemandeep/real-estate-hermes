@@ -1,4 +1,4 @@
-// pages/page3.js
+// pages/page.js
 "use client";
 import React from 'react';
 import NavBar from '@/app/components/NavBar';
