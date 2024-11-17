@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import NavBar from "../components/NavBar"; // Adjust the path if necessary
+import Layout from "../components/Layout"; // Adjust the path if necessary
 
 const FAQ = () => {
   const faqs = [
@@ -63,7 +63,7 @@ const FAQ = () => {
 
   return (
       <div>
-        <NavBar />
+        <Layout >
         <div className="container mx-auto p-6 pt-16">
           <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
             Frequently Asked Questions
@@ -88,6 +88,7 @@ const FAQ = () => {
             ))}
           </div>
         </div>
+        </Layout>
       </div>
   );
 };
