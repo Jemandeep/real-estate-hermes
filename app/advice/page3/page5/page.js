@@ -89,9 +89,7 @@ export default function UnderstandClosingCosts() {
                     </section>
                 </main>
 
-                <footer className="text-center mt-10 text-gray-600">
-                    <p>© 2024 Home Buying Tips. All rights reserved.</p>
-                </footer>
+                
             </Layout>
         </div>
     );
