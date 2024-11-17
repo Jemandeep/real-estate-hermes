@@ -1,6 +1,7 @@
+// pages/page3.js
 "use client";
 import React from "react";
-import { useRouter } from "next/navigation"; // Updated for Next.js app directory
+import { useRouter } from "next/navigation"; // Correct usage in a client component
 import NavBar from "@/app/components/NavBar";
 
 const Page3 = () => {
@@ -55,7 +56,7 @@ const Page3 = () => {
             {firstTimeBuyerTips.map((tip, index) => (
                 <div
                     key={index}
-                    className="flex items-center bg-white rounded-lg shadow-lg p-4 cursor-pointer hover:shadow-2xl transition-shadow"
+                    className="flex items-center bg-white rounded-lg shadow-lg p-4 cursor-pointer hover:shadow-2xl hover:scale-105 transition-transform duration-300"
                     onClick={() => handleCardClick(tip.page)} // Add onClick handler to navigate
                 >
                   <img className="w-1/3 h-48 object-cover rounded-lg" src={tip.imageSrc} alt={tip.title} />

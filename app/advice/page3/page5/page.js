@@ -89,7 +89,7 @@ export default function UnderstandClosingCosts() {
                     </section>
                 </main>
 
-                
+
             </Layout>
         </div>
     );

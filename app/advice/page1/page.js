@@ -49,7 +49,7 @@ const Page1 = () => {
             {trends.map((trend, index) => (
                 <div
                     key={index}
-                    className="flex items-center bg-white rounded-lg shadow-lg p-4 cursor-pointer hover:shadow-2xl transition-shadow"
+                    className="flex items-center bg-white rounded-lg shadow-lg p-4 cursor-pointer hover:shadow-2xl hover:scale-105 transition-transform duration-300"
                     onClick={() => handleCardClick(trend.page)}
                 >
                   <img

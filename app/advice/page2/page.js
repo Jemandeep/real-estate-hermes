@@ -52,7 +52,7 @@ const Page2 = () => {
             {tips.map((tip, index) => (
                 <div
                     key={index}
-                    className="flex items-center bg-white rounded-lg shadow-lg p-4 cursor-pointer hover:shadow-2xl transition-shadow"
+                    className="flex items-center bg-white rounded-lg shadow-lg p-4 cursor-pointer hover:shadow-2xl hover:scale-105 transition-transform duration-300"
                     onClick={() => handleCardClick(tip.page)} // Make the card clickable
                 >
                   <img className="w-1/3 h-48 object-cover rounded-lg" src={tip.imageSrc} alt={tip.title} />
