@@ -61,7 +61,7 @@ export default function SmartHomeTechnology() {
                     </section>
                 </main>
 
-                
+
             </Layout>
         </div>
     );
