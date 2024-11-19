@@ -6,56 +6,44 @@ import { useRouter } from 'next/navigation';
 import NavBar from './NavBar';
 
 const Layout = ({ children }) => {
-  const [user, setUser] = useState(null); // Track the logged-in user
-  const [loading, setLoading] = useState(true); // Track loading state for authentication check
-  const router = useRouter(); // Get the router instance for redirection
-  const auth = getAuth(); // Initialize Firebase Auth
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const auth = getAuth();
 
   useEffect(() => {
-    // Define routes that shouldn't trigger a redirect for unauthenticated users
     const publicRoutes = ['/login', '/signup'];
 
-    // Listen for authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
       if (loggedUser) {
-        setUser(loggedUser); // Set user if logged in
+        setUser(loggedUser);
       } else if (!publicRoutes.includes(router.pathname)) {
-         // Redirect to login if no user is logged in and not on public routes
+        router.push('/login'); // Redirect unauthenticated users to login
       }
-      setLoading(false); // Set loading to false once the check is complete
+      setLoading(false);
     });
 
-    return () => unsubscribe(); // Clean up the listener on unmount
+    return () => unsubscribe();
   }, [auth, router]);
 
-  useEffect(() => {
-    // Responsive chart resize functionality, applied only if chart exists on the page
-    const chart = document.getElementById('chart');
-    if (chart) {
-      const handleResize = () => {
-        chart.style.width = window.innerWidth * 0.8 + 'px';
-        chart.style.height = window.innerHeight * 0.5 + 'px';
-      };
-
-      // Initial call and resize listener
-      handleResize();
-      window.addEventListener('resize', handleResize);
-
-      // Cleanup listener on unmount
-      return () => window.removeEventListener('resize', handleResize);
-    }
-  }, []);
-
   if (loading) {
-    return <div>Loading...</div>; // Display a loading message or spinner during auth check
+    return <div>Loading...</div>;
   }
 
   return (
-    <div>
-      {/* Fixed NavBar at the top */}
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {/* Fixed NavBar */}
       <NavBar />
-      {/* Ensure the padding at the top accommodates the height of the NavBar */}
-      <main className="container mx-auto p-4 pt-20">{children}</main>
+
+      {/* Main content area */}
+      <main style={{ flex: 1, padding: '2rem', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+        {children}
+      </main>
+
+      {/* Optional Footer */}
+      <footer style={{ textAlign: 'center', padding: '1rem', background: '#f8f9fa' }}>
+        <p>© 2024 Your Company</p>
+      </footer>
     </div>
   );
 };

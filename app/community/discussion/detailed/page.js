@@ -6,6 +6,11 @@ import { db } from '../../../../firebase';
 import Layout from '../../../components/Layout';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
+// Basic Setup for Detailed Discussion Page:
+
+// The initial prompt was to create a detailed discussion page component where users can view a discussion’s title, content, likes, comments, and timestamps.
+// The page should include the ability to like or dislike comments, and the likes/dislikes should be managed so that a user can toggle them.
+
 const DetailedDiscussion = () => {
   const [discussion, setDiscussion] = useState(null);
   const [comments, setComments] = useState([]);
@@ -44,6 +49,11 @@ const DetailedDiscussion = () => {
     return () => unsubscribe();
   }, [auth, router]);
 
+  // Fetching and Displaying Discussion Data:
+
+  // A prompt was given to fetch discussion data from Firestore using a unique id (obtained from the URL’s query parameters).
+  // The code needed to fetch the discussion details (title, content, etc.) and set up an error message if the discussion wasn’t found.
+
   useEffect(() => {
     const fetchDiscussion = async () => {
       if (!id) return;
@@ -66,6 +76,11 @@ const DetailedDiscussion = () => {
 
     fetchDiscussion();
   }, [id]);
+
+  // Real-time Comment Updates:
+
+  // Instructions were provided to add a real-time listener on the comments collection for each discussion to dynamically update the comments on the page without refreshing.
+  // This was achieved by using Firestore’s onSnapshot to listen for changes and setComments to update the state in real time.
 
   useEffect(() => {
     if (!id) return;
@@ -131,6 +146,11 @@ const DetailedDiscussion = () => {
     }
   };
 
+  // User Authentication for Comments and Likes:
+
+  // A prompt was included to fetch the logged-in user’s details (email and user ID) via Firebase Authentication. If the user is not logged in, they are redirected to the login page.
+  // This is managed using Firebase’s onAuthStateChanged function, and if the user is authenticated, their email and other details are fetched from Firestore.
+
   const handleDislike = async (commentId) => {
     if (!user) return; 
     const commentRef = doc(db, 'discussions', id, 'comments', commentId);
@@ -158,40 +178,62 @@ const DetailedDiscussion = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-6">
+      <div className="max-w-3xl mx-auto p-6">
         {discussion && (
-          <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
-            <h1 className="text-3xl font-bold mb-4">{discussion.title}</h1>
+          <div className="bg-gray-50 rounded-lg p-6 mb-8">
+            <h1 className="text-4xl font-semibold mb-4 text-gray-800">{discussion.title}</h1>
             <p className="text-gray-700 mb-6">{discussion.content}</p>
-            <p className="text-sm text-gray-500">Likes: {discussion.likes || 0}</p>
-            <p className="text-sm text-gray-500">Comments: {discussion.commentCount || 0}</p>
-            <p className="text-sm text-gray-500">
-              Created At: {discussion.createdAt?.seconds ? new Date(discussion.createdAt.seconds * 1000).toLocaleDateString() : "N/A"}
-            </p>
-            <p className="text-sm text-gray-500">
-              Last Edited: {discussion.editedAt?.seconds ? new Date(discussion.editedAt.seconds * 1000).toLocaleDateString() : "N/A"}
-            </p>
+            <div className="flex items-center text-sm text-gray-500 space-x-6">
+              <p>👍 {discussion.likes || 0}</p>
+              <p>💬 {discussion.commentCount || 0}</p>
+              <p>
+                📅 Created:{' '}
+                {discussion.createdAt?.seconds
+                  ? new Date(discussion.createdAt.seconds * 1000).toLocaleDateString()
+                  : 'N/A'}
+              </p>
+              <p>
+                ✏️ Last Edited:{' '}
+                {discussion.editedAt?.seconds
+                  ? new Date(discussion.editedAt.seconds * 1000).toLocaleDateString()
+                  : 'N/A'}
+              </p>
+            </div>
           </div>
         )}
 
         {/* Display Comments */}
-        <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
-          <h2 className="text-2xl font-bold mb-4">Comments</h2>
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-800">Comments</h2>
           {comments.length > 0 ? (
             comments.map((comment) => (
-              <div key={comment.id} className="border-b border-gray-200 pb-4 mb-4">
+              <div key={comment.id} className="bg-white rounded-lg p-4 mb-4">
                 <p className="text-gray-800 mb-2">{comment.content}</p>
-                <p className="text-sm text-gray-500">By: {comment.createdBy || "Unknown"}</p>
-                <p className="text-sm text-gray-500">
-                  Created At: {comment.createdAt?.seconds ? new Date(comment.createdAt.seconds * 1000).toLocaleDateString() : "N/A"}
-                </p>
-                <div className="flex items-center space-x-4 mt-2">
-                  <button onClick={() => handleLike(comment.id)} className="text-sm text-gray-500">
-                    👍 {comment.likedBy ? comment.likedBy.length : 0}
-                  </button>
-                  <button onClick={() => handleDislike(comment.id)} className="text-sm text-gray-500">
-                    👎 {comment.dislikedBy ? comment.dislikedBy.length : 0}
-                  </button>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <div>
+                    <p>By: {comment.createdBy || 'Unknown'}</p>
+                    <p>
+                      Created At:{' '}
+                      {comment.createdAt?.seconds
+                        ? new Date(comment.createdAt.seconds * 1000).toLocaleDateString()
+                        : 'N/A'}
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={() => handleLike(comment.id)}
+                      className="flex items-center text-gray-500 hover:text-gray-700"
+                    >
+                      👍 <span className="ml-1">{comment.likedBy ? comment.likedBy.length : 0}</span>
+                    </button>
+                    <button
+                      onClick={() => handleDislike(comment.id)}
+                      className="flex items-center text-gray-500 hover:text-gray-700"
+                    >
+                      👎{' '}
+                      <span className="ml-1">{comment.dislikedBy ? comment.dislikedBy.length : 0}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
@@ -201,18 +243,18 @@ const DetailedDiscussion = () => {
         </div>
 
         {/* Add New Comment */}
-        <form onSubmit={handleAddComment} className="bg-white shadow-lg rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-4">Add a Comment</h2>
+        <form onSubmit={handleAddComment} className="bg-gray-50 rounded-lg p-6">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-800">Add a Comment</h2>
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Write your comment here..."
             rows={4}
-            className="w-full p-2 border border-gray-300 rounded-lg mb-4"
+            className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
           ></textarea>
           <button
             type="submit"
-            className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200"
+            className="bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200"
           >
             Submit Comment
           </button>

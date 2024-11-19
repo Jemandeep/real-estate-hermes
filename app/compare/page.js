@@ -1,40 +1,48 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { db } from '../../firebase'; // Import your Firebase configuration
-import { doc, getDoc } from 'firebase/firestore'; // Firestore methods
-import { useSearchParams } from 'next/navigation'; // For accessing query parameters
-import NavBar from '../components/NavBar';
+import React, { useEffect, useState } from "react";
+import { db } from "../../firebase"; // Import your Firebase configuration
+import { doc, getDoc } from "firebase/firestore"; // Firestore methods
+import { useSearchParams } from "next/navigation"; // For accessing query parameters
+import NavBar from "../components/NavBar";
 
 const Compare = () => {
   const [properties, setProperties] = useState([]); // State for fetched properties
   const [error, setError] = useState(null); // Error state
+  const [loading, setLoading] = useState(true); // Loading state
 
   const searchParams = useSearchParams(); // Get query parameters
-  const ids = searchParams.get('ids') ? searchParams.get('ids').split(',') : []; // Parse IDs from query params
+  const ids = searchParams.get("ids") ? searchParams.get("ids").split(",") : []; // Parse IDs from query params
 
   // Fetch properties based on IDs
   useEffect(() => {
     const fetchProperties = async () => {
-      if (ids.length !== 2) {
-        setError('Please select exactly two properties to compare.');
+      if (ids.length < 2) {
+        setError("Please select at least two properties to compare.");
+        setLoading(false);
         return;
       }
 
       try {
         const fetchedProperties = await Promise.all(
           ids.map(async (id) => {
-            const docRef = doc(db, 'listings', id); // Reference to the document
+            const docRef = doc(db, "listings", id); // Reference to the document
             const docSnap = await getDoc(docRef); // Fetch document
             return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null; // Return data if exists
           })
         );
 
         const validProperties = fetchedProperties.filter(Boolean); // Filter out null values
-        setProperties(validProperties); // Set properties state
-        setError(null); // Clear error state if successful
+        if (validProperties.length > 0) {
+          setProperties(validProperties);
+          setError(null); // Clear error state if successful
+        } else {
+          setError("None of the selected properties could be found.");
+        }
       } catch (error) {
-        console.error('Error fetching properties:', error);
-        setError('Failed to fetch properties.'); // Set error if fetching fails
+        console.error("Error fetching properties:", error);
+        setError("Failed to fetch properties.");
+      } finally {
+        setLoading(false); // Ensure loading is false after fetching
       }
     };
 
@@ -47,48 +55,74 @@ const Compare = () => {
       <div className="container mx-auto p-4 pt-32">
         <h1 className="text-2xl font-bold mb-4">Compare Properties</h1>
 
-        {error && <p className="text-red-600">{error}</p>} {/* Show error message */}
+        {/* Show loading state */}
+        {loading && <p className="text-gray-500">Loading properties...</p>}
 
-        {properties.length === 2 ? ( // Show properties if exactly two are fetched
-          <div className="border rounded shadow p-4 bg-gray-50"> {/* Light background for the table */}
+        {/* Show error message */}
+        {error && !loading && <p className="text-red-600">{error}</p>}
+
+        {/* Show properties if fetched */}
+        {!loading && !error && properties.length > 0 && (
+          <div className="border rounded shadow p-4 bg-gray-50">
             <table className="min-w-full border-collapse">
               <thead>
                 <tr className="bg-gray-200">
                   <th className="border p-2 text-left">Feature</th>
-                  <th className="border p-2 text-left">{properties[0].address}</th>
-                  <th className="border p-2 text-left">{properties[1].address}</th>
+                  {properties.map((property) => (
+                    <th key={property.id} className="border p-2 text-left">
+                      {property.address || "Unknown Address"}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td className="border p-2">Neighborhood</td>
-                  <td className="border p-2">{properties[0].neighborhood}</td>
-                  <td className="border p-2">{properties[1].neighborhood}</td>
+                  {properties.map((property) => (
+                    <td key={property.id} className="border p-2">
+                      {property.neighborhood || "N/A"}
+                    </td>
+                  ))}
                 </tr>
                 <tr>
                   <td className="border p-2">Type</td>
-                  <td className="border p-2">{properties[0].property_type}</td>
-                  <td className="border p-2">{properties[1].property_type}</td>
+                  {properties.map((property) => (
+                    <td key={property.id} className="border p-2">
+                      {property.property_type || "N/A"}
+                    </td>
+                  ))}
                 </tr>
                 <tr>
                   <td className="border p-2">Price</td>
-                  <td className="border p-2">${properties[0].current_price.toLocaleString()}</td>
-                  <td className="border p-2">${properties[1].current_price.toLocaleString()}</td>
+                  {properties.map((property) => (
+                    <td key={property.id} className="border p-2">
+                      ${property.current_price?.toLocaleString() || "N/A"}
+                    </td>
+                  ))}
                 </tr>
                 <tr>
                   <td className="border p-2">Beds</td>
-                  <td className="border p-2">{properties[0].bed_count}</td>
-                  <td className="border p-2">{properties[1].bed_count}</td>
+                  {properties.map((property) => (
+                    <td key={property.id} className="border p-2">
+                      {property.bed_count || "N/A"}
+                    </td>
+                  ))}
                 </tr>
                 <tr>
                   <td className="border p-2">Baths</td>
-                  <td className="border p-2">{properties[0].bathroom_count}</td>
-                  <td className="border p-2">{properties[1].bathroom_count}</td>
+                  {properties.map((property) => (
+                    <td key={property.id} className="border p-2">
+                      {property.bathroom_count || "N/A"}
+                    </td>
+                  ))}
                 </tr>
               </tbody>
             </table>
           </div>
-        ) : ( // Message if properties are not exactly two
+        )}
+
+        {/* Message if no properties are available */}
+        {!loading && !error && properties.length === 0 && (
           <p>No properties available for comparison.</p>
         )}
       </div>

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import NavBar from '../../components/NavBar'; // Adjust the path if necessary
+import Layout from '../../components/Layout'; // Adjust the path if necessary
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -100,7 +100,7 @@ const InvestmentPage1 = () => {
 
   return (
     <div>
-      <NavBar />
+      <Layout>
       <div className="container mx-auto p-6 pt-16 bg-white">
         <header className="mb-6 text-center">
           <h1 className="text-4xl font-extrabold text-gray-800 mb-1">{investment.propertyType}</h1>
@@ -176,6 +176,7 @@ const InvestmentPage1 = () => {
           </div>
         </div>
       )}
+      </Layout>
     </div>
   );
 };

@@ -1,3 +1,40 @@
+// Here's a summary of the prompts and instructions i used to the creation of the DiscussionPage component:
+
+// Fetching Discussions from Firestore:
+
+// You wanted a page to display a list of community discussions.
+// I set up the code to fetch discussions from the discussions collection in Firestore using getDocs.
+// Each discussion document retrieved is mapped into an array, which is then stored in the discussions state.
+// Error Handling and Loading State:
+
+// You requested handling for loading and error states.
+// A loading message is displayed while fetching data, and an error message is shown if the fetching fails.
+// Display Discussion Cards:
+
+// Each discussion is displayed as a card with specific details:
+// Title: Displays the title of the discussion or "No Title Available" if absent.
+// Content Preview: Shows the first 100 characters of the content as a preview.
+// Cards are laid out in a responsive grid, with different numbers of columns for various screen sizes.
+// Icons for Interactivity:
+
+// You wanted indicators for likes and comments, so I added a thumbs-up icon for likes and a message icon for comments.
+// Each icon displays the count of likes and comments, defaulting to 0 if these values are missing.
+// Date Formatting:
+
+// Each discussion card includes a date, formatted from the Firestore timestamp (createdAt). If createdAt is unavailable, it shows "Date not available."
+// Link to Detailed View:
+
+// Each card links to a detailed view of the discussion, using the discussion ID as a query parameter.
+// When a user clicks on a card, they’re redirected to /community/discussion/detailed?id=discussionId.
+// "Start New Discussion" Button:
+
+// You wanted a button for users to start a new discussion.
+// The button is styled with a hover effect and scaling animation and links to /community/discussion/new.
+// Styling:
+
+// The page uses a clean, centered layout with padding around the content.
+// Cards are styled with rounded corners and a shadow effect for a modern, clickable design.
+
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";

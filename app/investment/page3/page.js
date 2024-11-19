@@ -11,7 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import NavBar from '../../components/NavBar'; // Updated path for NavBar
+import Layout from '../../components/Layout'; // Updated path for NavBar
 
 // Register the required components
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Legend);
@@ -91,7 +91,7 @@ const InvestmentPage3 = () => {
 
   return (
     <div className="container mx-auto pt-16 p-6 bg-white"> {/* Added pt-16 */}
-      <NavBar /> {/* Added NavBar */}
+      <Layout > 
       <header className="mb-6 text-center">
         <h1 className="text-4xl font-extrabold text-gray-800 mb-1">{investment.propertyType}</h1>
         <h2 className="text-xl text-gray-600">{investment.location}</h2>
@@ -171,7 +171,9 @@ const InvestmentPage3 = () => {
           </div>
         </div>
       )}
+      </Layout>
     </div>
+    
   );
 };
 
