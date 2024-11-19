@@ -1,5 +1,56 @@
 "use client"; // Ensure client-side rendering
 
+import { Group, Paper, SimpleGrid, Text } from '@mantine/core';
+import {
+  IconUserPlus,
+  IconDiscount2,
+  IconReceipt2,
+  IconCoin,
+} from '@tabler/icons-react';
+
+const icons = {
+  user: IconUserPlus,
+  discount: IconDiscount2,
+  receipt: IconReceipt2,
+  coin: IconCoin,
+};
+
+export function StatsGrid({ metrics }) {
+  const stats = [
+    { title: 'Total Investment', icon: 'receipt', value: metrics.totalInvestment, diff: 0 },
+    { title: 'Current Portfolio Value', icon: 'coin', value: metrics.currentPortfolioValue, diff: 0 },
+    { title: 'ROI', icon: 'discount', value: metrics.roi.toFixed(2), diff: 0 },
+    { title: 'Cash Flow', icon: 'user', value: metrics.cashFlow, diff: 0 },
+  ];
+
+  const statsComponents = stats.map((stat) => {
+    const Icon = icons[stat.icon];
+
+    return (
+      <Paper withBorder p="md" radius="md" key={stat.title} style={{ backgroundColor: '#f8f9fa', flex: 1, textAlign: 'center' }}>
+        <Group position="apart" style={{ marginBottom: 10 }}>
+          <Text size="sm" color="dimmed" weight={700}>
+            {stat.title}
+          </Text>
+          <Icon size="1.8rem" stroke={1.5} style={{ position: 'absolute', top: 10, right: 10 }} />
+        </Group>
+
+        <Group align="center" spacing="xs" mt={10} style={{ justifyContent: 'center' }}>
+          <Text size="xl" weight={700}>
+            ${stat.value.toLocaleString()}
+          </Text>
+        </Group>
+      </Paper>
+    );
+  });
+
+  return (
+    <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', padding: '20px' }}>
+      {statsComponents}
+    </div>
+  );
+}
+
 import React, { useState, useEffect } from 'react';
 import { getDoc, getDocs, collection, query, where, updateDoc, doc, arrayUnion } from 'firebase/firestore'; // Firestore functions
 import { db } from '../../firebase'; // Firebase configuration
@@ -7,7 +58,6 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Firebase Auth to
 import Layout from '../components/Layout'; // Layout component for consistent structure
 import ListingCard from '../components/ListingCard'; // Component to display each listing
 import MapComponent from '../components/MapComponent'; // Component to display a map with listings
-
 
 const Analysis = () => {
   const [userProperties, setUserProperties] = useState([]); // Store fetched properties belonging to the user
@@ -23,7 +73,31 @@ const Analysis = () => {
   const [user, setUser] = useState(null); // Store authenticated user
 
   const auth = getAuth(); // Get Firebase auth instance
-
+  async function handleEstimation(details) {
+    console.log("Sending payload:", details); // Log the payload being sent
+    try {
+      const response = await fetch("http://localhost:5000/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(details), // Ensure JSON stringification
+      });
+  
+      const data = await response.json();
+      console.log("Response received:", data); // Log the response
+      if (response.ok) {
+        alert(`Estimated Property Value: $${data.estimatedValue.toFixed(2)}`);
+      } else {
+        console.error("Server error:", data);
+        alert(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Network or parsing error:", error);
+      alert("Error during estimation.");
+    }
+  }  
+  
   // Fetch personal properties and public listings from Firestore
   useEffect(() => {
     const fetchUserProperties = async (userEmail) => {
@@ -154,207 +228,205 @@ const Analysis = () => {
 
   return (
     <Layout>
-      <div className="flex-1 flex justify-between">
-        <div className="flex-1">
-          <h1 className="text-3xl font-semibold mb-6 text-gray-800">Your Property Portfolio</h1>
+  <div className="flex-1 flex justify-between">
+    <div className="flex-1">
+      <h1 className="text-3xl font-semibold mb-6 text-gray-800">Your Property Portfolio</h1>
 
-          {/* Metrics Overview Boxes */}
-          <div className="grid grid-cols-4 gap-4 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
-              <h3 className="font-semibold text-lg text-gray-600">Total Investment</h3>
-              <p className="text-2xl font-bold text-gray-800 mt-2">${metrics.totalInvestment.toLocaleString()}</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
-              <h3 className="font-semibold text-lg text-gray-600">Current Portfolio Value</h3>
-              <p className="text-2xl font-bold text-gray-800 mt-2">${metrics.currentPortfolioValue.toLocaleString()}</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
-              <h3 className="font-semibold text-lg text-gray-600">ROI</h3>
-              <p className="text-2xl font-bold text-gray-800 mt-2">{metrics.roi.toFixed(2)}%</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
-              <h3 className="font-semibold text-lg text-gray-600">Cash Flow</h3>
-              <p className="text-2xl font-bold text-gray-800 mt-2">${metrics.cashFlow.toLocaleString()}</p>
-            </div>
-          </div>
+      {/* Metrics Overview */}
+      <StatsGrid metrics={metrics} />
 
-          {/* Flex layout for the map and charts */}
-          <div className="flex">
-            {/* Left: LTV Ratio Horizontal Bar */}
-            <div
-              className="w-1/4 bg-white p-6 rounded-lg shadow-sm border border-gray-200"
-              style={{ maxHeight: '500px', overflowY: 'auto' }} // Ensure scrolling for multiple properties
-            >
-              <h3 className="text-lg font-semibold mb-2">LTV Ratio</h3>
-              {userProperties.map((property) => {
-                const ltvRatio = (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) * 100;
+      {/* LTV Ratio and Map Section */}
+      <div className="flex">
+        {/* LTV Ratio Section */}
+        <div
+          className="w-2/3 bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+          style={{ maxHeight: '500px', overflowY: 'auto' }}
+        >
+          <h3 className="text-lg font-semibold mb-2">LTV Ratio</h3>
+          {userProperties.map((property) => {
+            const ltvRatio = (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) * 100;
+            const getColor = (ratio) => {
+              if (ratio < 60) return 'bg-green-500';
+              if (ratio >= 60 && ratio <= 80) return 'bg-yellow-500';
+              return 'bg-red-500';
+            };
 
-                // Determine bar color based on LTV ratio
-                const getColor = (ratio) => {
-                  if (ratio < 60) return 'bg-green-500'; // Good: Green
-                  if (ratio >= 60 && ratio <= 80) return 'bg-yellow-500'; // Okay: Yellow
-                  return 'bg-red-500'; // Bad: Red
-                };
+            return (
+              <div key={property.id} className="mb-6">
+                <p className="text-sm font-medium text-gray-700">{property.address}</p>
+                <div className="w-full h-6 bg-gray-200 rounded-full mt-2">
+                  <div
+                    className={`h-6 rounded-full ${getColor(ltvRatio)}`}
+                    style={{ width: `${ltvRatio}%` }}
+                  />
+                </div>
+                <p className="text-xs mt-1 text-gray-500">{ltvRatio.toFixed(2)}% LTV Ratio</p>
+              </div>
+            );
+          })}
+        </div>
 
-                return (
-                  <div key={property.id} className="mb-6">
-                    {/* Property Address Label */}
-                    <p className="text-sm font-medium text-gray-700">{property.address}</p>
+        {/* Map Component */}
+        <div className="flex-1 mx-4 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h2 className="text-xl font-semibold mb-4 text-gray-700">Your Properties Map</h2>
+          <MapComponent listings={userProperties} />
+        </div>
+      </div>
 
-                    {/* LTV Ratio Loading Bar */}
-                    <div className="w-full h-6 bg-gray-200 rounded-full mt-2">
-                      <div
-                        className={`h-6 rounded-full ${getColor(ltvRatio)}`} // Dynamic bar color
-                        style={{ width: `${ltvRatio}%` }} // Dynamic bar width based on LTV ratio
-                      />
-                    </div>
-                    <p className="text-xs mt-1 text-gray-500">{ltvRatio.toFixed(2)}% LTV Ratio</p>
+      {/* Rental Income and Public Listings Section */}
+      <div className="flex mt-6 space-x-6">
+        {/* Rental Income Section */}
+        <div
+          className="w-1/3 bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+          style={{ maxHeight: '500px', overflowY: 'auto' }}
+        >
+          <h3 className="text-lg font-semibold mb-2">Rental Income vs. Expenses</h3>
+          {userProperties
+            .filter((property) => property.is_for_rent)
+            .map((property) => {
+              const rent = parseFloat(property.rent_price || 0);
+              const mortgage = parseFloat(property.mortgage_monthly_payment || 0);
+              const maintenance = parseFloat(property.maintenance || 0) / 12;
+              const insurance = parseFloat(property.insurance || 0) / 12;
+              const taxes = parseFloat(property.taxes || 0) / 12;
+              const totalExpenses = mortgage + maintenance + insurance + taxes;
+              const cashFlowWidth = ((rent - totalExpenses) / rent) * 100;
+
+              return (
+                <div key={property.id} className="mb-6">
+                  <p className="text-sm font-medium text-gray-700">{property.address}</p>
+                  <p className="text-xs font-semibold mt-2">Rental Income: ${rent.toFixed(2)}</p>
+                  <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
+                    <div className="h-6 rounded-full bg-green-500" style={{ width: '100%' }} />
                   </div>
-                );
-              })}
-            </div>
+                  <p className="text-xs font-semibold mt-2">Expenses: ${totalExpenses.toFixed(2)}</p>
+                  <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
+                    <div
+                      className={`h-6 rounded-full ${cashFlowWidth > 0 ? 'bg-green-500' : 'bg-red-500'}`}
+                      style={{ width: `${Math.abs(cashFlowWidth)}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+        </div>
 
-            {/* Map Component */}
-            <div className="flex-1 mx-4 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h2 className="text-xl font-semibold mb-4 text-gray-700">Your Properties Map</h2>
-              <MapComponent listings={userProperties} /> {/* Pass user properties to the MapComponent */}
-            </div>
-          </div>
-
-          {/* Public Listings */}
-          <div className="flex mt-6">
-            {/* Right: Rental Income vs Expenses Horizontal Bars */}
-            <div
-              className="w-1/4 bg-white p-6 rounded-lg shadow-sm border border-gray-200"
-              style={{ maxHeight: '500px', overflowY: 'auto' }} // Ensure scrolling for multiple properties
-            >
-              <h3 className="text-lg font-semibold mb-2">Rental Income vs. Expenses</h3>
-              {userProperties
-                .filter((property) => property.is_for_rent) // Only show for rental properties
-                .map((property) => {
-                  const rent = parseFloat(property.rent_price || 0);
-                  const mortgage = parseFloat(property.mortgage_monthly_payment || 0);
-                  const maintenance = parseFloat(property.maintenance || 0) / 12;
-                  const insurance = parseFloat(property.insurance || 0) / 12;
-                  const taxes = parseFloat(property.taxes || 0) / 12;
-
-                  const totalExpenses = mortgage + maintenance + insurance + taxes;
-
-                  // Calculate percentage width of each expense relative to the rent
-                  const mortgageWidth = (mortgage / rent) * 100;
-                  const maintenanceWidth = (maintenance / rent) * 100;
-                  const insuranceWidth = (insurance / rent) * 100;
-                  const taxesWidth = (taxes / rent) * 100;
-                  const cashFlowWidth = ((rent - totalExpenses) / rent) * 100; // Cash flow relative to rent
-
-                  return (
-                    <div key={property.id} className="mb-6">
-                      {/* Property Address Label */}
-                      <p className="text-sm font-medium text-gray-700">{property.address}</p>
-
-                      {/* Rental Income Bar with Amount */}
-                      <p className="text-xs font-semibold mt-2">Rental Income: ${rent.toFixed(2)}</p>
-                      <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
-                        <div
-                          className="h-6 rounded-full bg-green-500" // Green for rental income
-                          style={{ width: '100%' }} // Full width represents 100% of rental income
-                        />
-                      </div>
-
-                      {/* Expenses Label */}
-                      <p className="text-xs font-semibold mt-2">Expenses (Total: ${totalExpenses.toFixed(2)})</p>
-                      <div className="w-full h-6 bg-gray-200 rounded-full mt-1 relative">
-                        {/* Mortgage Expense */}
-                        <div
-                          className="h-6 rounded-l-full bg-red-500 absolute left-0"
-                          style={{ width: `${Math.min(mortgageWidth, 100)}%` }} // Restrict width to fit container
-                          title={`Mortgage: $${mortgage.toFixed(2)}`}
-                        />
-                        {/* Maintenance Expense */}
-                        <div
-                          className="h-6 bg-yellow-500 absolute left-[calc(${Math.min(mortgageWidth, 100)}%)]"
-                          style={{ width: `${Math.min(maintenanceWidth, 100)}%` }} // Restrict width to fit container
-                          title={`Maintenance: $${maintenance.toFixed(2)}`}
-                        />
-                        {/* Insurance Expense */}
-                        <div
-                          className="h-6 bg-blue-500 absolute left-[calc(${Math.min(mortgageWidth + maintenanceWidth, 100)}%)]"
-                          style={{ width: `${Math.min(insuranceWidth, 100)}%` }} // Restrict width to fit container
-                          title={`Insurance: $${insurance.toFixed(2)}`}
-                        />
-                        {/* Taxes Expense */}
-                        <div
-                          className="h-6 bg-purple-500 absolute left-[calc(${Math.min(mortgageWidth + maintenanceWidth + insuranceWidth, 100)}%)]"
-                          style={{ width: `${Math.min(taxesWidth, 100)}%` }} // Restrict width to fit container
-                          title={`Taxes: $${taxes.toFixed(2)}`}
-                        />
-                      </div>
-
-                      {/* Cash Flow Bar */}
-                      <p className="text-xs font-semibold mt-2">
-                        Cash Flow: ${((rent - totalExpenses) > 0 ? rent - totalExpenses : 0).toFixed(2)} (Profit)
-                      </p>
-                      <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
-                        <div
-                          className={`h-6 rounded-full ${cashFlowWidth > 0 ? 'bg-green-500' : 'bg-red-500'}`} // Green for positive, red for negative
-                          style={{ width: `${Math.abs(cashFlowWidth)}%` }} // Cash flow bar
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-
-            {/* Public Listings Container */}
-            <div className="flex-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-xl font-semibold mb-4 text-gray-700">Public Listings</h3>
-              <div className="max-h-96 overflow-y-auto space-y-4">
-                {error ? (
-                  <p className="text-red-600">{error}</p>
-                ) : (
-                  listings.map((listing) => (
-                    <div key={listing.id} className="bg-gray-100 p-4 rounded-lg shadow-sm">
-                      <ListingCard
-                        address={listing.address || 'Address not available'}
-                        neighborhood={listing.neighborhood || 'Neighborhood not available'}
-                        propertyType={listing.property_type || 'Type not available'}
-                        prices={listing.prices?.map((priceObj) => priceObj.price) || []}
-                        currentPrice={listing.current_price || 'Price not available'}
-                      />
-                      {/* Add to Watchlist Button */}
-                      <button
-                        onClick={() => addToWatchlist(listing)}
-                        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
-                      >
-                        Add to Watchlist
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Watchlist Container */}
-            <div className="w-1/4 ml-4 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-xl font-semibold mb-4 text-gray-700">Your Watchlist</h3>
-              <div className="max-h-96 overflow-y-auto space-y-4">
-                {watchlist.length > 0 ? (
-                  watchlist.map((watchlistItemId) => (
-                    <div key={watchlistItemId} className="bg-gray-100 p-4 rounded-lg shadow-sm">
-                      <p>Property ID: {watchlistItemId}</p>
-                      {/* You can fetch more details using the ID if needed */}
-                    </div>
-                  ))
-                ) : (
-                  <p>No properties in your watchlist yet.</p>
-                )}
-              </div>
-            </div>
+        {/* Public Listings Section */}
+        <div className="flex-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-xl font-semibold mb-4 text-gray-700">Public Listings</h3>
+          <div className="max-h-96 overflow-y-auto space-y-4">
+            {error ? (
+              <p className="text-red-600">{error}</p>
+            ) : (
+              listings.map((listing) => (
+                <div key={listing.id} className="bg-gray-100 p-4 rounded-lg shadow-sm">
+                  <ListingCard
+                    address={listing.address || 'Address not available'}
+                    neighborhood={listing.neighborhood || 'Neighborhood not available'}
+                    propertyType={listing.property_type || 'Type not available'}
+                    prices={listing.prices?.map((priceObj) => priceObj.price) || []}
+                    currentPrice={listing.current_price || 'Price not available'}
+                  />
+                  
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
-    </Layout>
-  );
+
+      {/* Property Estimation Section */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mt-6">
+        <h3 className="text-lg font-semibold mb-4">Property Estimation (Machine Learning)</h3>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const form = e.target;
+            const details = {
+              squareFootage: form.squareFootage.value,
+              bedrooms: form.bedrooms.value,
+              bathrooms: form.bathrooms.value,
+              propertyType: form.propertyType.value,
+              postalCode: form.postalCode.value.toUpperCase(),
+            };
+            handleEstimation(details);
+            form.reset();
+          }}
+          className="space-y-4"
+        >
+          <div>
+            <label htmlFor="squareFootage" className="block text-sm font-medium text-gray-700">
+              Floor Size (sq ft)
+            </label>
+            <input
+              type="number"
+              id="squareFootage"
+              name="squareFootage"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="bedrooms" className="block text-sm font-medium text-gray-700">
+              Number of Bedrooms
+            </label>
+            <input
+              type="number"
+              id="bedrooms"
+              name="bedrooms"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700">
+              Number of Bathrooms
+            </label>
+            <input
+              type="number"
+              id="bathrooms"
+              name="bathrooms"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="propertyType" className="block text-sm font-medium text-gray-700">
+              Property Type
+            </label>
+            <input
+              type="text"
+              id="propertyType"
+              name="propertyType"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700">
+              Postal Code
+            </label>
+            <input
+              type="text"
+              id="postalCode"
+              name="postalCode"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md shadow-sm hover:bg-blue-600"
+          >
+            Estimate Property Value
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+);
 };
 
 export default Analysis;
