@@ -70,27 +70,35 @@ const LtvAverageGauge = ({ userProperties }) => {
         title="Average LTV Ratio"
         subheader="Loan-to-Value Ratio of Your Properties"
       />
-      <CardContent>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-          <GaugeContainer
-            width={200}
-            height={200}
-            startAngle={-110}
-            endAngle={110}
-            value={averageLtv}
-          >
-            <GaugeReferenceArc />
-            <GaugeValueArc />
-            <GaugePointer />
-          </GaugeContainer>
-        </div>
-        <Typography variant="h6" sx={{ mt: 2 }}>
-          Average LTV: {averageLtv.toFixed(2)}%
-        </Typography>
-        <Typography variant="body2" sx={{ mt: 2 }}>
-          The Loan-to-Value (LTV) ratio is a measure used by lenders to assess the risk of a loan. It compares the mortgage amount to the current property value.
-        </Typography>
-      </CardContent>
+<CardContent>
+  <div style={{ position: 'relative', width: 200, height: 200, margin: '0 auto' }}>
+    <GaugeContainer
+      width={200}
+      height={200}
+      startAngle={-110}
+      endAngle={110}
+      value={averageLtv}
+    >
+      <GaugeReferenceArc />
+      <GaugeValueArc />
+      <GaugePointer />
+    </GaugeContainer>
+    {/* Simplified labels positioned around the gauge */}
+    <div style={{ position: 'absolute', bottom: '35px', left: '0px',  fontSize: '10px' }}>0%</div>
+    <div style={{ position: 'absolute', top: '65px', left: '10px', fontSize: '10px' }}>25%</div>
+    <div style={{ position: 'absolute', top: '27px', left: '95px',  fontSize: '10px' }}>50%</div>
+    <div style={{ position: 'absolute', top: '65px', right: '10px', fontSize: '10px' }}>75%</div>
+    <div style={{ position: 'absolute', bottom: '35px', right: '-10px', fontSize: '10px' }}>100%</div>
+  </div>
+  <Typography variant="h6" sx={{ mt: 2 }}>
+    Average LTV: {averageLtv.toFixed(2)}%
+  </Typography>
+  <Typography variant="body2" sx={{ mt: 2 }}>
+    The Loan-to-Value (LTV) ratio is a measure used by lenders to assess the risk of a loan. It compares the mortgage amount to the current property value.
+  </Typography>
+</CardContent>
+
+
       <CardActions disableSpacing>
         <ExpandMore
           expand={expanded}
