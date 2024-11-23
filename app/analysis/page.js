@@ -9,6 +9,7 @@ import ListingCard from '../components/ListingCard'; // Component to display eac
 import MapComponent from '../components/MapComponent'; // Component to display a map with listings
 import StatsGrid from '../components/Overview'; // Import the new StatsGrid component
 import LtvRatio from '../components/LtvRatio'; // Import the new LtvRatio component
+import RentalIncomeExpenses from '../components/RentalIncomeExpenses'; // Import the new RentalIncomeExpenses component
 
 const Analysis = () => {
   const [userProperties, setUserProperties] = useState([]); // Store fetched properties belonging to the user
@@ -202,40 +203,7 @@ const Analysis = () => {
           {/* Rental Income and Public Listings Section */}
           <div className="flex mt-6 space-x-6">
             {/* Rental Income Section */}
-            <div
-              className="w-1/3 bg-white p-6 rounded-lg shadow-sm border border-gray-200"
-              style={{ maxHeight: '500px', overflowY: 'auto' }}
-            >
-              <h3 className="text-lg font-semibold mb-2">Rental Income vs. Expenses</h3>
-              {userProperties
-                .filter((property) => property.is_for_rent)
-                .map((property) => {
-                  const rent = parseFloat(property.rent_price || 0);
-                  const mortgage = parseFloat(property.mortgage_monthly_payment || 0);
-                  const maintenance = parseFloat(property.maintenance || 0) / 12;
-                  const insurance = parseFloat(property.insurance || 0) / 12;
-                  const taxes = parseFloat(property.taxes || 0) / 12;
-                  const totalExpenses = mortgage + maintenance + insurance + taxes;
-                  const cashFlowWidth = ((rent - totalExpenses) / rent) * 100;
-
-                  return (
-                    <div key={property.id} className="mb-6">
-                      <p className="text-sm font-medium text-gray-700">{property.address}</p>
-                      <p className="text-xs font-semibold mt-2">Rental Income: ${rent.toFixed(2)}</p>
-                      <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
-                        <div className="h-6 rounded-full bg-green-500" style={{ width: '100%' }} />
-                      </div>
-                      <p className="text-xs font-semibold mt-2">Expenses: ${totalExpenses.toFixed(2)}</p>
-                      <div className="w-full h-6 bg-gray-200 rounded-full mt-1">
-                        <div
-                          className={`h-6 rounded-full ${cashFlowWidth > 0 ? 'bg-green-500' : 'bg-red-500'}`}
-                          style={{ width: `${Math.abs(cashFlowWidth)}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
+            <RentalIncomeExpenses userProperties={userProperties} />
 
             {/* Public Listings Section */}
             <div className="flex-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
