@@ -66,10 +66,23 @@ const LtvAverageGauge = ({ userProperties }) => {
 
   return (
     <Card sx={{ maxWidth: 400, margin: '0 auto', textAlign: 'center' }}>
-      <CardHeader
-        title="Average LTV Ratio"
-        subheader="Loan-to-Value Ratio of Your Properties"
-      />
+      <CardHeader title="Average LTV Ratio" subheader="Loan-to-Value Ratio of Your Properties" />
+      {averageLtv && (
+        <Card sx={{ width: 150, margin: '10px 10px 10px auto', textAlign: 'center', backgroundColor: '#ffffff', padding: '10px'}}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              backgroundColor: averageLtv <= 50 ? 'green' : averageLtv <= 75 ? 'yellow' : 'red',
+              marginRight: 10
+            }}></div>
+            <Typography variant="body2">
+              {averageLtv <= 50 ? 'Good Standing' : averageLtv <= 75 ? 'Moderate Risk' : 'High Risk'}
+            </Typography>
+          </div>
+        </Card>
+      )}
 <CardContent>
   <div style={{ position: 'relative', width: 200, height: 200, margin: '0 auto' }}>
     <GaugeContainer
@@ -88,7 +101,7 @@ const LtvAverageGauge = ({ userProperties }) => {
     <div style={{ position: 'absolute', top: '65px', left: '10px', fontSize: '10px' }}>25%</div>
     <div style={{ position: 'absolute', top: '27px', left: '95px',  fontSize: '10px' }}>50%</div>
     <div style={{ position: 'absolute', top: '65px', right: '10px', fontSize: '10px' }}>75%</div>
-    <div style={{ position: 'absolute', bottom: '35px', right: '-10px', fontSize: '10px' }}>100%</div>
+    <div style={{ position: 'absolute', bottom: '35px', right: '-20px', transform: 'translateX(-50%)', fontSize: '10px' }}>100%</div>
   </div>
   <Typography variant="h6" sx={{ mt: 2 }}>
     Average LTV: {averageLtv.toFixed(2)}%
