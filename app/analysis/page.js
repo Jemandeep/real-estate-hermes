@@ -8,7 +8,7 @@ import Layout from '../components/Layout'; // Layout component for consistent st
 import ListingCard from '../components/ListingCard'; // Component to display each listing
 import MapComponent from '../components/MapComponent'; // Component to display a map with listings
 import StatsGrid from '../components/Overview'; // Import the new StatsGrid component
-
+import LtvRatio from '../components/LtvRatio'; // Import the new LtvRatio component
 
 const Analysis = () => {
   const [userProperties, setUserProperties] = useState([]); // Store fetched properties belonging to the user
@@ -129,7 +129,7 @@ const Analysis = () => {
       try {
         const userDocRef = doc(db, 'users', userEmail); // Reference to the user's document
         const userDocSnapshot = await getDoc(userDocRef); // Fetch the single user document
-
+    
         if (userDocSnapshot.exists()) {
           const userData = userDocSnapshot.data();
           setWatchlist(userData.watchlist || []); // Set watchlist from Firestore
@@ -141,7 +141,7 @@ const Analysis = () => {
         console.error('Error fetching watchlist:', error);
       }
     };
-
+    
 
     // Check for the authenticated user and fetch their properties and watchlist
     const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
@@ -159,7 +159,6 @@ const Analysis = () => {
   }, [auth]);
 
   // Function to add a listing to the user's watchlist in Firestore
-  // Function to add listing to watchlist
   const addToWatchlist = async (listing) => {
     if (!user) {
       alert('You need to be logged in to add properties to your watchlist.');
@@ -167,18 +166,17 @@ const Analysis = () => {
     }
 
     try {
-      const userDocRef = doc(db, 'users', user.email);
+      const userDocRef = doc(db, 'users', user.email); // Reference to the user's document in Firestore
       await updateDoc(userDocRef, {
-        watchlist: arrayUnion(listing.id),
+        watchlist: arrayUnion(listing.id), // Add the listing ID to the user's watchlist
       });
-      setWatchlist((prev) => [...prev, listing]); // Add to watchlist state
+      setWatchlist([...watchlist, listing.id]); // Update local state
       alert(`Added ${listing.address} to your watchlist.`);
     } catch (error) {
       console.error('Error adding to watchlist:', error);
       alert('Error adding to watchlist.');
     }
   };
-
 
   return (
     <Layout>
@@ -192,33 +190,7 @@ const Analysis = () => {
           {/* LTV Ratio and Map Section */}
           <div className="flex">
             {/* LTV Ratio Section */}
-            <div
-              className="w-2/3 bg-white p-6 rounded-lg shadow-sm border border-gray-200"
-              style={{ maxHeight: '500px', overflowY: 'auto' }}
-            >
-              <h3 className="text-lg font-semibold mb-2">LTV Ratio</h3>
-              {userProperties.map((property) => {
-                const ltvRatio = (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) * 100;
-                const getColor = (ratio) => {
-                  if (ratio < 60) return 'bg-green-500';
-                  if (ratio >= 60 && ratio <= 80) return 'bg-yellow-500';
-                  return 'bg-red-500';
-                };
-
-                return (
-                  <div key={property.id} className="mb-6">
-                    <p className="text-sm font-medium text-gray-700">{property.address}</p>
-                    <div className="w-full h-6 bg-gray-200 rounded-full mt-2">
-                      <div
-                        className={`h-6 rounded-full ${getColor(ltvRatio)}`}
-                        style={{ width: `${ltvRatio}%` }}
-                      />
-                    </div>
-                    <p className="text-xs mt-1 text-gray-500">{ltvRatio.toFixed(2)}% LTV Ratio</p>
-                  </div>
-                );
-              })}
-            </div>
+            <LtvRatio userProperties={userProperties} />
 
             {/* Map Component */}
             <div className="flex-1 mx-4 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
