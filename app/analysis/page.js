@@ -1,5 +1,4 @@
 "use client"; // Ensure client-side rendering
-
 import React, { useState, useEffect } from 'react';
 import { getDoc, getDocs, collection, query, where, updateDoc, doc, arrayUnion } from 'firebase/firestore'; // Firestore functions
 import { db } from '../../firebase'; // Firebase configuration
