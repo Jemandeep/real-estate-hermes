@@ -68,31 +68,36 @@ const RentalIncomeExpenses = ({ userProperties }) => {
               Average Expenses Breakdown
             </Typography>
             <PieChart
-              series={[
-                {
-                  data: [
-                    { id: 0, value: totalMortgage / rentalProperties.length, label: 'Mortgage' },
-                    { id: 1, value: totalMaintenance / rentalProperties.length, label: 'Maintenance' },
-                    { id: 2, value: totalInsurance / rentalProperties.length, label: 'Insurance' },
-                    { id: 3, value: totalTaxes / rentalProperties.length, label: 'Taxes' },
-                  ],
-                  innerRadius: 30,
-                  outerRadius: 100,
-                  paddingAngle: 5,
-                  cornerRadius: 5,
-                  startAngle: -45,
-                  endAngle: 225,
-                  cx: 150,
-                  cy: 150,
-                },
-              ]}
-              legend={{
-                position: 'bottom', // Move the legend below the chart
-                align: 'center',   // Center-align the legend
-              }}
-              width={300}
-              height={300}
-            />
+  series={[
+    {
+      data: [
+        { id: 0, value: totalMortgage / rentalProperties.length, label: 'Mortgage' },
+        { id: 1, value: totalMaintenance / rentalProperties.length, label: 'Maintenance' },
+        { id: 2, value: totalInsurance / rentalProperties.length, label: 'Insurance' },
+        { id: 3, value: totalTaxes / rentalProperties.length, label: 'Taxes' },
+      ],
+      innerRadius: 30,
+      outerRadius: 100,
+      paddingAngle: 0,
+      cornerRadius: 5,
+      startAngle: -45,
+      endAngle: 225,
+      cx: 150,
+      cy: 150,
+    },
+  ]}
+  slotProps={{
+    legend: {
+      direction: 'row', // Arrange items vertically
+      position: { vertical: 'top', horizontal: 'left' }, // Place the legend on the right
+      textStyle: { fontSize: 10, color: '#333' }, // Customize text style if supported
+    },
+  }}
+  width={300}
+  height={300}
+/>
+
+
           </div>
 
           {/* Income vs. Expenses for All Properties and Average */}
