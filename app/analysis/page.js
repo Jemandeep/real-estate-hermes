@@ -193,16 +193,12 @@ const Analysis = () => {
             <LtvRatio userProperties={userProperties} />
 
             {/* Map Component */}
-            <div className="flex-1 mx-4 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h2 className="text-xl font-semibold mb-4 text-gray-700">Your Properties Map</h2>
-              <MapComponent listings={userProperties} />
-            </div>
+            <RentalIncomeExpenses userProperties={userProperties} />
           </div>
 
           {/* Rental Income and Public Listings Section */}
           <div className="flex mt-6 space-x-6">
             {/* Rental Income Section */}
-            <RentalIncomeExpenses userProperties={userProperties} />
 
             {/* Public Listings Section */}
             <div className="flex-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
