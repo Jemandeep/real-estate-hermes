@@ -16,6 +16,8 @@ const ListingCard = ({
   prices = [], // Provide default value as an empty array
   maxMonth = 12,
   currentPrice,
+  addToWatchlist, // Use the addToWatchlist function passed as a prop
+  listing, // Listing object for adding to watchlist
 }) => {
   // Safeguard: Ensure `prices` is always an array
   const validPrices = Array.isArray(prices)
@@ -45,53 +47,67 @@ const ListingCard = ({
       ? `$${parseFloat(currentPrice).toLocaleString()}`
       : 'Price not available';
 
+  
+
   return (
-    <div className="bg-white shadow rounded p-4 mb-4 flex justify-between items-center">
-      <div>
-        <h2 className="text-lg font-bold">{propertyType}</h2>
-        <p className="text-sm text-gray-600">
-          {address}, {neighborhood}
-        </p>
+    <div className="bg-white shadow rounded p-4 mb-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-bold">{propertyType}</h2>
+          <p className="text-sm text-gray-600">
+            {address}, {neighborhood}
+          </p>
+        </div>
+
+        <div className="flex items-center">
+          <ResponsiveContainer width={650} height={70}>
+            <LineChart data={priceData}>
+              <XAxis dataKey="name" hide />
+              <YAxis
+                domain={[
+                  Math.min(...limitedPrices) - 10,
+                  Math.max(...limitedPrices) + 10,
+                ]}
+                hide
+              />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="price"
+                stroke={trendDirection === 'up' ? '#4CAF50' : '#FF0000'}
+                strokeWidth={1}
+                dot={{
+                  r: 1.5,
+                  fill: trendDirection === 'up' ? '#4CAF50' : '#FF0000',
+                }}
+                activeDot={{ r: 3 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+
+          <span
+            className={`ml-2 ${
+              trendDirection === 'up' ? 'text-green-500' : 'text-red-500'
+            }`}
+          >
+            {trendDirection === 'up' ? '▲' : '▼'}
+          </span>
+
+          <div className="text-right ml-4">
+            <p className="text-sm text-gray-500">Current Price:</p>
+            <p className="text-lg font-semibold">{formattedCurrentPrice}</p>
+          </div>
+        </div>
       </div>
 
-      <div className="flex items-center">
-        <ResponsiveContainer width={650} height={70}>
-          <LineChart data={priceData}>
-            <XAxis dataKey="name" hide />
-            <YAxis
-              domain={[
-                Math.min(...limitedPrices) - 10,
-                Math.max(...limitedPrices) + 10,
-              ]}
-              hide
-            />
-            <Tooltip />
-            <Line
-              type="monotone"
-              dataKey="price"
-              stroke={trendDirection === 'up' ? '#4CAF50' : '#FF0000'}
-              strokeWidth={1}
-              dot={{
-                r: 1.5,
-                fill: trendDirection === 'up' ? '#4CAF50' : '#FF0000',
-              }}
-              activeDot={{ r: 3 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-
-        <span
-          className={`ml-2 ${
-            trendDirection === 'up' ? 'text-green-500' : 'text-red-500'
-          }`}
+      {/* Add to Watchlist Button */}
+      <div className="mt-4 flex justify-end">
+        <button
+          onClick={() => addToWatchlist(listing)} // Use addToWatchlist prop with listing data
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
-          {trendDirection === 'up' ? '▲' : '▼'}
-        </span>
-
-        <div className="text-right ml-4">
-          <p className="text-sm text-gray-500">Current Price:</p>
-          <p className="text-lg font-semibold">{formattedCurrentPrice}</p>
-        </div>
+          Add to Watchlist
+        </button>
       </div>
     </div>
   );
