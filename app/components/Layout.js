@@ -36,7 +36,7 @@ const Layout = ({ children }) => {
       <NavBar />
 
       {/* Main content area */}
-      <main style={{ flex: 1, padding: '2rem', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+      <main style={{ flex: 1, padding: '2rem', margin: '0 auto', width: '100%' }}>
         {children}
       </main>
 
