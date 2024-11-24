@@ -86,6 +86,10 @@ const RentalIncomeExpenses = ({ userProperties }) => {
                   cy: 150,
                 },
               ]}
+              legend={{
+                position: 'bottom', // Move the legend below the chart
+                align: 'center',   // Center-align the legend
+              }}
               width={300}
               height={300}
             />
