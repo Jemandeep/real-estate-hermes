@@ -25,17 +25,29 @@ function GaugePointer() {
     return null;
   }
 
+  // Calculate the target point at the end of the pointer
   const target = {
     x: cx + outerRadius * Math.sin(valueAngle),
     y: cy - outerRadius * Math.cos(valueAngle),
   };
+
+  // Calculate two additional points to create a triangular pointer
+  const baseWidth = 10; // Width at the bottom of the pointer
+  const baseLeft = {
+    x: cx + (baseWidth / 2) * Math.cos(valueAngle),
+    y: cy + (baseWidth / 2) * Math.sin(valueAngle),
+  };
+  const baseRight = {
+    x: cx - (baseWidth / 2) * Math.cos(valueAngle),
+    y: cy - (baseWidth / 2) * Math.sin(valueAngle),
+  };
+
   return (
     <g>
       <circle cx={cx} cy={cy} r={5} fill="red" />
-      <path
-        d={`M ${cx} ${cy} L ${target.x} ${target.y}`}
-        stroke="red"
-        strokeWidth={3}
+      <polygon
+        points={`${baseLeft.x},${baseLeft.y} ${baseRight.x},${baseRight.y} ${target.x},${target.y}`}
+        fill="red"
       />
     </g>
   );
@@ -97,11 +109,11 @@ const LtvAverageGauge = ({ userProperties }) => {
       <GaugePointer />
     </GaugeContainer>
     {/* Simplified labels positioned around the gauge */}
-    <div style={{ position: 'absolute', bottom: '35px', left: '0px',  fontSize: '10px' }}>0%</div>
-    <div style={{ position: 'absolute', top: '65px', left: '10px', fontSize: '10px' }}>25%</div>
-    <div style={{ position: 'absolute', top: '27px', left: '95px',  fontSize: '10px' }}>50%</div>
-    <div style={{ position: 'absolute', top: '65px', right: '10px', fontSize: '10px' }}>75%</div>
-    <div style={{ position: 'absolute', bottom: '35px', right: '-20px', transform: 'translateX(-50%)', fontSize: '10px' }}>100%</div>
+    <div style={{ position: 'absolute', bottom: '40px', left: '35px',  fontSize: '10px' }}>0%</div>
+    <div style={{ position: 'absolute', top: '85px', left: '42px', fontSize: '10px' }}>25%</div>
+    <div style={{ position: 'absolute', top: '58px', left: '95px',  fontSize: '10px' }}>50%</div>
+    <div style={{ position: 'absolute', top: '85px', right: '37px', fontSize: '10px' }}>75%</div>
+    <div style={{ position: 'absolute', bottom: '40px', right: '33px',  fontSize: '10px' }}>100%</div>
   </div>
   <Typography variant="h6" sx={{ mt: 2 }}>
     Average LTV: {averageLtv.toFixed(2)}%
