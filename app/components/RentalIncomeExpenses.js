@@ -104,8 +104,8 @@ const RentalIncomeExpenses = ({ userProperties }) => {
               dataset={combinedData}
               xAxis={[{ scaleType: 'band', dataKey: 'category' }]}
               series={[
-                { dataKey: 'income', label: 'Income', valueFormatter: (val) => `$${val.toFixed(2)}` },
-                { dataKey: 'expenses', label: 'Expenses', valueFormatter: (val) => `$${val.toFixed(2)}` },
+                { dataKey: 'income', label: 'Income', valueFormatter: (val) => `$${val.toLocaleString(2)}` },
+                { dataKey: 'expenses', label: 'Expenses', valueFormatter: (val) => `$${val.toLocaleString(2)}` },
               ]}
               {...chartSetting}
             />

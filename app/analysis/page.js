@@ -188,9 +188,11 @@ const Analysis = () => {
           <StatsGrid metrics={metrics} />
 
           {/* LTV Ratio and Map Section */}
-          <div className="flex">
-            {/* LTV Ratio Section */}
-            <LtvRatio userProperties={userProperties} />
+<div className="flex">
+  {/* LTV Ratio Section */}
+  <LtvRatio userProperties={userProperties} className="pt-4" />
+</div>
+
 
             {/* Map Component */}
             <RentalIncomeExpenses userProperties={userProperties} />
@@ -311,7 +313,6 @@ const Analysis = () => {
             </form>
           </div>
         </div>
-      </div>
     </Layout>
   );
 };
