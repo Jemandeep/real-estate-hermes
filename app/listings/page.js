@@ -4,8 +4,10 @@ import { db } from '../../firebase'; // Firebase configuration
 import { collection, getDocs } from 'firebase/firestore';
 import Layout from '../components/Layout';
 import ListingCard from './ListingCard'; // Component to display individual listing cards
+import { useRouter } from 'next/navigation'; // Updated import
 
 const Listings = () => {
+  const router = useRouter();
   const [listings, setListings] = useState([]);
   const [filteredPropertyTypes, setFilteredPropertyTypes] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 1000000]); // Default price range
@@ -14,6 +16,7 @@ const Listings = () => {
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [compareList, setCompareList] = useState([]);
 
   // Fetch listings from Firebase
   useEffect(() => {
@@ -39,6 +42,23 @@ const Listings = () => {
 
     fetchListings();
   }, []);
+
+  const handleCompare = (id) => {
+    if (compareList.includes(id)) {
+      setCompareList(compareList.filter((item) => item !== id)); // Remove if already selected
+    } else {
+      setCompareList([...compareList, id]); // Add to compare list
+    }
+  };
+
+  const goToComparePage = () => {
+    if (compareList.length > 1) {
+      const compareIds = compareList.join(',');
+      router.push(`/compare?ids=${compareIds}`);
+    } else {
+      alert('Please select at least two listings to compare.');
+    }
+  };
 
   const handlePropertyTypeChange = (e) => {
     const propertyType = e.target.value;
@@ -195,23 +215,41 @@ const Listings = () => {
           <p className="text-gray-600 text-center mt-8">Please wait, data is being fetched...</p>
         ) : (
           filteredListings.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredListings.map((listing) => (
-                <ListingCard
-                  key={listing.id}
-                  address={listing.address}
-                  neighborhood={listing.neighborhood}
-                  propertyType={listing.property_type}
-                  currentPrice={listing.current_price}
-                  bedCount={listing.bed_count}
-                  bathroomCount={listing.bathroom_count}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {filteredListings.map((listing) => (
+                  <ListingCard
+                    key={listing.id}
+                    id={listing.id} // Pass the id here
+                    address={listing.address}
+                    neighborhood={listing.neighborhood}
+                    propertyType={listing.property_type}
+                    currentPrice={listing.current_price}
+                    bedCount={listing.bed_count}
+                    bathroomCount={listing.bathroom_count}
+                    onCompare={handleCompare} // Pass the compare function
+                    compareList={compareList} // Pass the compareList to highlight selected items
+                  />
+                ))}
+              </div>
+
+              {/* Compare Button */}
+              <div className="mt-6 text-right">
+                <button
+                  onClick={goToComparePage}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  Compare Selected Listings
+                </button>
+              </div>
+            </>
           ) : (
-            <p className="text-gray-600 text-center">No listings to display.</p>
+            <p className="text-gray-600 text-center mt-8">No listings match your criteria.</p>
           )
         )}
+
+        {/* Show error message */}
+        {error && <p className="text-red-500 text-center mt-8">{error}</p>}
       </div>
     </Layout>
   );

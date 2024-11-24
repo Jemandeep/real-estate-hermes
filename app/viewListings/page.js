@@ -3,13 +3,18 @@ import { useState, useEffect } from 'react';
 import { db } from '../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import Layout from '../components/Layout';
-import Link from 'next/link'; // For linking to the detailed page
-import { FaBed, FaBath, FaMapMarkerAlt, FaHome } from 'react-icons/fa'; // Import icons
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { FaBed, FaBath, FaMapMarkerAlt, FaHome } from 'react-icons/fa';
 
 const ViewListings = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [compareList, setCompareList] = useState([]); 
+  const [sortOrder, setSortOrder] = useState('low'); 
+  const [priceRange, setPriceRange] = useState([0, 1000000]); 
+  const router = useRouter();
 
   // Fetch listings from Firebase
   useEffect(() => {
@@ -32,25 +37,89 @@ const ViewListings = () => {
     fetchListings();
   }, []);
 
+  // Handle compare selection
+  const handleCompare = (id) => {
+    // If the property is already in the compare list, remove it, otherwise add it
+    if (compareList.includes(id)) {
+      setCompareList(compareList.filter(item => item !== id));
+    } else {
+      setCompareList([...compareList, id]);
+    }
+  };
+
+  // Navigate to compare page
+  const handleCompareRedirect = () => {
+    if (compareList.length >= 2) {
+      router.push(`/compare?ids=${compareList.join(',')}`);
+    } else {
+      alert('Please select at least two properties to compare.');
+    }
+  };
+
+  // Sort listings based on selected order
+  const sortedListings = [...listings].sort((a, b) => {
+    if (sortOrder === 'low') {
+      return a.current_price - b.current_price;
+    } else {
+      return b.current_price - a.current_price;
+    }
+  });
+
+  // Filter listings based on selected price range
+  const filteredListings = sortedListings.filter((listing) => {
+    const price = listing.current_price || 0;
+    return price >= priceRange[0] && price <= priceRange[1];
+  });
+
   return (
     <Layout>
       <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
-          View Listings
-        </h1>
+        <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-8">View Listings</h1>
+
+        {/* Price Filter */}
+        <div className="text-right mb-4">
+          <label htmlFor="minPrice" className="mr-2">Min Price:</label>
+          <input 
+            type="number" 
+            id="minPrice" 
+            value={priceRange[0]} 
+            onChange={(e) => setPriceRange([Math.max(0, +e.target.value), priceRange[1]])} 
+            className="border p-2 rounded-lg" 
+            min="0" 
+          />
+          <label htmlFor="maxPrice" className="ml-4 mr-2">Max Price:</label>
+          <input 
+            type="number" 
+            id="maxPrice" 
+            value={priceRange[1]} 
+            onChange={(e) => setPriceRange([priceRange[0], Math.max(priceRange[0], +e.target.value)])} 
+            className="border p-2 rounded-lg" 
+            min="0" 
+          />
+        </div>
+
+        {/* Sort Button */}
+        <div className="text-right mb-4">
+          <select 
+            value={sortOrder} 
+            onChange={(e) => setSortOrder(e.target.value)} 
+            className="border p-2 rounded-lg"
+          >
+            <option value="low">Sort by Price: Low to High</option>
+            <option value="high">Sort by Price: High to Low</option>
+          </select>
+        </div>
 
         {loading ? (
-          <p className="text-gray-600 text-center mt-8">
-            Loading listings, please wait...
-          </p>
+          <p className="text-gray-600 text-center mt-8">Loading listings, please wait...</p>
         ) : error ? (
           <p className="text-red-500 text-center mt-8">{error}</p>
-        ) : listings.length > 0 ? (
+        ) : filteredListings.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {listings.map((listing) => (
-              <Link key={listing.id} href={`/viewListings/detailedListing?id=${listing.id}`}>
-                <div className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transform hover:scale-105 transition duration-200 cursor-pointer min-h-[350px] flex flex-col justify-between">
-                  <div>
+            {filteredListings.map((listing) => (
+              <div key={listing.id} className="relative bg-white shadow-lg rounded-lg p-6 min-h-[350px] flex flex-col justify-between">
+                <Link href={`/viewListings/detailedListing?id=${listing.id}`}>
+                  <div className="cursor-pointer">
                     <div className="mb-4">
                       <p className="text-lg font-bold text-gray-800 mb-2 flex items-center">
                         <FaMapMarkerAlt className="mr-2 text-gray-700" />
@@ -71,19 +140,41 @@ const ViewListings = () => {
                         {listing.property_type}
                       </p>
                     </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold">Current Price:</p>
+                      <p className="text-lg font-semibold text-gray-800">
+                        ${listing.current_price ? listing.current_price.toLocaleString() : 'No price available'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold">Current Price:</p>
-                    <p className="text-lg font-semibold text-gray-800">
-                      ${listing.current_price ? listing.current_price.toLocaleString() : 'No price available'}
-                    </p>
-                  </div>
+                </Link>
+
+                {/* Compare Button */}
+                <div className="mt-4">
+                  <button
+                    onClick={() => handleCompare(listing.id)}
+                    className={`w-full py-2 px-4 text-white font-semibold rounded-lg ${compareList.includes(listing.id) ? 'bg-red-500' : 'bg-blue-500'} hover:opacity-90 transition duration-200`}
+                  >
+                    {compareList.includes(listing.id) ? 'Remove from Compare' : 'Add to Compare'}
+                  </button>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         ) : (
-          <p className="text-gray-600 text-center">No listings found.</p>
+          <p className="text-gray-600 text-center">No listings found in the selected price range.</p>
+        )}
+
+        {/* Compare Page Button */}
+        {compareList.length >= 2 && (
+          <div className="mt-6">
+            <button
+              onClick={handleCompareRedirect}
+              className="w-full py-2 px-4 bg-green-500 text-white font-semibold rounded-lg hover:opacity-90 transition duration-200"
+            >
+              Compare Selected Listings
+            </button>
+          </div>
         )}
       </div>
     </Layout>

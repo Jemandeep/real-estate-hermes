@@ -19,7 +19,9 @@
     "@tabler/icons-react": "^3.22.0",
     "audit": "^0.0.6",
     "chart.js": "^4.4.5",
+    "cors": "^2.8.5",
     "d3-geo": "^3.1.1",
+    "express": "^4.21.1",
     "firebase": "^10.13.2",
     "firebase-admin": "^12.5.0",
     "fix": "^0.0.3",
@@ -36,6 +38,7 @@
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {
+    "@types/react": "18.3.12",
     "eslint": "^8",
     "eslint-config-next": "14.2.9",
     "postcss": "^8",

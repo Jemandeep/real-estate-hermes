@@ -1,59 +1,49 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Firebase Auth
-import { useRouter } from 'next/navigation'; // Next.js router for navigation
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 import NavBar from './NavBar';
 
 const Layout = ({ children }) => {
-  const [user, setUser] = useState(null); // Track the logged-in user
-  const router = useRouter(); // Get the router instance for redirection
-  const auth = getAuth(); // Initialize Firebase Auth
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const auth = getAuth();
 
   useEffect(() => {
-    // Listen for authentication state changes
+    const publicRoutes = ['/login', '/signup'];
+
     const unsubscribe = onAuthStateChanged(auth, (loggedUser) => {
       if (loggedUser) {
-        setUser(loggedUser); // Set user if logged in
-      } else {
-        // If no user, redirect to login page
-        router.push('/login');
+        setUser(loggedUser);
+      } else if (!publicRoutes.includes(router.pathname)) {
+        router.push('/login'); // Redirect unauthenticated users to login
       }
+      setLoading(false);
     });
 
-    return () => unsubscribe(); // Clean up the listener on unmount
+    return () => unsubscribe();
   }, [auth, router]);
 
-  useEffect(() => {
-    // Ensure the chart-related functionality is only applied on pages that actually have a chart.
-    const chart = document.getElementById('chart');
-    if (chart) {
-      const handleResize = () => {
-        chart.style.width = window.innerWidth * 0.8 + 'px';
-        chart.style.height = window.innerHeight * 0.5 + 'px';
-      };
-
-      // Initial call when the component mounts
-      handleResize();
-
-      // Setup the resize event listener
-      window.addEventListener('resize', handleResize);
-
-      // Cleanup the event listener on component unmount
-      return () => window.removeEventListener('resize', handleResize);
-    }
-  }, []);
-
-  if (!user) {
-    return null; // Optionally, return a loading spinner here while checking auth state
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
   return (
-    <div>
-      {/* Fixed NavBar at the top */}
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {/* Fixed NavBar */}
       <NavBar />
-      {/* Ensure the padding at the top accommodates the height of the NavBar */}
-      <main className="container mx-auto p-4 pt-20">{children}</main>
+
+      {/* Main content area */}
+      <main style={{ flex: 1, padding: '2rem', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+        {children}
+      </main>
+
+      {/* Optional Footer */}
+      <footer style={{ textAlign: 'center', padding: '1rem', background: '#f8f9fa' }}>
+        <p>© 2024 Your Company</p>
+      </footer>
     </div>
   );
 };
