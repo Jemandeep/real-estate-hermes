@@ -83,14 +83,14 @@ const RentalIncomeExpenses = ({ userProperties }) => {
       startAngle: -45,
       endAngle: 225,
       cx: 150,
-      cy: 150,
+      cy: 170,
     },
   ]}
   slotProps={{
     legend: {
       direction: 'row', // Arrange items vertically
-      position: { vertical: 'top', horizontal: 'left' }, // Place the legend on the right
-      textStyle: { fontSize: 10, color: '#333' }, // Customize text style if supported
+      position: { vertical: 'top', horizontal: 'center' }, // Place the legend on the right
+      textStyle: { fontSize: 10, color: '#333', }, // Customize text style if supported
     },
   }}
   width={300}
