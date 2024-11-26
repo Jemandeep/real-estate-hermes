@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; // Import useRouter from next/navigation for App Router
 import Link from "next/link";
 import Layout from "../components/Layout";
-import { FiMessageSquare, FiStar, FiActivity,FiBarChart2 } from "react-icons/fi";
+import { FiMessageSquare, FiStar, FiActivity,FiBarChart2g } from "react-icons/fi";
 import { getAuth, onAuthStateChanged } from "firebase/auth"; // Import Firebase auth
 
 const CommunityPage = () => {
