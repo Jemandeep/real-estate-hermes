@@ -50,11 +50,21 @@ const RentalIncomeExpenses = ({ userProperties }) => {
   const chartSetting = {
     width: 800,
     height: 300,
-    barWidth: 15, // Thinner bars
+    barWidth: 10, // Thinner bars
   };
 
   return (
-    <Card sx={{ maxWidth: 1200, margin: '20px auto', textAlign: 'center', padding: '10px', border: '1px solid #ddd' }}>
+    <Card 
+  sx={{ 
+    borderRadius: "30px", 
+    maxWidth: 1200, 
+    margin: '20px 0', // Removes horizontal centering
+    textAlign: 'center', 
+    padding: '10px', 
+    border: '1px solid #ddd' 
+  }}
+>
+
       <CardContent>
         <Typography variant="h6" gutterBottom>
           Rental Income and Expenses Analysis

@@ -11,8 +11,7 @@ const LtvAverageGauge = ({ userProperties }) => {
       ? userProperties.reduce(
           (acc, property) =>
             acc +
-            (parseFloat(property.mortgage_amount) /
-              parseFloat(property.current_price)) *
+            (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) *
               100,
           0
         ) / userProperties.length
@@ -26,20 +25,15 @@ const LtvAverageGauge = ({ userProperties }) => {
   }));
 
   return (
-<Card
+    <Card
       sx={{
-        width: '50vw', // 1/4 of viewport width
-        height: '28vw', // Equal height for square
-        maxWidth: '37vh', // Prevent exceeding 1/4 of viewport height
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'auto',
-        margin: 'auto',
-        textAlign: 'center',
-        border: '1px solid #ddd',
-        borderRadius: '30px',
-        justifyContent: "space-between"
+        maxWidth: 1200, // Set maximum width for responsiveness
+        margin: "20px auto", // Center the card horizontally
+        textAlign: "center",
+        padding: "10px", // Padding inside the card
+        border: "1px solid #ddd",
+        borderRadius: "30px",
+        height: "530px"
       }}
     >
       <CardHeader

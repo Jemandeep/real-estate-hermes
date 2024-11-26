@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Chart from "react-apexcharts";
 import { db } from "../../firebase"; // Adjust the path to your Firebase config
 import { collection, getDocs } from "firebase/firestore";
+import { Card, CardContent, Typography } from "@mui/material"; // Added this import
 
 const chartsConfig = {
   chart: {
@@ -215,28 +216,32 @@ const AverageMortgage = () => {
   ];
 
   return (
-    <div
-      className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"
-      style={{
-        width: "31.5vw",
-        height: "48vh",
-        margin: "0 auto",
+    <Card
+      sx={{
+        maxWidth: 1200, // Matches RentalIncomeExpenses maxWidth for consistency
+        margin: "20px auto", // Center horizontally with vertical spacing
+        textAlign: "center",
+        padding: "10px", // Padding inside the card
+        border: "1px solid #ddd",
         borderRadius: "30px",
       }}
     >
-      <h3 className="text-xl font-semibold mb-4 text-gray-700 text-center">
-        Average Mortgage: ${averageMortgage.toFixed(2)}
-      </h3>
-      <div>
+      <CardContent>
+        <Typography
+          variant="h6"
+          sx={{ textAlign: "center", marginBottom: 3 }}
+        >
+          Average Mortgage: ${averageMortgage.toFixed(2)}
+        </Typography>
         <Chart
           options={chartOptions}
           series={chartSeries}
           type="bar"
           width="100%"
-          height="300%"
+          height="400px" // Fixed height for consistency
         />
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
