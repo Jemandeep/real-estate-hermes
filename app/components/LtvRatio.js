@@ -1,142 +1,103 @@
 "use client";
 
-import * as React from 'react';
-import {
-  GaugeContainer,
-  GaugeValueArc,
-  GaugeReferenceArc,
-  useGaugeState,
-} from '@mui/x-charts/Gauge';
-import { styled } from '@mui/material/styles';
-import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
-import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
-import Collapse from '@mui/material/Collapse';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-
-function GaugePointer() {
-  const { valueAngle, outerRadius, cx, cy } = useGaugeState();
-
-  if (valueAngle === null) {
-    // No value to display
-    return null;
-  }
-
-  const target = {
-    x: cx + outerRadius * Math.sin(valueAngle),
-    y: cy - outerRadius * Math.cos(valueAngle),
-  };
-  return (
-    <g>
-      <circle cx={cx} cy={cy} r={5} fill="red" />
-      <path
-        d={`M ${cx} ${cy} L ${target.x} ${target.y}`}
-        stroke="red"
-        strokeWidth={3}
-      />
-    </g>
-  );
-}
-
-const ExpandMore = styled((props) => {
-  const { expand, ...other } = props;
-  return <IconButton {...other} />;
-})(({ theme }) => ({
-  marginLeft: 'auto',
-  transition: theme.transitions.create('transform', {
-    duration: theme.transitions.duration.shortest,
-  }),
-  transform: (props) => (props.expand ? 'rotate(180deg)' : 'rotate(0deg)')
-}));
+import React from "react";
+import { Gauge, gaugeClasses } from "@mui/x-charts/Gauge";
+import { Card, CardHeader, CardContent, Typography, Box, LinearProgress } from "@mui/material";
 
 const LtvAverageGauge = ({ userProperties }) => {
-  const [expanded, setExpanded] = React.useState(false);
+  // Calculate the average LTV ratio
+  const averageLtv =
+    userProperties.length > 0
+      ? userProperties.reduce(
+          (acc, property) =>
+            acc +
+            (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) *
+              100,
+          0
+        ) / userProperties.length
+      : 0;
 
-  // Calculate the average LTV Ratio of all properties
-  const averageLtv = userProperties.length > 0
-    ? userProperties.reduce((acc, property) => acc + (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) * 100, 0) / userProperties.length
-    : 0;
-
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
-  };
+  // Calculate LTV ratios for individual properties
+  const propertyRatios = userProperties.map((property) => ({
+    address: property.address,
+    ltvRatio:
+      (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) * 100,
+  }));
 
   return (
-    <Card sx={{ maxWidth: 400, margin: '0 auto', textAlign: 'center' }}>
-      <CardHeader title="Average LTV Ratio" subheader="Loan-to-Value Ratio of Your Properties" />
-      {averageLtv && (
-        <Card sx={{ width: 150, margin: '10px 10px 10px auto', textAlign: 'center', backgroundColor: '#ffffff', padding: '10px'}}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              backgroundColor: averageLtv <= 50 ? 'green' : averageLtv <= 75 ? 'yellow' : 'red',
-              marginRight: 10
-            }}></div>
-            <Typography variant="body2">
-              {averageLtv <= 50 ? 'Good Standing' : averageLtv <= 75 ? 'Moderate Risk' : 'High Risk'}
-            </Typography>
-          </div>
-        </Card>
-      )}
-<CardContent>
-  <div style={{ position: 'relative', width: 200, height: 200, margin: '0 auto' }}>
-    <GaugeContainer
-      width={200}
-      height={200}
-      startAngle={-110}
-      endAngle={110}
-      value={averageLtv}
+    <Card
+      sx={{
+        maxWidth: 1200, // Set maximum width for responsiveness
+        margin: "20px auto", // Center the card horizontally
+        textAlign: "center",
+        padding: "10px", // Padding inside the card
+        border: "1px solid #ddd",
+        borderRadius: "30px",
+        height: "530px"
+      }}
     >
-      <GaugeReferenceArc />
-      <GaugeValueArc />
-      <GaugePointer />
-    </GaugeContainer>
-    {/* Simplified labels positioned around the gauge */}
-    <div style={{ position: 'absolute', bottom: '35px', left: '0px',  fontSize: '10px' }}>0%</div>
-    <div style={{ position: 'absolute', top: '65px', left: '10px', fontSize: '10px' }}>25%</div>
-    <div style={{ position: 'absolute', top: '27px', left: '95px',  fontSize: '10px' }}>50%</div>
-    <div style={{ position: 'absolute', top: '65px', right: '10px', fontSize: '10px' }}>75%</div>
-    <div style={{ position: 'absolute', bottom: '35px', right: '-20px', transform: 'translateX(-50%)', fontSize: '10px' }}>100%</div>
-  </div>
-  <Typography variant="h6" sx={{ mt: 2 }}>
-    Average LTV: {averageLtv.toFixed(2)}%
-  </Typography>
-  <Typography variant="body2" sx={{ mt: 2 }}>
-    The Loan-to-Value (LTV) ratio is a measure used by lenders to assess the risk of a loan. It compares the mortgage amount to the current property value.
-  </Typography>
-</CardContent>
+      <CardHeader
+        title="Loan-to-Value (LTV) Overview"
+        subheader="Visualizing LTV Ratios for Your Properties"
+      />
+      <CardContent>
+        {/* Average LTV Gauge */}
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+          <Gauge
+            width={200}
+            height={200}
+            value={averageLtv}
+            cornerRadius="50%"
+            sx={{
+              [`& .${gaugeClasses.valueText}`]: {
+                fontSize: 40,
+              },
+              [`& .${gaugeClasses.valueArc}`]: {
+                fill:
+                  averageLtv <= 50
+                    ? "#4caf50" // Green for good
+                    : averageLtv <= 75
+                    ? "#ffb300" // Yellow for moderate
+                    : "#f44336", // Red for high risk
+              },
+              [`& .${gaugeClasses.referenceArc}`]: {
+                fill: "#e0e0e0",
+              },
+            }}
+          />
+        </Box>
 
-
-      <CardActions disableSpacing>
-        <ExpandMore
-          expand={expanded}
-          onClick={handleExpandClick}
-          aria-expanded={expanded}
-          aria-label="Ratio Breakdown"
-        >
-          <ExpandMoreIcon />
-        </ExpandMore>
-      </CardActions>
-      <Collapse in={expanded} timeout="auto" unmountOnExit>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Individual Property LTV Ratios:
-          </Typography>
-          {userProperties.map((property, index) => {
-            const ltvRatio = (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) * 100;
-            return (
-              <Typography key={index} variant="body2" sx={{ marginBottom: 1 }}>
-                {property.address}: {ltvRatio.toFixed(2)}%
+        {/* Individual Property LTV Ratios */}
+        <Box>
+          {propertyRatios.map((property, index) => (
+            <Box key={index} mb={2}>
+              <Typography variant="body2" gutterBottom>
+                {property.address || "Unknown Address"}
               </Typography>
-            );
-          })}
-        </CardContent>
-      </Collapse>
+              <LinearProgress
+                variant="determinate"
+                value={property.ltvRatio}
+                sx={{
+                  height: 10,
+                  borderRadius: 5,
+                  backgroundColor: "#e0e0e0",
+                  "& .MuiLinearProgress-bar": {
+                    backgroundColor:
+                      property.ltvRatio <= 50
+                        ? "#4caf50" // Green for good
+                        : property.ltvRatio <= 75
+                        ? "#ffb300" // Yellow for moderate
+                        : "#f44336", // Red for high risk
+                  },
+                }}
+              />
+              <Typography variant="caption" sx={{ display: "block" }}>
+                {property.ltvRatio.toFixed(2)}%
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+      </CardContent>
     </Card>
   );
 };

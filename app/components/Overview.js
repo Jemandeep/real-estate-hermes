@@ -5,7 +5,7 @@ import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import Group from '@mui/material/Stack';
+import Stack from '@mui/material/Stack';
 import {
   IconUserPlus,
   IconDiscount2,
@@ -21,35 +21,101 @@ const icons = {
 };
 
 const StatsGrid = ({ metrics }) => {
-    const stats = [
-      { title: 'Total Investment', icon: 'receipt', value: `$${metrics.totalInvestment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, diff: 0 },
-      { title: 'Current Portfolio Value', icon: 'coin', value: `$${metrics.currentPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, diff: 0 },
-      { title: 'ROI', icon: 'discount', value: `${metrics.roi.toFixed(2)}%`, diff: 0 },
-      { title: 'Cash Flow', icon: 'user', value: `$${metrics.cashFlow.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, diff: 0 },
-    ];
+  const stats = [
+    {
+      title: 'Total Investment',
+      icon: 'receipt',
+      value: `$${metrics.totalInvestment.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`,
+    },
+    {
+      title: 'Current Portfolio Value',
+      icon: 'coin',
+      value: `$${metrics.currentPortfolioValue.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`,
+    },
+    {
+      title: 'ROI',
+      icon: 'discount',
+      value: `${metrics.roi.toFixed(2)}%`,
+    },
+    {
+      title: 'Cash Flow',
+      icon: 'user',
+      value: `$${metrics.cashFlow.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`,
+    },
+  ];
 
   return (
-    <Box sx={{ width: '100%', maxWidth: { sm: '100%', md: '1700px' }, padding: '20px' }}>
-      <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+    <Box
+      sx={{
+        width: '100%',
+        maxWidth: '100%',
+        padding: '20px',
+        borderRadius: "30px",
+        backgroundColor: '#f5f5f5',
+      }}
+    >
+      <Typography
+        component="h2"
+        variant="h6"
+        sx={{ mb: 4, fontWeight: 'bold', textAlign: 'center' }}
+      >
         Overview
       </Typography>
-      <Grid container spacing={2} columns={12} sx={{ mb: 2 }}>
+      <Grid
+        container
+        spacing={2}
+        justifyContent="space-evenly"
+        alignItems="stretch"
+      >
         {stats.map((stat, index) => {
           const Icon = icons[stat.icon];
           return (
-            <Grid item xs={12} sm={6} lg={3} key={index}>
-              <Paper elevation={3} sx={{ p: 2, textAlign: 'center', backgroundColor: '#f8f9fa' }}>
-                <Group direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-                  <Typography variant="subtitle1" color="textSecondary" fontWeight={700}>
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <Paper
+                elevation={3}
+                sx={{
+                  p: 3,
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  backgroundColor: '#ffffff',
+                  height: '100%',
+                  borderRadius: "30px",
+
+                }}
+              >
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ mb: 2 }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    color="textSecondary"
+                    fontWeight={700}
+                  >
                     {stat.title}
                   </Typography>
-                  <Icon size="1.8rem" stroke={1.5} style={{ position: 'absolute', top: 10, right: 10 }} />
-                </Group>
-                <Group alignItems="center" justifyContent="center" mt={2}>
-                  <Typography variant="h4" fontWeight={700}>
-                    {stat.value.toLocaleString()}
-                  </Typography>
-                </Group>
+                  <Icon
+                    size="1.8rem"
+                    stroke={1.5}
+                    style={{ position: 'relative' }}
+                  />
+                </Stack>
+                <Typography variant="h4" fontWeight={700}>
+                  {stat.value}
+                </Typography>
               </Paper>
             </Grid>
           );
