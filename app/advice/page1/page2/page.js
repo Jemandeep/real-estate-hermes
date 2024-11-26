@@ -1,7 +1,7 @@
 // pages/increased-interest-in-suburban-living.js
 import Head from "next/head";
 import Layout from "../../../components/Layout";
-
+{/* Property Discussion */}
 export default function IncreasedInterestInSuburbanLiving() {
     return (
         <div className="bg-gray-50 min-h-screen p-6">
