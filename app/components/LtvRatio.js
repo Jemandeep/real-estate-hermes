@@ -21,18 +21,15 @@ function GaugePointer() {
   const { valueAngle, outerRadius, cx, cy } = useGaugeState();
 
   if (valueAngle === null) {
-    // No value to display
     return null;
   }
 
-  // Calculate the target point at the end of the pointer
   const target = {
     x: cx + outerRadius * Math.sin(valueAngle),
     y: cy - outerRadius * Math.cos(valueAngle),
   };
 
-  // Calculate two additional points to create a triangular pointer
-  const baseWidth = 10; // Width at the bottom of the pointer
+  const baseWidth = 10;
   const baseLeft = {
     x: cx + (baseWidth / 2) * Math.cos(valueAngle),
     y: cy + (baseWidth / 2) * Math.sin(valueAngle),
@@ -61,68 +58,171 @@ const ExpandMore = styled((props) => {
   transition: theme.transitions.create('transform', {
     duration: theme.transitions.duration.shortest,
   }),
-  transform: (props) => (props.expand ? 'rotate(180deg)' : 'rotate(0deg)')
+  transform: (props) => (props.expand ? 'rotate(180deg)' : 'rotate(0deg)'),
 }));
 
 const LtvAverageGauge = ({ userProperties }) => {
   const [expanded, setExpanded] = React.useState(false);
 
-  // Calculate the average LTV Ratio of all properties
-  const averageLtv = userProperties.length > 0
-    ? userProperties.reduce((acc, property) => acc + (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) * 100, 0) / userProperties.length
-    : 0;
+  const averageLtv =
+    userProperties.length > 0
+      ? userProperties.reduce(
+          (acc, property) =>
+            acc +
+            (parseFloat(property.mortgage_amount) /
+              parseFloat(property.current_price)) *
+              100,
+          0
+        ) / userProperties.length
+      : 0;
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
   };
 
   return (
-    <Card sx={{ maxWidth: 400, margin: '0 auto', textAlign: 'center' }}>
-      <CardHeader title="Average LTV Ratio" subheader="Loan-to-Value Ratio of Your Properties" />
+    <Card
+      sx={{
+        width: '50vw', // 1/4 of viewport width
+        height: '28vw', // Equal height for square
+        maxWidth: '37vh', // Prevent exceeding 1/4 of viewport height
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'auto',
+        margin: 'auto',
+        textAlign: 'center',
+        border: '1px solid #ddd',
+        borderRadius: '30px',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+        backgroundColor: '#ffffff',
+      }}
+    >
+      <CardHeader
+        title="Average LTV Ratio"
+        subheader="Loan-to-Value Ratio of Your Properties"
+      />
       {averageLtv && (
-        <Card sx={{ width: 150, margin: '10px 10px 10px auto', textAlign: 'center', backgroundColor: '#ffffff', padding: '10px'}}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              backgroundColor: averageLtv <= 50 ? 'green' : averageLtv <= 75 ? 'yellow' : 'red',
-              marginRight: 10
-            }}></div>
+        <Card
+          sx={{
+            width: 150,
+            margin: '10px auto',
+            textAlign: 'center',
+            backgroundColor: '#ffffff',
+            padding: '10px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <div
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                backgroundColor:
+                  averageLtv <= 50
+                    ? 'green'
+                    : averageLtv <= 75
+                    ? 'yellow'
+                    : 'red',
+                marginRight: 10,
+              }}
+            ></div>
             <Typography variant="body2">
-              {averageLtv <= 50 ? 'Good Standing' : averageLtv <= 75 ? 'Moderate Risk' : 'High Risk'}
+              {averageLtv <= 50
+                ? 'Good Standing'
+                : averageLtv <= 75
+                ? 'Moderate Risk'
+                : 'High Risk'}
             </Typography>
           </div>
         </Card>
       )}
-<CardContent>
-  <div style={{ position: 'relative', width: 200, height: 200, margin: '0 auto' }}>
-    <GaugeContainer
-      width={200}
-      height={200}
-      startAngle={-110}
-      endAngle={110}
-      value={averageLtv}
-    >
-      <GaugeReferenceArc />
-      <GaugeValueArc />
-      <GaugePointer />
-    </GaugeContainer>
-    {/* Simplified labels positioned around the gauge */}
-    <div style={{ position: 'absolute', bottom: '40px', left: '35px',  fontSize: '10px' }}>0%</div>
-    <div style={{ position: 'absolute', top: '85px', left: '42px', fontSize: '10px' }}>25%</div>
-    <div style={{ position: 'absolute', top: '58px', left: '95px',  fontSize: '10px' }}>50%</div>
-    <div style={{ position: 'absolute', top: '85px', right: '37px', fontSize: '10px' }}>75%</div>
-    <div style={{ position: 'absolute', bottom: '40px', right: '33px',  fontSize: '10px' }}>100%</div>
-  </div>
-  <Typography variant="h6" sx={{ mt: 2 }}>
-    Average LTV: {averageLtv.toFixed(2)}%
-  </Typography>
-  <Typography variant="body2" sx={{ mt: 2 }}>
-    The Loan-to-Value (LTV) ratio is a measure used by lenders to assess the risk of a loan. It compares the mortgage amount to the current property value.
-  </Typography>
-</CardContent>
-
+      <CardContent>
+        <div
+          style={{
+            position: 'relative',
+            width: 200,
+            height: 200,
+            margin: '0 auto',
+          }}
+        >
+          <GaugeContainer
+            width={200}
+            height={200}
+            startAngle={-110}
+            endAngle={110}
+            value={averageLtv}
+          >
+            <GaugeReferenceArc />
+            <GaugeValueArc />
+            <GaugePointer />
+          </GaugeContainer>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '40px',
+              left: '35px',
+              fontSize: '10px',
+            }}
+          >
+            0%
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              top: '85px',
+              left: '42px',
+              fontSize: '10px',
+            }}
+          >
+            25%
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              top: '58px',
+              left: '95px',
+              fontSize: '10px',
+            }}
+          >
+            50%
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              top: '85px',
+              right: '37px',
+              fontSize: '10px',
+            }}
+          >
+            75%
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '40px',
+              right: '33px',
+              fontSize: '10px',
+            }}
+          >
+            100%
+          </div>
+        </div>
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Average LTV: {averageLtv.toFixed(2)}%
+        </Typography>
+        <Typography variant="body2" sx={{ mt: 2 }}>
+          The Loan-to-Value (LTV) ratio is a measure used by lenders to assess
+          the risk of a loan. It compares the mortgage amount to the current
+          property value.
+        </Typography>
+      </CardContent>
 
       <CardActions disableSpacing>
         <ExpandMore
@@ -140,7 +240,10 @@ const LtvAverageGauge = ({ userProperties }) => {
             Individual Property LTV Ratios:
           </Typography>
           {userProperties.map((property, index) => {
-            const ltvRatio = (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) * 100;
+            const ltvRatio =
+              (parseFloat(property.mortgage_amount) /
+                parseFloat(property.current_price)) *
+              100;
             return (
               <Typography key={index} variant="body2" sx={{ marginBottom: 1 }}>
                 {property.address}: {ltvRatio.toFixed(2)}%
