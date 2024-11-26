@@ -117,6 +117,47 @@ const AverageMortgage = () => {
       ...chartsConfig.chart,
       type: "bar",
       stacked: true, // Stacked bars to separate paid and remaining
+      responsive: [
+        {
+          breakpoint: 768, // Example for tablet screens
+          options: {
+            plotOptions: {
+              bar: {
+                columnWidth: "50%", // Adjust bar width for smaller screens
+              },
+            },
+            xaxis: {
+              labels: {
+                style: {
+                  fontSize: "10px", // Smaller font size for x-axis
+                },
+              },
+            },
+            yaxis: {
+              labels: {
+                style: {
+                  fontSize: "10px", // Smaller font size for y-axis
+                },
+              },
+            },
+          },
+        },
+        {
+          breakpoint: 480, // Example for mobile screens
+          options: {
+            plotOptions: {
+              bar: {
+                columnWidth: "70%", // Wider bars for very small screens
+              },
+            },
+            xaxis: {
+              labels: {
+                show: false, // Hide labels on very small screens for readability
+              },
+            },
+          },
+        },
+      ],
     },
     xaxis: {
       ...chartsConfig.xaxis,
@@ -161,7 +202,6 @@ const AverageMortgage = () => {
       },
     },
   };
-  
 
   const chartSeries = [
     {
@@ -193,7 +233,7 @@ const AverageMortgage = () => {
           series={chartSeries}
           type="bar"
           width="100%"
-          height={610}
+          height="300%"
         />
       </div>
     </div>
