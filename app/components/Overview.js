@@ -59,6 +59,7 @@ const StatsGrid = ({ metrics }) => {
         width: '100%',
         maxWidth: '100%',
         padding: '20px',
+        borderRadius: "30px",
         backgroundColor: '#f5f5f5',
       }}
     >
@@ -89,6 +90,8 @@ const StatsGrid = ({ metrics }) => {
                   justifyContent: 'space-between',
                   backgroundColor: '#ffffff',
                   height: '100%',
+                  borderRadius: "30px",
+
                 }}
               >
                 <Stack
