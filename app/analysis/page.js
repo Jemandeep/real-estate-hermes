@@ -85,35 +85,30 @@ const Analysis = () => {
           <StatsGrid metrics={metrics} />
         </div>
   
-{/* Main Charts Section */}
-<div className="grid grid-cols-4 gap-6 mb-12"> {/* Adds margin below the section */}
-  {/* LTV Ratio */}
-  <div className="col-span-1 h-[50vh]">
-    <LtvRatio userProperties={userProperties} />
-  </div>
-
-  {/* Average Mortgage */}
-  <div className="col-span-1 h-[50vh]">
-    <AverageMortgage userProperties={userProperties} />
-  </div>
-
-  {/* Empty Space */}
-  <div className="col-span-2"></div>
-</div>
-
-{/* Rental Income and Expenses Section */}
-<div className="mt-12"> {/* Adds margin to avoid overlap */}
-  <RentalIncomeExpenses userProperties={userProperties} />
-</div>
-
+        {/* Main Layout */}
+        <div className="grid grid-cols-2 gap-6 mb-12">
+          {/* LTV Ratio */}
+          <div className="h-[50vh]">
+            <LtvRatio userProperties={userProperties} />
+          </div>
   
+          {/* Average Mortgage */}
+          <div className="h-[50vh]">
+            <AverageMortgage userProperties={userProperties} />
+          </div>
+        </div>
+  
+        {/* Rental Income and Expenses Section */}
+        <div className="mt-12">
+          <RentalIncomeExpenses userProperties={userProperties} />
+        </div>
         {/* Public Listings Section */}
         <div className="mt-8">
           <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
             <h3 className="text-xl font-semibold mb-4 text-gray-700">
               Public Listings
             </h3>
-            <div className="max-h-96 overflow-y-auto space-y-4">
+            <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">
               {error ? (
                 <p className="text-red-600">{error}</p>
               ) : (
@@ -138,8 +133,6 @@ const Analysis = () => {
       </div>
     </Layout>
   );
-  
-  
-}
-  
+};
+
 export default Analysis;
