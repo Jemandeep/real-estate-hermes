@@ -41,8 +41,7 @@
     "react-simple-maps": "^1.0.0",
     "react-slick": "^0.30.2",
     "recharts": "^2.12.7",
-    "slick-carousel": "^1.8.1",
-    "swiper": "^11.1.15",
+    "tokens": "^0.0.8",
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {
