@@ -1,11 +1,8 @@
-"use client";
+"use client"; // Add this line at the top to indicate a Client Component
+
 import React, { useState, useEffect } from "react";
+import { Box, Button, Typography } from "@mui/material";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import Layout from "../components/Layout";
-import ListingCard from "../components/ListingCard";
-import StatsGrid from "../components/Overview";
-import LtvRatio from "../components/LtvRatio";
-import AverageMortgage from "../components/AverageMortgage";
 import {
   fetchUserProperties,
   fetchListings,
@@ -13,12 +10,16 @@ import {
   addToWatchlist,
 } from "../components/firebaseUtils";
 import { calculateMetrics } from "../components/calculateMetrics";
+import Layout from "../components/Layout";
+import StatsGrid from "../components/Overview";
+import LtvRatio from "../components/LtvRatio";
+import AverageMortgage from "../components/AverageMortgage";
 import RentalIncomeExpenses from "../components/RentalIncomeExpenses";
+import ListingCard from "../components/ListingCard";
 
 const Analysis = () => {
   const [userProperties, setUserProperties] = useState([]);
   const [listings, setListings] = useState([]);
-  const [watchlist, setWatchlist] = useState([]);
   const [error, setError] = useState(null);
   const [metrics, setMetrics] = useState({
     totalInvestment: 0,
@@ -26,111 +27,122 @@ const Analysis = () => {
     roi: 0,
     cashFlow: 0,
   });
-  const [user, setUser] = useState(null);
-
   const auth = getAuth();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (loggedUser) => {
       if (loggedUser) {
-        setUser(loggedUser);
         try {
           const properties = await fetchUserProperties(loggedUser.email);
           setUserProperties(properties);
           setMetrics(calculateMetrics(properties));
-          setWatchlist(await fetchWatchlist(loggedUser.email));
+          setListings(await fetchListings());
         } catch (err) {
-          setError(err.message);
           console.error(err);
         }
-      } else {
-        setUser(null);
       }
     });
-
-    fetchListings()
-      .then(setListings)
-      .catch((err) => {
-        setError(err.message);
-        console.error(err);
-      });
-
     return () => unsubscribe();
   }, [auth]);
 
   const handleAddToWatchlist = async (listing) => {
-    if (!user) {
-      alert("You need to be logged in to add properties to your watchlist.");
-      return;
-    }
     try {
-      await addToWatchlist(user.email, listing.id);
-      setWatchlist((prev) => [...prev, listing.id]);
+      await addToWatchlist(userProperties.email, listing.id);
       alert(`Added ${listing.address} to your watchlist.`);
-    } catch (error) {
-      alert("Error adding to watchlist.");
+    } catch (err) {
+      console.error("Error adding to watchlist:", err);
     }
   };
 
   return (
     <Layout>
-      <div className="min-h-screen bg-blue-gray-50/50 p-6">
-        {/* Page Header */}
-        <h1 className="text-3xl font-semibold mb-6 text-gray-800">
-          Your Property Portfolio
-        </h1>
-  
-        {/* Metrics Overview */}
-        <div className="mb-8">
+
+
+        {/* Overview Section */}
+        <Box mt="20px">
           <StatsGrid metrics={metrics} />
-        </div>
-  
-        {/* Main Layout */}
-        <div className="grid grid-cols-2 gap-6 mb-12">
-          {/* LTV Ratio */}
-          <div className="h-[50vh]">
+        </Box>
+
+        {/* Grid Layout */}
+        <Box
+          display="grid"
+          gridTemplateColumns="repeat(12, 1fr)"
+          gap="20px"
+          mt="20px"
+        >
+          {/* Row 1: LTV Ratio and Average Mortgage */}
+          <Box
+            gridColumn="span 6"
+            backgroundColor="#fff"
+            borderRadius="8px"
+            padding="20px"
+          >
             <LtvRatio userProperties={userProperties} />
-          </div>
-  
-          {/* Average Mortgage */}
-          <div className="h-[50vh]">
+          </Box>
+          <Box
+            gridColumn="span 6"
+            backgroundColor="#fff"
+            borderRadius="8px"
+            padding="20px"
+          >
             <AverageMortgage userProperties={userProperties} />
-          </div>
-        </div>
-  
-        {/* Rental Income and Expenses Section */}
-        <div className="mt-12">
-          <RentalIncomeExpenses userProperties={userProperties} />
-        </div>
-        {/* Public Listings Section */}
-        <div className="mt-8">
-          <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-            <h3 className="text-xl font-semibold mb-4 text-gray-700">
+          </Box>
+
+          {/* Row 2: Rental Income and Expenses Analysis */}
+          <Box
+            gridColumn="span 8"
+            backgroundColor="#fff"
+            borderRadius="8px"
+            padding="20px"
+          >
+            <RentalIncomeExpenses userProperties={userProperties} />
+          </Box>
+
+          {/* Row 2: Public Listings */}
+          <Box
+            gridColumn="span 4"
+            backgroundColor="#fff"
+            borderRadius="8px"
+            padding="20px"
+            overflow="auto"
+          >
+            <Typography
+              variant="h5"
+              fontWeight="600"
+              marginBottom="10px"
+              color="#333"
+            >
               Public Listings
-            </h3>
-            <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">
-              {error ? (
-                <p className="text-red-600">{error}</p>
-              ) : (
+            </Typography>
+            <Box>
+              {listings.length > 0 ? (
                 listings.map((listing) => (
-                  <div
+                  <Box
                     key={listing.id}
-                    className="bg-gray-100 p-4 rounded-lg shadow-sm"
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    borderBottom="1px solid #ddd"
+                    padding="10px 0"
                   >
                     <ListingCard {...listing} />
-                    <button
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
                       onClick={() => handleAddToWatchlist(listing)}
-                      className="mt-2 text-blue-500 hover:underline"
                     >
                       Add to Watchlist
-                    </button>
-                  </div>
+                    </Button>
+                  </Box>
                 ))
+              ) : (
+                <Typography color="textSecondary">No listings available.</Typography>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
+            </Box>
+          </Box>
+        </Box>
+
     </Layout>
   );
 };
