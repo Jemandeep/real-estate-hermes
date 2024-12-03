@@ -27,11 +27,6 @@ const Layout = ({ children }) => {
     return () => unsubscribe();
   }, [auth, router]);
 
-  // Dynamically calculate NavBar height
-  const handleNavBarHeight = (height) => {
-    setNavHeight(height);
-  };
-
   if (loading) {
     return (
       <div
@@ -47,7 +42,7 @@ const Layout = ({ children }) => {
       </div>
     );
   }
-  // 144272 secondary colour
+
   return (
     <div
       style={{
@@ -58,24 +53,20 @@ const Layout = ({ children }) => {
         color: "#FFFFFF", // White text for contrast
       }}
     >
-      {/* Fixed NavBar */}
-      <NavBar setNavHeight={handleNavBarHeight} />
-
-      {/* Main content area with dynamic padding */}
+      <NavBar setNavHeight={setNavHeight} />
       <main
         style={{
           flex: 1,
           padding: "2rem",
-          marginTop: navHeight, // Add margin equal to NavBar height
-          maxWidth: "clamp(800px, 90%, 2600px)", // Responsive width
-          margin: "0 auto",
+          marginTop: `${navHeight}px`,
+          marginLeft: "auto",
+          marginRight: "auto",
+          maxWidth: "clamp(800px, 90%, 2600px)",
           width: "100%",
         }}
       >
         {children}
       </main>
-
-      
     </div>
   );
 };
