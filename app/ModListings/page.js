@@ -151,197 +151,209 @@ const ModifyListings = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-6">
-        <h2 className="text-2xl font-bold mb-4">Add New Listing</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Address */}
-          <div>
-            <label className="block text-gray-700">Address</label>
+  {/* Main Container with Royal Navy Blue Background */}
+  <div className="container mx-auto p-6 bg-royal-navy-blue text-white">
+    <h2 className="text-3xl font-bold mb-6">Add New Listing</h2>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Address */}
+      <div className="bg-white p-4 rounded shadow">
+        <label className="block text-gray-700">Address</label>
+        <input
+          type="text"
+          name="address"
+          id="address-input"
+          value={formValues.address}
+          onChange={handleAddressChange}
+          required
+          className="w-full p-2 mt-1 bg-light-gray border border-gray-300 rounded text-gray-900"
+          placeholder="Start typing an address..."
+        />
+      </div>
+
+      {/* Property Type */}
+      <div className="bg-white p-4 rounded shadow">
+        <label className="block text-gray-700">Property Type</label>
+        <select
+          name="property_type"
+          value={formValues.property_type}
+          onChange={handleChange}
+          className="w-full p-2 mt-1 bg-light-gray border border-gray-300 rounded text-gray-900"
+          required
+        >
+          <option value="" disabled>
+            Select property type
+          </option>
+          <option value="Mansion">Mansion</option>
+          <option value="Apartment">Apartment</option>
+          <option value="Condo">Condo</option>
+          <option value="Townhouse">Townhouse</option>
+          <option value="Detached House">Detached House</option>
+          <option value="Bungalow">Bungalow</option>
+        </select>
+      </div>
+
+      {/* Postal Code, Latitude, Longitude, Neighborhood */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Postal Code */}
+        <div className="bg-white p-4 rounded shadow">
+          <label className="block text-gray-700">Postal Code</label>
+          <input
+            type="text"
+            name="postal_code"
+            value={formValues.postal_code}
+            onChange={handleChange}
+            readOnly
+            className="w-full p-2 mt-1 bg-light-gray border border-gray-300 rounded text-gray-900"
+          />
+        </div>
+        {/* Neighborhood */}
+        <div className="bg-white p-4 rounded shadow">
+          <label className="block text-gray-700">Neighborhood</label>
+          <input
+            type="text"
+            name="neighborhood"
+            value={formValues.neighborhood}
+            onChange={handleChange}
+            className="w-full p-2 mt-1 bg-light-gray border border-gray-300 rounded text-gray-900"
+          />
+        </div>
+        {/* Latitude */}
+        <div className="bg-white p-4 rounded shadow">
+          <label className="block text-gray-700">Latitude</label>
+          <input
+            type="text"
+            name="latitude"
+            value={formValues.latitude}
+            onChange={handleChange}
+            readOnly
+            className="w-full p-2 mt-1 bg-light-gray border border-gray-300 rounded text-gray-900"
+          />
+        </div>
+        {/* Longitude */}
+        <div className="bg-white p-4 rounded shadow">
+          <label className="block text-gray-700">Longitude</label>
+          <input
+            type="text"
+            name="longitude"
+            value={formValues.longitude}
+            onChange={handleChange}
+            readOnly
+            className="w-full p-2 mt-1 bg-light-gray border border-gray-300 rounded text-gray-900"
+          />
+        </div>
+      </div>
+
+      {/* Bathrooms and Bedrooms */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Bathrooms */}
+        <div className="bg-white p-4 rounded shadow">
+          <label className="block text-gray-700">Bathrooms</label>
+          <select
+            name="bathroom_count"
+            value={formValues.bathroom_count}
+            onChange={handleChange}
+            className="w-full p-2 mt-1 bg-light-gray border border-gray-300 rounded text-gray-900"
+            required
+          >
+            {[...Array(6).keys()].map((num) => (
+              <option key={num + 1} value={num + 1}>
+                {num + 1} Bathroom(s)
+              </option>
+            ))}
+          </select>
+        </div>
+        {/* Bedrooms */}
+        <div className="bg-white p-4 rounded shadow">
+          <label className="block text-gray-700">Bedrooms</label>
+          <select
+            name="bed_count"
+            value={formValues.bed_count}
+            onChange={handleChange}
+            className="w-full p-2 mt-1 bg-light-gray border border-gray-300 rounded text-gray-900"
+            required
+          >
+            {[...Array(6).keys()].map((num) => (
+              <option key={num + 1} value={num + 1}>
+                {num + 1} Bedroom(s)
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Current Price */}
+      <div className="bg-white p-4 rounded shadow">
+        <label className="block text-gray-700">Current Price</label>
+        <div className="flex items-center mt-1">
+          <input
+            type="text"
+            name="current_price"
+            value={formValues.current_price}
+            onChange={handlePriceChange}
+            className="w-1/3 p-2 bg-light-gray border border-gray-300 rounded mr-4 text-gray-900"
+            required
+          />
+          <input
+            type="range"
+            min="50000"
+            max="20000000"
+            step="50000"
+            value={formValues.current_price}
+            onChange={handlePriceChange}
+            className="w-2/3"
+            required
+          />
+        </div>
+      </div>
+
+      {/* Monthly Price Inputs */}
+      <div className="space-y-6">
+        {monthlyPrices.map((price, index) => (
+          <div key={index} className="bg-white p-4 rounded shadow space-y-2">
+            <label className="block text-gray-700">
+              {price.month || `Last ${index + 1} Month(s)`}
+            </label>
             <input
               type="text"
-              name="address"
-              id="address-input"
-              value={formValues.address}
-              onChange={handleAddressChange}
+              value={price.price}
+              onChange={(e) => handleMonthlyPriceChange(index, e)}
+              className="w-full p-2 mt-1 bg-light-gray border border-gray-300 rounded text-gray-900"
               required
-              className="w-full p-2 border rounded"
-              placeholder="Start typing an address..."
+            />
+            <input
+              type="range"
+              min="50000"
+              max="20000000"
+              step="50000"
+              value={price.price}
+              onChange={(e) => handleMonthlyPriceChange(index, e)}
+              className="w-full"
+              required
             />
           </div>
-
-          {/* Property Type */}
-          <div>
-            <label className="block text-gray-700">Property Type</label>
-            <select
-              name="property_type"
-              value={formValues.property_type}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              required
-            >
-              <option value="" disabled>Select property type</option>
-              <option value="Mansion">Mansion</option>
-              <option value="Apartment">Apartment</option>
-              <option value="Condo">Condo</option>
-              <option value="Townhouse">Townhouse</option>
-              <option value="Detached House">Detached House</option>
-              <option value="Bungalow">Bungalow</option>
-            </select>
-          </div>
-
-          {/* Display Postal Code, Latitude, Longitude, Neighborhood */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-gray-700">Postal Code</label>
-              <input
-                type="text"
-                name="postal_code"
-                value={formValues.postal_code}
-                onChange={handleChange}
-                readOnly
-                className="w-full p-2 border rounded"
-              />
-            </div>
-            <div>
-  <label className="block text-gray-700">Neighborhood</label>
-  <input
-    type="text"
-    name="neighborhood"
-    value={formValues.neighborhood}
-    onChange={handleChange}
-    className="w-full p-2 border rounded"
-  />
-</div>
-
-            <div>
-              <label className="block text-gray-700">Latitude</label>
-              <input
-                type="text"
-                name="latitude"
-                value={formValues.latitude}
-                onChange={handleChange}
-                readOnly
-                className="w-full p-2 border rounded"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700">Longitude</label>
-              <input
-                type="text"
-                name="longitude"
-                value={formValues.longitude}
-                onChange={handleChange}
-                readOnly
-                className="w-full p-2 border rounded"
-              />
-            </div>
-          </div>
-
-          {/* Bathrooms and Bedrooms */}
-          <div>
-            <label className="block text-gray-700">Bathrooms</label>
-            <select
-              name="bathroom_count"
-              value={formValues.bathroom_count}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              required
-            >
-              {[...Array(6).keys()].map((num) => (
-                <option key={num + 1} value={num + 1}>
-                  {num + 1} Bathroom(s)
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-gray-700">Bedrooms</label>
-            <select
-              name="bed_count"
-              value={formValues.bed_count}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              required
-            >
-              {[...Array(6).keys()].map((num) => (
-                <option key={num + 1} value={num + 1}>
-                  {num + 1} Bedroom(s)
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Current Price */}
-          <div>
-            <label className="block text-gray-700">Current Price</label>
-            <div className="flex items-center">
-              <input
-                type="text"
-                name="current_price"
-                value={formValues.current_price}
-                onChange={handlePriceChange}
-                className="w-1/3 p-2 border rounded mr-4"
-                required
-              />
-              <input
-                type="range"
-                min="50000"
-                max="20000000"
-                step="50000"
-                value={formValues.current_price}
-                onChange={handlePriceChange}
-                className="w-2/3"
-                required
-              />
-            </div>
-          </div>
-
-          {/* Monthly Price Inputs */}
-          <div className="space-y-4">
-            {monthlyPrices.map((price, index) => (
-              <div key={index} className="space-y-2">
-                <label className="block text-gray-700">{price.month || `Last ${index + 1} month`}</label>
-                <input
-                  type="text"
-                  value={price.price}
-                  onChange={(e) => handleMonthlyPriceChange(index, e)}
-                  className="w-full p-2 border rounded"
-                  required
-                />
-                <input
-                  type="range"
-                  min="50000"
-                  max="20000000"
-                  step="50000"
-                  value={price.price}
-                  onChange={(e) => handleMonthlyPriceChange(index, e)}
-                  className="w-full"
-                  required
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Auto Complete Button */}
-          <button
-            type="button"
-            onClick={autoCompleteMonthlyPrices}
-            className="mt-2 px-4 py-2 bg-green-500 text-white rounded"
-          >
-            Auto Complete Monthly Prices
-          </button>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-          >
-            Add New Listing
-          </button>
-        </form>
+        ))}
       </div>
-    </Layout>
+
+      {/* Auto Complete Button */}
+      <button
+        type="button"
+        onClick={autoCompleteMonthlyPrices}
+        className="mt-2 px-4 py-2 bg-accent-green hover:bg-green-700 text-white rounded"
+      >
+        Auto Complete Monthly Prices
+      </button>
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        className="mt-4 px-4 py-2 bg-royal-navy-blue hover:bg-blue-800 text-white rounded"
+      >
+        Add New Listing
+      </button>
+    </form>
+  </div>
+</Layout>
+
   );
 };
 
