@@ -12,8 +12,9 @@
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
     "@heroicons/react": "^1.0.6",
-    "@mantine/core": "^7.14.1",
-    "@mantine/hooks": "^7.14.1",
+    "@mantine/carousel": "^7.14.3",
+    "@mantine/core": "^7.14.3",
+    "@mantine/hooks": "^7.14.3",
     "@mui/icons-material": "^6.1.8",
     "@mui/material": "^6.1.9",
     "@mui/x-charts": "^7.22.3",
@@ -41,6 +42,7 @@
     "react-slick": "^0.30.2",
     "recharts": "^2.12.7",
     "slick-carousel": "^1.8.1",
+    "swiper": "^11.1.15",
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {

@@ -132,44 +132,60 @@ const ModifyListings = () => {
   // Function to handle file selection
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    if (files.length > 5) {
+  
+    // Filter files to ensure size limit of 3MB
+    const validFiles = files.filter((file) => file.size <= 3 * 1024 * 1024);
+  
+    if (files.length > validFiles.length) {
+      alert("Some files exceed the 3MB size limit and were not added.");
+    }
+  
+    if (validFiles.length > 5) {
       alert("You can upload up to 5 images only.");
       return;
     }
-    setImageFiles(files);
+  
+    setImageFiles(validFiles);
   };
+  
 
-  // Function to upload images
   const uploadImages = async (listingId) => {
-    const uploadedImageURLs = [];
-    for (const file of imageFiles) {
-      const fileRef = ref(storage, `listings/${listingId}/${Date.now()}_${file.name}`);
-      const uploadTask = uploadBytesResumable(fileRef, file);
-
-      await new Promise((resolve, reject) => {
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setUploadProgress((prev) => ({
-              ...prev,
-              [file.name]: progress,
-            }));
-          },
-          (error) => {
-            console.error("Upload error: ", error);
-            reject(error);
-          },
-          async () => {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            uploadedImageURLs.push(downloadURL);
-            resolve();
-          }
-        );
+    try {
+      const uploadPromises = imageFiles.map((file) => {
+        const fileRef = ref(storage, `listings/${listingId}/${Date.now()}_${file.name}`);
+        const uploadTask = uploadBytesResumable(fileRef, file);
+  
+        return new Promise((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress((prev) => ({
+                ...prev,
+                [file.name]: progress,
+              }));
+            },
+            (error) => {
+              console.error("Upload error: ", error);
+              reject(error);
+            },
+            async () => {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(downloadURL);
+            }
+          );
+        });
       });
+  
+      // Wait for all uploads to finish and get their URLs
+      const uploadedImageURLs = await Promise.all(uploadPromises);
+      return uploadedImageURLs;
+    } catch (error) {
+      console.error("Error uploading images: ", error);
+      throw new Error("Failed to upload images");
     }
-    return uploadedImageURLs;
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -181,11 +197,11 @@ const ModifyListings = () => {
         ...formValues,
         prices: monthlyPrices.map((item) => ({
           month: item.month,
-          summary: formValues.summary,
           price: item.price.toString(), // Ensure prices are stored as strings
         })),
         agent_name: formValues.agent_name, // Include the agent's name
         images: [], // Temporarily set images to empty array
+        summary: formValues.summary,
       });
 
       const listingId = docRef.id;
@@ -234,30 +250,42 @@ const ModifyListings = () => {
             />
           </div>
 
-          {/* Image Upload */}
-          <div className="bg-white p-4 rounded shadow">
-            <label className="block text-gray-700">Upload Images (JPG or PNG, max 5)</label>
-            <input
-              type="file"
-              accept="image/jpeg, image/png"
-              multiple
-              onChange={handleFileChange}
-              className="w-full p-2 mt-1 bg-light-gray border border-gray-300 rounded text-gray-900"
-            />
-            <div className="mt-2">
-              {imageFiles.map((file, index) => (
-                <div key={index} className="flex items-center space-x-4">
-                  <p className="text-sm">{file.name}</p>
-                  <div className="w-full bg-gray-300 rounded h-2">
-                    <div
-                      className="bg-blue-500 h-2 rounded"
-                      style={{ width: `${uploadProgress[file.name] || 0}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Image Upload */}
+<div className="bg-white p-4 rounded shadow">
+  <label className="block text-gray-700">Upload Images (JPG or PNG, max 5, 3MB each)</label>
+  <input
+    type="file"
+    accept="image/jpeg, image/png"
+    multiple
+    onChange={handleFileChange}
+    className="w-full p-2 mt-1 bg-light-gray border border-gray-300 rounded text-gray-900"
+  />
+  <div className="mt-2 space-y-2">
+    {imageFiles.map((file, index) => (
+      <div key={index} className="flex items-center space-x-4">
+        {/* File Name */}
+        <p className="text-sm truncate w-1/3">{file.name}</p>
+        
+        {/* Progress Bar */}
+        <div className="w-full bg-gray-300 rounded h-2">
+          <div
+            className="bg-blue-500 h-2 rounded"
+            style={{ width: `${uploadProgress[file.name] || 0}%` }}
+          ></div>
+        </div>
+
+        {/* Remove Button */}
+        <button
+          onClick={() => removeFile(file.name)}
+          className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-700"
+        >
+          Remove
+        </button>
+      </div>
+    ))}
+  </div>
+</div>
+
 
           {/* Property Type */}
           <div className="bg-white p-4 rounded shadow">
