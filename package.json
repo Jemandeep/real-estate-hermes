@@ -16,6 +16,7 @@
     "@mui/icons-material": "^6.1.8",
     "@mui/material": "^6.1.8",
     "@mui/x-charts": "^7.22.3",
+    "@nivo/line": "^0.88.0",
     "@nivo/pie": "^0.88.0",
     "@tabler/icons-react": "^3.22.0",
     "audit": "^0.0.6",
@@ -39,6 +40,7 @@
     "react-leaflet": "^4.2.1",
     "react-simple-maps": "^1.0.0",
     "recharts": "^2.12.7",
+    "tokens": "^0.0.8",
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {

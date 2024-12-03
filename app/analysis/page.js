@@ -55,22 +55,121 @@ const Analysis = () => {
       console.error("Error adding to watchlist:", err);
     }
   };
-
-  return (
-    <Layout>
+  const data = [
+    {
+      id: "some-id", // Unique identifier
+      color: "hsl(22, 70%, 50%)", // Optional
+      data: [
+        { x: "Label1", y: 10 },
+        { x: "Label2", y: 20 },
+        { x: "Label3", y: 15 },
+      ],
+    },
+  ];
+  
+return(
+<Layout>
+  {/* Add a scaling wrapper */}
+  <Box
+    sx={{
+      transform: "scale(0.8)", // Adjust the scaling factor to zoom out
+      transformOrigin: "top center", // Keeps the zoomed-out content centered
+    }}
+  >
       {/* Overview Section */}
-      <Box mt="20px">
+      <Box mt="20px" paddingTop="30px">
         <StatsGrid metrics={metrics} />
       </Box>
-
+  
       {/* Grid Layout */}
       <Box
-        display="grid"
-        gridTemplateColumns="repeat(12, 1fr)" // 12-column grid layout
-        gap="20px"
-        mt="20px"
-      >
-        {/* Row 1: LTV Ratio, Average Mortgage, and Map */}
+  display="grid"
+  gridTemplateColumns="repeat(12, 1fr)" // 12-column layout
+  gap="20px"
+  mt="20px"
+  sx={{
+    gridAutoRows: "minmax(auto, max-content)", // Automatically adjusts row height based on content
+  }}
+>
+  {/* Rental Income and Expenses Analysis */}
+  <Box
+    gridColumn="span 8"
+    className="grid-item"
+    backgroundColor="#fff"
+    borderRadius="8px"
+    padding="20px"
+
+  >
+    <RentalIncomeExpenses userProperties={userProperties} />
+  </Box>
+
+  {/* Public Listings */}
+  <Box
+    gridColumn="span 4"
+    className="grid-item"
+    backgroundColor="#fff"
+    borderRadius="8px"
+    padding="20px"
+    sx={{
+      overflowY: "auto", // Scroll if content overflows
+      "::-webkit-scrollbar": {
+        width: "0px", // Hides scrollbar for WebKit browsers
+      },
+      msOverflowStyle: "none", // Hides scrollbar for IE
+      scrollbarWidth: "none", // Hides scrollbar for Firefox
+    }}
+  >
+    <Typography
+      variant="h5"
+      fontWeight="600"
+      marginBottom="10px"
+      color="#333"
+    >
+      Public Listings
+    </Typography>
+    <Box>
+      {listings.length > 0 ? (
+        listings.slice(0, 6).map((listing, index) => ( // Use slice(0, 7) to limit to 7 listings
+      <Box
+            key={`${listing.id}-${index}`}
+            flexGrow="1"
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            borderBottom="4px solid #ddd"
+            padding="15px"
+          >
+            {/* Address */}
+            <Box>
+              <Typography variant="subtitle2" fontWeight="500">
+                {listing.address}
+              </Typography>
+              <Typography variant="caption" color="textSecondary">
+                {listing.neighborhood}
+              </Typography>
+            </Box>
+
+            {/* Current Price */}
+            <Box textAlign="right">
+              <Typography variant="caption" color="textSecondary">
+                Current Price:
+              </Typography>
+              <Typography variant="subtitle2" fontWeight="500">
+                {listing.current_price
+                  ? `$${parseFloat(listing.current_price).toLocaleString()}`
+                  : "Price not available"}
+              </Typography>
+            </Box>
+          </Box>
+        ))
+      ) : (
+        <Typography color="textSecondary">No listings available.</Typography>
+      )}
+    </Box>
+  </Box>
+
+  
+        {/* Row 2: LTV Ratio, Average Mortgage, and Map */}
         <Box
           gridColumn="span 4"
           backgroundColor="#fff"
@@ -93,62 +192,9 @@ const Analysis = () => {
           borderRadius="8px"
           padding="20px"
         >
-          <MapComponent /> {/* Add the Map Component */}
+          <MapComponent />
         </Box>
-
-        {/* Row 2: Rental Income and Expenses Analysis */}
-        <Box
-          gridColumn="span 8"
-          backgroundColor="#fff"
-          borderRadius="8px"
-          padding="20px"
-        >
-          <RentalIncomeExpenses userProperties={userProperties} />
-        </Box>
-
-        {/* Row 2: Public Listings */}
-        <Box
-          gridColumn="span 4"
-          backgroundColor="#fff"
-          borderRadius="8px"
-          padding="20px"
-          overflow="auto"
-        >
-          <Typography
-            variant="h5"
-            fontWeight="600"
-            marginBottom="10px"
-            color="#333"
-          >
-            Public Listings
-          </Typography>
-          <Box>
-            {listings.length > 0 ? (
-              listings.map((listing) => (
-                <Box
-                  key={listing.id}
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  borderBottom="1px solid #ddd"
-                  padding="10px 0"
-                >
-                  <ListingCard {...listing} />
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    onClick={() => handleAddToWatchlist(listing)}
-                  >
-                    Add to Watchlist
-                  </Button>
-                </Box>
-              ))
-            ) : (
-              <Typography color="textSecondary">No listings available.</Typography>
-            )}
-          </Box>
-        </Box>
+      </Box>
       </Box>
     </Layout>
   );

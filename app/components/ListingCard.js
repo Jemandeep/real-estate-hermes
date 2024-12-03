@@ -1,115 +1,74 @@
 "use client";
-import React from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import React, { useEffect, useState } from "react";
+import { Box, Typography } from "@mui/material";
+import { db } from '../../firebase';
+import { collection, getDocs } from "firebase/firestore";
 
-const ListingCard = ({
-  address = "No Address Available",
-  neighborhood = "Unknown Neighborhood",
-  propertyType = "Unknown Type",
-  prices = [], // Provide default value as an empty array
-  maxMonth = 12,
-  currentPrice,
-  addToWatchlist, // Use the addToWatchlist function passed as a prop
-  listing, // Listing object for adding to watchlist
-}) => {
-  // Safeguard: Ensure `prices` is always an array
-  const validPrices = Array.isArray(prices)
-    ? prices.filter((price) => price !== null && price !== undefined && price !== '')
-    : [];
+const ListingCard = () => {
+  const [listings, setListings] = useState([]);
 
-  // Limit the prices to the specified number of months
-  const limitedPrices = validPrices.slice(0, maxMonth);
+  // Fetch listings from Firestore
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "listings")); // Adjust collection name if needed
+        const fetchedListings = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setListings(fetchedListings);
+      } catch (error) {
+        console.error("Error fetching listings:", error);
+      }
+    };
 
-  // Determine the trend direction
-  const trendDirection =
-    limitedPrices.length > 1
-      ? limitedPrices[limitedPrices.length - 1] - limitedPrices[0] > 0
-        ? 'up'
-        : 'down'
-      : 'neutral';
-
-  // Create chart data from prices
-  const priceData = limitedPrices.map((price, index) => ({
-    name: `Month ${index + 1}`,
-    price: parseFloat(price),
-  }));
-
-  // Format the current price
-  const formattedCurrentPrice =
-    currentPrice && !isNaN(parseFloat(currentPrice))
-      ? `$${parseFloat(currentPrice).toLocaleString()}`
-      : 'Price not available';
-
-  
+    fetchListings();
+  }, []);
 
   return (
-    <div className="bg-white shadow rounded p-4 mb-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-lg font-bold">{propertyType}</h2>
-          <p className="text-sm text-gray-600">
-            {address}, {neighborhood}
-          </p>
-        </div>
-
-        <div className="flex items-center">
-          <ResponsiveContainer width={650} height={70}>
-            <LineChart data={priceData}>
-              <XAxis dataKey="name" hide />
-              <YAxis
-                domain={[
-                  Math.min(...limitedPrices) - 10,
-                  Math.max(...limitedPrices) + 10,
-                ]}
-                hide
-              />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="price"
-                stroke={trendDirection === 'up' ? '#4CAF50' : '#FF0000'}
-                strokeWidth={1}
-                dot={{
-                  r: 1.5,
-                  fill: trendDirection === 'up' ? '#4CAF50' : '#FF0000',
-                }}
-                activeDot={{ r: 3 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-
-          <span
-            className={`ml-2 ${
-              trendDirection === 'up' ? 'text-green-500' : 'text-red-500'
-            }`}
-          >
-            {trendDirection === 'up' ? '▲' : '▼'}
-          </span>
-
-          <div className="text-right ml-4">
-            <p className="text-sm text-gray-500">Current Price:</p>
-            <p className="text-lg font-semibold">{formattedCurrentPrice}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Add to Watchlist Button */}
-      <div className="mt-4 flex justify-end">
-        <button
-          onClick={() => addToWatchlist(listing)} // Use addToWatchlist prop with listing data
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+    <Box>
+      {listings.map((listing) => (
+        <Box
+          key={listing.id}
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          borderBottom="1px solid #ddd"
+          padding="10px"
+          width="450px" // Fixed width for all cards
+          height="100px" // Fixed height for all cards
+          overflow="hidden" // Hide overflow content
         >
-          Add to Watchlist
-        </button>
-      </div>
-    </div>
+          {/* Address and Neighborhood */}
+          <Box
+            sx={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <Typography variant="subtitle1" fontWeight="500">
+              {listing.address || "No Address Available"}
+            </Typography>
+            <Typography variant="caption" color="textSecondary">
+              {listing.neighborhood || "Unknown Neighborhood"}
+            </Typography>
+          </Box>
+
+          {/* Current Price */}
+          <Box ml="auto" textAlign="right">
+            <Typography variant="caption" color="textSecondary">
+              Current Price:
+            </Typography>
+            <Typography variant="subtitle2" fontWeight="500">
+              {listing.current_price
+                ? `$${parseFloat(listing.current_price).toLocaleString()}`
+                : "Price not available"}
+            </Typography>
+          </Box>
+        </Box>
+      ))}
+    </Box>
   );
 };
 
