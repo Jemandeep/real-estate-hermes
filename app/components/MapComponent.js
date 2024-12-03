@@ -7,8 +7,7 @@ const MapComponent = memo(({ userProperties = [], listings = [], onAddProperty }
 
   return (
     <div className="map-layout" style={{ display: 'flex', gap: '20px', justifyContent: 'left', alignItems: 'flex-start' }}>
-      {/* Sidebar for user properties */}
-      <PropertySidebar userProperties={userProperties} onAddProperty={onAddProperty} />
+
 
       {/* Box for the Map */}
       <div style={{ 
