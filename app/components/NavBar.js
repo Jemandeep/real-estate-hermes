@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -21,13 +23,9 @@ const NavBar = ({ setNavHeight = () => {} }) => {
       }
     };
 
-    // Update the height initially and on window resize
     updateNavHeight();
     window.addEventListener("resize", updateNavHeight);
-
-    return () => {
-      window.removeEventListener("resize", updateNavHeight);
-    };
+    return () => window.removeEventListener("resize", updateNavHeight);
   }, [setNavHeight]);
 
   useEffect(() => {
@@ -43,16 +41,6 @@ const NavBar = ({ setNavHeight = () => {} }) => {
       }
     });
     return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLogout = async () => {
