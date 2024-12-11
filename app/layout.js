@@ -28,7 +28,7 @@ export default function RootLayout({ children }) {
       >
         <MantineProviderWrapper> {/* Mantine is now handled in a client component */}
           {children}
-          <Footer />
+          
         </MantineProviderWrapper>
       </body>
     </html>

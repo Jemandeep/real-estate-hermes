@@ -1,11 +1,11 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { db } from '../../../firebase';
-import { collection, doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import Layout from '@/app/components/Layout';
-import { getAuth } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
-import { FaThumbsUp } from 'react-icons/fa';
+import React, { useEffect, useState } from "react";
+import { db } from "../../../firebase";
+import { collection, doc, updateDoc, onSnapshot } from "firebase/firestore";
+import Layout from "@/app/components/Layout";
+import { getAuth } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import { FaThumbsUp } from "react-icons/fa";
 
 const PollsList = () => {
   const router = useRouter();
@@ -15,7 +15,7 @@ const PollsList = () => {
   const [error, setError] = useState(null);
   const [userEmail, setUserEmail] = useState("");
 
-  // Get the current user's email if logged in, otherwise redirect to login
+  // Check authentication
   useEffect(() => {
     const user = auth.currentUser;
     if (user) {
@@ -27,45 +27,41 @@ const PollsList = () => {
 
   // Fetch polls in real-time
   useEffect(() => {
-    const fetchPolls = () => {
-      const pollsRef = collection(db, 'polls');
-      const unsubscribe = onSnapshot(pollsRef, (snapshot) => {
+    const pollsRef = collection(db, "polls");
+    const unsubscribe = onSnapshot(
+      pollsRef,
+      (snapshot) => {
         const fetchedPolls = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
         setPolls(fetchedPolls);
         setLoading(false);
-      }, (error) => {
+      },
+      (error) => {
         console.error("Error fetching polls:", error);
         setError("Failed to load polls. Please try again.");
         setLoading(false);
-      });
+      }
+    );
 
-      return () => unsubscribe();
-    };
-    fetchPolls();
+    return () => unsubscribe();
   }, []);
 
   // Handle voting
   const handleVote = async (pollId, optionIndex) => {
     try {
-      const pollRef = doc(db, 'polls', pollId);
+      const pollRef = doc(db, "polls", pollId);
       const poll = polls.find((poll) => poll.id === pollId);
 
-      // Check if the user has already voted for this option
       if (poll.options[optionIndex].votes.includes(userEmail)) {
         alert("You have already voted for this option!");
         return;
       }
 
-      // Update the options array with the new vote
-      const updatedOptions = poll.options.map((option, index) => {
-        if (index === optionIndex) {
-          return { ...option, votes: [...option.votes, userEmail] };
-        }
-        return option;
-      });
+      const updatedOptions = poll.options.map((option, i) =>
+        i === optionIndex ? { ...option, votes: [...option.votes, userEmail] } : option
+      );
 
       await updateDoc(pollRef, { options: updatedOptions });
     } catch (error) {
@@ -74,63 +70,107 @@ const PollsList = () => {
     }
   };
 
-  if (loading) return <p>Loading polls...</p>;
-  if (error) return <p className="text-red-500 text-center">{error}</p>;
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+          <p className="text-xl font-semibold text-gray-600">Loading polls...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+          <p className="text-xl font-semibold text-red-500">{error}</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Community Polls</h1>
-          <button
-            onClick={() => router.push('/community/polls/new')}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200"
-          >
-            Create New Poll
-          </button>
-        </div>
+      <div className="min-h-screen bg-gray-50 py-10">
+        <div className="max-w-4xl mx-auto px-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold text-gray-800">Community Polls</h1>
+            <button
+              onClick={() => router.push("/community/polls/new")}
+              className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition"
+            >
+              Create New Poll
+            </button>
+          </div>
 
-        {polls.length > 0 ? (
-          polls.map((poll) => {
-            const totalVotes = poll.options.reduce((acc, option) => acc + option.votes.length, 0);
-            return (
-              <div key={poll.id} className="bg-white rounded-lg p-6 mb-6 shadow-md hover:shadow-lg transition-shadow duration-200">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800">{poll.question}</h2>
+          {/* Polls List */}
+          {polls.length > 0 ? (
+            <div className="space-y-6">
+              {polls.map((poll) => {
+                const totalVotes = poll.options.reduce(
+                  (acc, option) => acc + option.votes.length,
+                  0
+                );
 
-                {poll.options.map((option, index) => {
-                  const votePercentage = totalVotes > 0 ? ((option.votes.length / totalVotes) * 100).toFixed(0) : 0;
-                  return (
-                    <div key={index} className="flex items-center mb-4">
-                      <button
-                        onClick={() => handleVote(poll.id, index)}
-                        className={`flex items-center text-left w-full bg-gray-100 p-2 rounded-lg shadow-sm hover:bg-blue-100 transition-colors duration-150 ${option.votes.includes(userEmail) ? 'bg-blue-100' : ''}`}
-                        disabled={option.votes.includes(userEmail)}
-                      >
-                        <FaThumbsUp className="text-blue-500 mr-2" />
-                        <span className="font-medium text-gray-800">{option.label}</span>
-                      </button>
-                      <div className="w-full bg-gray-300 h-4 rounded ml-4 mr-2">
-                        <div
-                          className="bg-blue-500 h-4 rounded"
-                          style={{
-                            width: `${votePercentage}%`,
-                          }}
-                        ></div>
-                      </div>
-                      <span className="ml-2 text-gray-700 font-medium">{votePercentage}% ({option.votes.length})</span>
+                return (
+                  <div
+                    key={poll.id}
+                    className="bg-white shadow-md rounded-lg p-6 border border-gray-200 hover:shadow-lg transition"
+                  >
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                      {poll.question}
+                    </h2>
+
+                    <div className="space-y-4">
+                      {poll.options.map((option, index) => {
+                        const votePercentage =
+                          totalVotes > 0
+                            ? ((option.votes.length / totalVotes) * 100).toFixed(0)
+                            : 0;
+
+                        return (
+                          <div key={index} className="flex flex-col gap-2">
+                            <button
+                              onClick={() => handleVote(poll.id, index)}
+                              disabled={option.votes.includes(userEmail)}
+                              className={`flex items-center gap-3 px-4 py-2 rounded-md border ${
+                                option.votes.includes(userEmail)
+                                  ? "bg-blue-50 border-blue-400 text-blue-600 cursor-not-allowed"
+                                  : "bg-gray-100 border-gray-300 text-gray-800 hover:bg-blue-50"
+                              }`}
+                            >
+                              <FaThumbsUp className="text-blue-500" />
+                              <span className="font-medium">{option.label}</span>
+                            </button>
+
+                            <div className="relative w-full h-4 bg-gray-200 rounded-md">
+                              <div
+                                className="absolute top-0 left-0 h-4 bg-blue-500 rounded-md"
+                                style={{ width: `${votePercentage}%` }}
+                              ></div>
+                            </div>
+
+                            <span className="text-sm font-medium text-gray-600">
+                              {votePercentage}% ({option.votes.length} votes)
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
 
-                <p className="text-gray-700 mt-4 font-semibold">
-                  Total number of votes: {totalVotes}
-                </p>
-              </div>
-            );
-          })
-        ) : (
-          <p className="text-gray-600">No polls available.</p>
-        )}
+                    <p className="mt-6 text-gray-700 font-medium text-right">
+                      Total Votes: {totalVotes}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-center text-gray-600 mt-10">No polls available.</p>
+          )}
+        </div>
       </div>
     </Layout>
   );

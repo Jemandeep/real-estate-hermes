@@ -2,8 +2,6 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "./components/NavBar";
 import Header from "./components/Header";
-import Layout from "./components/Layout";
-import Footer from "./components/Footer";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import Link from "next/link";
@@ -84,7 +82,7 @@ const HomePage = () => {
                   <div className="text-right">
                     <p className="text-sm font-bold">Current Price:</p>
                     <p className="text-lg font-semibold text-gray-800">
-                      ${listing.current_price ? listing.current_price.toLocaleString() : 'No price available'}
+                      ${listing.current_price ? listing.current_price.toLocaleString() : "No price available"}
                     </p>
                   </div>
                 </div>
@@ -96,7 +94,7 @@ const HomePage = () => {
         )}
       </div>
 
-      <div className="bg-[#144272]  text-white px-40 py-40 text-center fade-in">
+      <div className="bg-[#144272] text-white px-40 py-40 text-center fade-in">
         <h2 className="text-3xl font-bold mb-4">Our Vision</h2>
         <p className="text-lg max-w-3xl mx-auto">
           At Calgary Real Estate, our vision is to help you discover your dream home with ease and confidence. We aim to provide you with the most accurate and up-to-date property listings, ensuring that you have all the tools you need to make informed decisions about your future home. With a wide range of properties in various locations, we are dedicated to offering you the best real estate experience.
