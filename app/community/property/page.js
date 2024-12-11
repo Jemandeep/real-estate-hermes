@@ -1,41 +1,31 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { db } from "../../../firebase"; // Adjust the path to your Firebase configuration
+import { db } from "../../../firebase";
 import { collection, getDocs } from "firebase/firestore";
 import Layout from "../../components/Layout";
 import Link from "next/link";
 
 const PropertiesPage = () => {
   const [listings, setListings] = useState([]);
-  const [filteredPropertyTypes, setFilteredPropertyTypes] = useState([]);
-  const [priceRange, setPriceRange] = useState([0, 1000000]); // Default price range
-  const [filteredBeds, setFilteredBeds] = useState([]);
-  const [filteredBathrooms, setFilteredBathrooms] = useState([]);
-  const [propertyTypes, setPropertyTypes] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch listings from Firebase
+  // Fetch all listings from Firebase
   useEffect(() => {
     const fetchListings = async () => {
       setLoading(true);
       try {
-        const querySnapshot = await getDocs(collection(db, "listings")); // Use 'listings' collection
+        const querySnapshot = await getDocs(collection(db, "listings"));
         const fetchedListings = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-
         setListings(fetchedListings);
-        const uniquePropertyTypes = [
-          ...new Set(fetchedListings.map((item) => item.property_type)),
-        ];
-        setPropertyTypes(uniquePropertyTypes);
-        setLoading(false);
-      } catch (error) {
+      } catch (err) {
         setError("Failed to fetch listings. Please try again.");
-        console.error("Error fetching listings:", error);
+        console.error("Error fetching listings:", err);
+      } finally {
         setLoading(false);
       }
     };
@@ -43,52 +33,85 @@ const PropertiesPage = () => {
     fetchListings();
   }, []);
 
-  // Filtering logic for property type, price range, bed count, and bathroom count
-  const filteredListings = listings.filter((listing) => {
-    return (
-      (filteredPropertyTypes.length === 0 ||
-        filteredPropertyTypes.includes(listing.property_type)) &&
-      listing.current_price >= priceRange[0] &&
-      listing.current_price <= priceRange[1] &&
-      (filteredBeds.length === 0 || filteredBeds.includes(listing.bed_count)) &&
-      (filteredBathrooms.length === 0 ||
-        filteredBathrooms.includes(listing.bathroom_count))
-    );
-  });
-
   return (
     <Layout>
-      <div className="max-w-full mx-auto p-4 bg-white rounded shadow mt-10">
-        <h1 className="text-2xl font-bold mb-4">Select a Property to Discuss</h1>
-
-        {/* Filters Section */}
-        <div className="mb-4 grid grid-cols-2 gap-4">
-          {/* Add filter inputs for property type, price range, bed count, and bathroom count here */}
-        </div>
-
-        {/* Show loading message */}
-        {loading ? (
-          <p className="text-gray-600 text-center mt-8">
-            Please wait, data is being fetched...
-          </p>
-        ) : filteredListings.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredListings.map((listing) => (
-              <Link key={listing.id} href={`/community/property/detailed?id=${listing.id}`} passHref>
-                <div className="cursor-pointer border rounded p-4 bg-white hover:shadow-lg">
-                  <h3 className="font-bold text-lg">{listing.address}</h3>
-                  <p>Neighborhood: {listing.neighborhood}</p>
-                  <p>Type: {listing.property_type}</p>
-                  <p>Price: ${listing.current_price.toLocaleString()}</p>
-                  <p>Beds: {listing.bed_count}</p>
-                  <p>Baths: {listing.bathroom_count}</p>
-                </div>
-              </Link>
-            ))}
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12">
+        <div className="max-w-6xl mx-auto px-6">
+          {/* Heading Section */}
+          <div className="mb-10 text-center">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-blue-900 mb-4">
+              Explore a variety of properties and join the conversation.
+            </h1>
+            <p className="text-lg text-gray-700">
+              Browse through the listings below and find a property to discuss.
+            </p>
           </div>
-        ) : (
-          <p className="text-gray-600 text-center">No listings to display.</p>
-        )}
+
+          {/* Loading and Error States */}
+          {loading && (
+            <p className="text-gray-600 text-center mt-8">
+              Loading listings, please wait...
+            </p>
+          )}
+          {error && (
+            <p className="text-red-500 text-center mt-8">{error}</p>
+          )}
+
+          {/* Listings Grid */}
+          {!loading && !error && listings.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {listings.map((listing) => (
+                <Link
+                  key={listing.id}
+                  href={`/community/property/detailed?id=${listing.id}`}
+                  passHref
+                >
+                  <div className="cursor-pointer bg-white rounded-xl border border-gray-200 p-6 flex flex-col justify-between min-h-[240px] transition-transform transform hover:-translate-y-1 hover:shadow-xl">
+                    <div>
+                      <h3 className="font-bold text-lg text-gray-800 mb-3 line-clamp-2 break-words border-b pb-2">
+                        {listing.address || "No Address Available"}
+                      </h3>
+                      <p className="text-gray-700 mb-1">
+                        <span className="font-semibold">Neighborhood:</span>{" "}
+                        {listing.neighborhood || "Unknown"}
+                      </p>
+                      <p className="text-gray-700 mb-1">
+                        <span className="font-semibold">Type:</span>{" "}
+                        {listing.property_type || "N/A"}
+                      </p>
+                      <p className="text-gray-700 mb-1">
+                        <span className="font-semibold">Price:</span>{" "}
+                        {listing.current_price
+                          ? `$${listing.current_price.toLocaleString()}`
+                          : "N/A"}
+                      </p>
+                      <p className="text-gray-700 mb-1">
+                        <span className="font-semibold">Beds:</span>{" "}
+                        {listing.bed_count || "N/A"}
+                      </p>
+                      <p className="text-gray-700 mb-1">
+                        <span className="font-semibold">Baths:</span>{" "}
+                        {listing.bathroom_count || "N/A"}
+                      </p>
+                    </div>
+                    <div className="mt-4 flex justify-end">
+                      <span className="inline-block text-sm text-blue-600 font-semibold hover:underline">
+                        View Details →
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            !loading &&
+            !error && (
+              <p className="text-gray-600 text-center mt-8">
+                No listings available.
+              </p>
+            )
+          )}
+        </div>
       </div>
     </Layout>
   );
