@@ -50,7 +50,7 @@ const Layout = ({ children }) => {
         flexDirection: "column",
         minHeight: "100vh",
         backgroundColor: "#0A2647", // Navy background
-        color: "#FFFFFF", // White text for contrast
+        color: "#5D7B8D", // White text for contrast
       }}
     >
       <NavBar setNavHeight={setNavHeight} />
