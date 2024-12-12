@@ -14,7 +14,7 @@ export default function SignupChoice() {
   };
 
   return (
-    <Layout>
+    
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
           {/* Regular User Signup Card */}
@@ -44,6 +44,6 @@ export default function SignupChoice() {
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 }

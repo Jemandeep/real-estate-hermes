@@ -145,7 +145,7 @@ const NavBar = ({ setNavHeight = () => {} }) => {
                   >
                     Account Info
                   </Link>
-                  <Link
+                  {/* <Link
                     href="/accounts/saved"
                     className="block px-6 py-3 text-lg text-stone-600 hover:bg-stone-200"
                   >
@@ -156,7 +156,7 @@ const NavBar = ({ setNavHeight = () => {} }) => {
                     className="block px-6 py-3 text-lg text-stone-600 hover:bg-stone-200"
                   >
                     Settings
-                  </Link>
+                  </Link> */}
                   <button
                     onClick={handleLogout}
                     className="block w-full text-left px-6 py-3 text-lg text-stone-600 hover:bg-stone-200"

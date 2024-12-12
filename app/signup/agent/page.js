@@ -76,7 +76,7 @@ export default function AgentSignup() {
   };
 
   return (
-    <Layout>
+    
       <div className="flex items-center justify-center min-h-screen bg-gray-100 overflow-hidden">
         <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
           <h2 className="text-2xl font-semibold text-center mb-6">Sign Up - Agent</h2>
@@ -192,7 +192,7 @@ export default function AgentSignup() {
               />
             </div>
 
-            <div className="flex flex-col mb-4">
+            {/* <div className="flex flex-col mb-4">
               <label className="text-gray-700 mb-2">Proof of Certification</label>
               <input
                 type="file"
@@ -200,7 +200,7 @@ export default function AgentSignup() {
                 className="p-3 border border-gray-300 rounded-lg"
                 required
               />
-            </div>
+            </div> */}
 
             {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
             {success && <p className="text-green-500 mb-4 text-center">{success}</p>}
@@ -215,6 +215,6 @@ export default function AgentSignup() {
           </form>
         </div>
       </div>
-    </Layout>
+    
   );
 }
