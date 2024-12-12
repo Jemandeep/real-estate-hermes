@@ -40,7 +40,7 @@ const Layout = ({ children }) => {
   style={{
     flex: 1,
     padding: '2rem',
-    maxWidth: 'clamp(800px, 90%, 2600px)', // Limits width dynamically
+    maxWidth: 'clamp(800px, 100%, 3600px)', // Limits width dynamically
     margin: '0 auto',
     width: '100%',
   }}
