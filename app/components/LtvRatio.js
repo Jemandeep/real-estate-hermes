@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { Gauge, gaugeClasses } from "@mui/x-charts/Gauge";
-import { Card, CardHeader, CardContent, Typography, Box, LinearProgress } from "@mui/material";
+import { ResponsivePie } from "@nivo/pie";
+import { Card, CardContent, Typography, Box } from "@mui/material";
 
 const LtvAverageGauge = ({ userProperties }) => {
   // Calculate the average LTV ratio
@@ -17,85 +17,139 @@ const LtvAverageGauge = ({ userProperties }) => {
         ) / userProperties.length
       : 0;
 
-  // Calculate LTV ratios for individual properties
-  const propertyRatios = userProperties.map((property) => ({
-    address: property.address,
-    ltvRatio:
-      (parseFloat(property.mortgage_amount) / parseFloat(property.current_price)) * 100,
-  }));
+  // Prepare data for the pie chart
+  const pieData = [
+    {
+      id: "LTV Ratio",
+      label: "LTV Ratio",
+      value: averageLtv,
+      color: "hsl(210, 70%, 50%)", // Blue-like color
+    },
+    {
+      id: "Remaining",
+      label: "Remaining",
+      value: 100 - averageLtv,
+      color: "hsl(0, 0%, 80%)", // Light gray
+    },
+  ];
 
   return (
     <Card
       sx={{
-        maxWidth: 1200, // Set maximum width for responsiveness
-        margin: "20px auto", // Center the card horizontally
-        textAlign: "center",
-        padding: "10px", // Padding inside the card
+        marginBottom: "30px",
+        maxWidth: "1200px",
+        margin: "20px auto",
+        padding: "20px",
         border: "1px solid #ddd",
         borderRadius: "30px",
-        height: "530px"
+        textAlign: "center",
+        overflow: "hidden",
+        height: "400px", // Adjust the height to match the PieChart
       }}
     >
-      <CardHeader
-        title="Loan-to-Value (LTV) Overview"
-        subheader="Visualizing LTV Ratios for Your Properties"
-      />
       <CardContent>
-        {/* Average LTV Gauge */}
-        <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
-          <Gauge
-            width={200}
-            height={200}
-            value={averageLtv}
-            cornerRadius="50%"
-            sx={{
-              [`& .${gaugeClasses.valueText}`]: {
-                fontSize: 40,
+        <Typography variant="h6" sx={{ marginBottom: "20px" }}>
+          Average Loan-to-Value (LTV): {averageLtv.toFixed(2)}%
+        </Typography>
+
+        {/* Pie Chart */}
+        <Box sx={{ height: "300px" }}>
+          <ResponsivePie
+            data={pieData}
+            theme={{
+              axis: {
+                domain: {
+                  line: {
+                    stroke: "#ddd",
+                  },
+                },
+                legend: {
+                  text: {
+                    fill: "#ddd",
+                  },
+                },
+                ticks: {
+                  line: {
+                    stroke: "#ddd",
+                    strokeWidth: 1,
+                  },
+                  text: {
+                    fill: "#ddd",
+                  },
+                },
               },
-              [`& .${gaugeClasses.valueArc}`]: {
-                fill:
-                  averageLtv <= 50
-                    ? "#4caf50" // Green for good
-                    : averageLtv <= 75
-                    ? "#ffb300" // Yellow for moderate
-                    : "#f44336", // Red for high risk
-              },
-              [`& .${gaugeClasses.referenceArc}`]: {
-                fill: "#e0e0e0",
+              legends: {
+                text: {
+                  fill: "#ddd",
+                },
               },
             }}
-          />
-        </Box>
-
-        {/* Individual Property LTV Ratios */}
-        <Box>
-          {propertyRatios.map((property, index) => (
-            <Box key={index} mb={2}>
-              <Typography variant="body2" gutterBottom>
-                {property.address || "Unknown Address"}
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={property.ltvRatio}
-                sx={{
-                  height: 10,
-                  borderRadius: 5,
-                  backgroundColor: "#e0e0e0",
-                  "& .MuiLinearProgress-bar": {
-                    backgroundColor:
-                      property.ltvRatio <= 50
-                        ? "#4caf50" // Green for good
-                        : property.ltvRatio <= 75
-                        ? "#ffb300" // Yellow for moderate
-                        : "#f44336", // Red for high risk
+            margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+            innerRadius={0.5}
+            padAngle={0.7}
+            cornerRadius={3}
+            activeOuterRadiusOffset={8}
+            borderColor={{
+              from: "color",
+              modifiers: [["darker", 0.2]],
+            }}
+            arcLinkLabelsSkipAngle={10}
+            arcLinkLabelsTextColor="#ddd"
+            arcLinkLabelsThickness={2}
+            arcLinkLabelsColor={{ from: "color" }}
+            enableArcLabels={false}
+            arcLabelsRadiusOffset={0.4}
+            arcLabelsSkipAngle={7}
+            arcLabelsTextColor={{
+              from: "color",
+              modifiers: [["darker", 2]],
+            }}
+            defs={[
+              {
+                id: "dots",
+                type: "patternDots",
+                background: "inherit",
+                color: "rgba(255, 255, 255, 0.3)",
+                size: 4,
+                padding: 1,
+                stagger: true,
+              },
+              {
+                id: "lines",
+                type: "patternLines",
+                background: "inherit",
+                color: "rgba(255, 255, 255, 0.3)",
+                rotation: -45,
+                lineWidth: 6,
+                spacing: 10,
+              },
+            ]}
+            legends={[
+              {
+                anchor: "bottom",
+                direction: "row",
+                justify: false,
+                translateX: 0,
+                translateY: 56,
+                itemsSpacing: 0,
+                itemWidth: 100,
+                itemHeight: 18,
+                itemTextColor: "#999",
+                itemDirection: "left-to-right",
+                itemOpacity: 1,
+                symbolSize: 18,
+                symbolShape: "circle",
+                effects: [
+                  {
+                    on: "hover",
+                    style: {
+                      itemTextColor: "#000",
+                    },
                   },
-                }}
-              />
-              <Typography variant="caption" sx={{ display: "block" }}>
-                {property.ltvRatio.toFixed(2)}%
-              </Typography>
-            </Box>
-          ))}
+                ],
+              },
+            ]}
+          />
         </Box>
       </CardContent>
     </Card>

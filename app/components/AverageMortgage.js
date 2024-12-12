@@ -1,80 +1,17 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
 import Chart from "react-apexcharts";
-import { db } from "../../firebase"; // Adjust the path to your Firebase config
+import { db } from "../../firebase";
 import { collection, getDocs } from "firebase/firestore";
-import { Card, CardContent, Typography } from "@mui/material"; // Added this import
-
-const chartsConfig = {
-  chart: {
-    toolbar: {
-      show: false,
-    },
-  },
-  title: {
-    show: false,
-  },
-  dataLabels: {
-    enabled: false,
-  },
-  xaxis: {
-    axisTicks: {
-      show: false,
-    },
-    axisBorder: {
-      show: false,
-    },
-    labels: {
-      style: {
-        colors: "#37474f",
-        fontSize: "13px",
-        fontFamily: "inherit",
-        fontWeight: 300,
-      },
-    },
-  },
-  yaxis: {
-    labels: {
-      style: {
-        colors: "#37474f",
-        fontSize: "13px",
-        fontFamily: "inherit",
-        fontWeight: 300,
-      },
-    },
-  },
-  grid: {
-    show: true,
-    borderColor: "#dddddd",
-    strokeDashArray: 5,
-    xaxis: {
-      lines: {
-        show: true,
-      },
-    },
-    padding: {
-      top: 5,
-      right: 20,
-    },
-  },
-  fill: {
-    opacity: 0.8,
-  },
-  tooltip: {
-    theme: "dark",
-  },
-};
+import { Card, CardContent, Typography } from "@mui/material";
 
 const AverageMortgage = () => {
   const [properties, setProperties] = useState([]);
   const [averageMortgage, setAverageMortgage] = useState(0);
 
-  // Fetch property data from Firestore
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "properties")); // Firestore collection name
+        const querySnapshot = await getDocs(collection(db, "properties"));
         const fetchedProperties = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -82,10 +19,9 @@ const AverageMortgage = () => {
 
         setProperties(fetchedProperties);
 
-        // Calculate average mortgage
         const totalMortgage = fetchedProperties.reduce(
           (sum, property) =>
-            sum + parseFloat(property.mortgage_monthly_payment || 0) * 12, // Annualize monthly payments
+            sum + parseFloat(property.mortgage_monthly_payment || 0) * 12,
           0
         );
         const average = totalMortgage / fetchedProperties.length || 0;
@@ -98,7 +34,6 @@ const AverageMortgage = () => {
     fetchProperties();
   }, []);
 
-  // Prepare chart data
   const categories = properties.map(
     (property) => property.address || "Unknown Address"
   );
@@ -109,128 +44,89 @@ const AverageMortgage = () => {
 
   const mortgageRemaining = properties.map(
     (property) =>
-      parseFloat(property.mortgage_amount || 0) - parseFloat(property.down_payment || 0)
+      parseFloat(property.mortgage_amount || 0) -
+      parseFloat(property.down_payment || 0)
   );
 
   const chartOptions = {
-    ...chartsConfig,
     chart: {
-      ...chartsConfig.chart,
       type: "bar",
-      stacked: true, // Stacked bars to separate paid and remaining
+      stacked: true,
+      toolbar: { show: false },
       responsive: [
         {
-          breakpoint: 768, // Example for tablet screens
+          breakpoint: 768,
           options: {
             plotOptions: {
-              bar: {
-                columnWidth: "50%", // Adjust bar width for smaller screens
-              },
+              bar: { columnWidth: "50%" },
             },
             xaxis: {
-              labels: {
-                style: {
-                  fontSize: "10px", // Smaller font size for x-axis
-                },
-              },
+              labels: { style: { fontSize: "10px" } },
             },
             yaxis: {
-              labels: {
-                style: {
-                  fontSize: "10px", // Smaller font size for y-axis
-                },
-              },
+              labels: { style: { fontSize: "10px" } },
             },
           },
         },
         {
-          breakpoint: 480, // Example for mobile screens
+          breakpoint: 480,
           options: {
             plotOptions: {
-              bar: {
-                columnWidth: "70%", // Wider bars for very small screens
-              },
+              bar: { columnWidth: "70%" },
             },
-            xaxis: {
-              labels: {
-                show: false, // Hide labels on very small screens for readability
-              },
-            },
+            xaxis: { labels: { show: false } },
           },
         },
       ],
     },
     xaxis: {
-      ...chartsConfig.xaxis,
-      categories, // Keep categories for internal functionality but hide labels
-      labels: {
-        show: false, // Hide x-axis labels (addresses under bars)
-      },
+      categories,
+      labels: { show: false },
     },
     yaxis: {
-      ...chartsConfig.yaxis,
-      title: {
-        text: "Mortgage Amount",
-        style: {
-          color: "#37474f",
-          fontSize: "14px",
-          fontWeight: 400,
-        },
-      },
+      title: { text: "Mortgage Amount", style: { fontSize: "14px" } },
       labels: {
-        formatter: (val) => {
-          if (val >= 1000000) {
-            return `${(val / 1000000).toFixed(1)}M`; // Format for millions (e.g., 1.2M)
-          } else if (val >= 1000) {
-            return `${(val / 1000).toFixed(0)}k`; // Format for thousands (e.g., 150k)
-          }
-          return val; // Keep original for smaller numbers
-        },
+        formatter: (val) =>
+          val >= 1000000
+            ? `${(val / 1000000).toFixed(1)}M`
+            : val >= 1000
+            ? `${(val / 1000).toFixed(0)}k`
+            : val,
       },
     },
     tooltip: {
-      ...chartsConfig.tooltip,
-      y: {
-        formatter: (val) => `$${val.toLocaleString()}`, // Format as currency in tooltip
-      },
+      y: { formatter: (val) => `$${val.toLocaleString()}` },
     },
-    colors: ["#4caf50", "#f44336"], // Green for paid, red for remaining
+    colors: ["#4caf50", "#f44336"],
     plotOptions: {
       bar: {
-        horizontal: false, // Ensure vertical bars
-        columnWidth: "30%", // Adjust this value for thinner bars
-        borderRadius: 4, // Optional: round the bar edges
+        horizontal: false,
+        columnWidth: "30%",
+        borderRadius: 4,
       },
     },
   };
 
   const chartSeries = [
-    {
-      name: "Paid",
-      data: mortgagePaid, // Green bars for the paid portion
-    },
-    {
-      name: "Remaining",
-      data: mortgageRemaining, // Red bars for the remaining portion
-    },
+    { name: "Paid", data: mortgagePaid },
+    { name: "Remaining", data: mortgageRemaining },
   ];
 
   return (
     <Card
       sx={{
-        maxWidth: 1200, // Matches RentalIncomeExpenses maxWidth for consistency
-        margin: "20px auto", // Center horizontally with vertical spacing
-        textAlign: "center",
-        padding: "10px", // Padding inside the card
+        marginBottom: "30px", // Add margin below to separate it
+        maxWidth: "1200px",
+        margin: "20px auto",
+        padding: "20px",
         border: "1px solid #ddd",
         borderRadius: "30px",
+        textAlign: "center",
+        overflow: "hidden", // Prevents content overflow
       }}
     >
       <CardContent>
-        <Typography
-          variant="h6"
-          sx={{ textAlign: "center", marginBottom: 3 }}
-        >
+        <Typography variant="h6" sx={{ marginBottom: "20px" }}>
           Average Mortgage: ${averageMortgage.toFixed(2)}
         </Typography>
         <Chart
@@ -238,7 +134,7 @@ const AverageMortgage = () => {
           series={chartSeries}
           type="bar"
           width="100%"
-          height="400px" // Fixed height for consistency
+          height="100%"
         />
       </CardContent>
     </Card>

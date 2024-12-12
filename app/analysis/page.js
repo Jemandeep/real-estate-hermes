@@ -1,11 +1,8 @@
-"use client";
-import React, { useState, useEffect } from "react";
+"use client"; // Client Component
+
+import React, { useState, useEffect, useRef } from "react";
+import { Box, Button, Typography } from "@mui/material";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import Layout from "../components/Layout";
-import ListingCard from "../components/ListingCard";
-import StatsGrid from "../components/Overview";
-import LtvRatio from "../components/LtvRatio";
-import AverageMortgage from "../components/AverageMortgage";
 import {
   fetchUserProperties,
   fetchListings,
@@ -13,12 +10,18 @@ import {
   addToWatchlist,
 } from "../components/firebaseUtils";
 import { calculateMetrics } from "../components/calculateMetrics";
+import Layout from "../components/Layout";
+import StatsGrid from "../components/Overview";
+import LtvRatio from "../components/LtvRatio";
+import AverageMortgage from "../components/AverageMortgage";
 import RentalIncomeExpenses from "../components/RentalIncomeExpenses";
+import ListingCard from "../components/ListingCard";
+import MapComponent from "../components/MapComponent"; // Import the Map Component
+import AnalysisSidebar from "../components/AnalysisSidebar";
 
 const Analysis = () => {
   const [userProperties, setUserProperties] = useState([]);
   const [listings, setListings] = useState([]);
-  const [watchlist, setWatchlist] = useState([]);
   const [error, setError] = useState(null);
   const [metrics, setMetrics] = useState({
     totalInvestment: 0,
@@ -26,120 +29,168 @@ const Analysis = () => {
     roi: 0,
     cashFlow: 0,
   });
-  const [user, setUser] = useState(null);
-
   const auth = getAuth();
+  const mainContentRef = useRef(null); // Ref for the main content area
+  const [sidebarHeight, setSidebarHeight] = useState("auto");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (loggedUser) => {
       if (loggedUser) {
-        setUser(loggedUser);
         try {
           const properties = await fetchUserProperties(loggedUser.email);
           setUserProperties(properties);
           setMetrics(calculateMetrics(properties));
-          setWatchlist(await fetchWatchlist(loggedUser.email));
+          setListings(await fetchListings());
         } catch (err) {
-          setError(err.message);
           console.error(err);
         }
-      } else {
-        setUser(null);
       }
     });
-
-    fetchListings()
-      .then(setListings)
-      .catch((err) => {
-        setError(err.message);
-        console.error(err);
-      });
-
     return () => unsubscribe();
   }, [auth]);
 
   const handleAddToWatchlist = async (listing) => {
-    if (!user) {
-      alert("You need to be logged in to add properties to your watchlist.");
-      return;
-    }
     try {
-      await addToWatchlist(user.email, listing.id);
-      setWatchlist((prev) => [...prev, listing.id]);
+      await addToWatchlist(userProperties.email, listing.id);
       alert(`Added ${listing.address} to your watchlist.`);
-    } catch (error) {
-      alert("Error adding to watchlist.");
+    } catch (err) {
+      console.error("Error adding to watchlist:", err);
     }
   };
+  const data = [
+    {
+      id: "some-id", // Unique identifier
+      color: "hsl(22, 70%, 50%)", // Optional
+      data: [
+        { x: "Label1", y: 10 },
+        { x: "Label2", y: 20 },
+        { x: "Label3", y: 15 },
+      ],
+    },
+  ];
 
+  useEffect(() => {
+    // Function to calculate and set the sidebar height
+    const updateSidebarHeight = () => {
+      if (mainContentRef.current) {
+        const height = mainContentRef.current.offsetHeight;
+        setSidebarHeight(height);
+      }
+    };
+
+    // Update height initially and on window resize
+    updateSidebarHeight();
+    window.addEventListener("resize", updateSidebarHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateSidebarHeight);
+    };
+  }, [userProperties, listings]); // Add dependencies if the content height might change based on these
+  
   return (
     <Layout>
-      <div className="min-h-screen bg-blue-gray-50/50 p-6">
-        {/* Page Header */}
-        <h1 className="text-3xl font-semibold mb-6 text-gray-800">
-          Your Property Portfolio
-        </h1>
+      {/* Main Container: Flexbox for Sidebar and Main Content */}
+      <Box display="flex" gap="20px" sx={{
+            transform: "scale(0.8)",
+            transformOrigin: "top center", // Adjust origin if needed
+            height: "containerHeight",
+          }}>
+        {/* Sidebar Section */}
+        <AnalysisSidebar sidebarHeight={sidebarHeight} />
+
+        {/* Main Content: Flex Grow to take available space */}
+        <Box flexGrow={1} display="flex" flexDirection="column" ref={mainContentRef}>
+          {/* Remove transform: scale(0.8) from here */}
+          {/* Overview Section */}
+          <Box mt="20px" paddingTop="30px">
+            <StatsGrid metrics={metrics} />
+          </Box>
+
+          {/* Grid Layout: For the content rows */}
+          <Box
+            display="grid"
+            gridTemplateColumns="repeat(12, 1fr)"
+            gap="20px"
+            mt="20px"
+            sx={{ gridAutoRows: "minmax(auto, max-content)" }}
+            flexGrow={1}
+          >
+            {/* ... Rest of your components ... */}
+            <Box gridColumn="span 8" className="grid-item" backgroundColor="#fff" borderRadius="8px" padding="20px">
+              <RentalIncomeExpenses userProperties={userProperties} />
+            </Box>
   
-        {/* Metrics Overview */}
-        <div className="mb-8">
-          <StatsGrid metrics={metrics} />
-        </div>
-  
-{/* Main Charts Section */}
-<div className="grid grid-cols-4 gap-6 mb-12"> {/* Adds margin below the section */}
-  {/* LTV Ratio */}
-  <div className="col-span-1 h-[50vh]">
-    <LtvRatio userProperties={userProperties} />
-  </div>
-
-  {/* Average Mortgage */}
-  <div className="col-span-1 h-[50vh]">
-    <AverageMortgage userProperties={userProperties} />
-  </div>
-
-  {/* Empty Space */}
-  <div className="col-span-2"></div>
-</div>
-
-{/* Rental Income and Expenses Section */}
-<div className="mt-12"> {/* Adds margin to avoid overlap */}
-  <RentalIncomeExpenses userProperties={userProperties} />
-</div>
-
-  
-        {/* Public Listings Section */}
-        <div className="mt-8">
-          <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-            <h3 className="text-xl font-semibold mb-4 text-gray-700">
-              Public Listings
-            </h3>
-            <div className="max-h-96 overflow-y-auto space-y-4">
-              {error ? (
-                <p className="text-red-600">{error}</p>
-              ) : (
-                listings.map((listing) => (
-                  <div
-                    key={listing.id}
-                    className="bg-gray-100 p-4 rounded-lg shadow-sm"
-                  >
-                    <ListingCard {...listing} />
-                    <button
-                      onClick={() => handleAddToWatchlist(listing)}
-                      className="mt-2 text-blue-500 hover:underline"
+            {/* Public Listings */}
+            <Box
+              gridColumn="span 4"
+              className="grid-item"
+              backgroundColor="#fff"
+              borderRadius="8px"
+              padding="20px"
+              flex= "1"
+              sx={{
+                overflowY: "auto",
+                "::-webkit-scrollbar": { width: "0px" },
+                msOverflowStyle: "none",
+                scrollbarWidth: "none",
+              }}
+            >
+              <Typography variant="h5" fontWeight="600" marginBottom="10px" color="#333">
+                Public Listings
+              </Typography>
+              <Box>
+                {listings.length > 0 ? (
+                  listings.slice(0, 6).map((listing, index) => (
+                    <Box
+                      key={`${listing.id}-${index}`}
+                      flexGrow="1"
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      borderBottom="4px solid #ddd"
+                      padding="15px"
                     >
-                      Add to Watchlist
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+                      <Box>
+                        <Typography variant="subtitle2" fontWeight="500">
+                          {listing.address}
+                        </Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          {listing.neighborhood}
+                        </Typography>
+                      </Box>
+                      <Box textAlign="right">
+                        <Typography variant="caption" color="textSecondary">
+                          Current Price:
+                        </Typography>
+                        <Typography variant="subtitle2" fontWeight="500">
+                          {listing.current_price
+                            ? `$${parseFloat(listing.current_price).toLocaleString()}`
+                            : "Price not available"}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))
+                ) : (
+                  <Typography color="textSecondary">No listings available.</Typography>
+                )}
+              </Box>
+            </Box>
+  
+            {/* Row 2: LTV Ratio, Average Mortgage, and Map */}
+            <Box gridColumn="span 4" backgroundColor="#fff" borderRadius="8px" padding="20px">
+              <LtvRatio userProperties={userProperties} />
+            </Box>
+            <Box gridColumn="span 4" backgroundColor="#fff" borderRadius="8px" padding="20px">
+              <AverageMortgage userProperties={userProperties} />
+            </Box>
+            <Box gridColumn="span 4" backgroundColor="#fff" borderRadius="8px" padding="20px">
+              <MapComponent />
+            </Box>
+          </Box>
+        </Box>
+      </Box>
     </Layout>
   );
-  
-  
-}
+};
   
 export default Analysis;

@@ -22,6 +22,8 @@
     "@mui/icons-material": "^6.1.8",
     "@mui/material": "^6.1.9",
     "@mui/x-charts": "^7.22.3",
+    "@nivo/line": "^0.88.0",
+    "@nivo/pie": "^0.88.0",
     "@tabler/icons-react": "^3.22.0",
     "apexcharts": "^4.1.0",
     "audit": "^0.0.6",
@@ -34,8 +36,11 @@
     "fix": "^0.0.3",
     "framer-motion": "^11.13.5",
     "leaflet": "^1.9.4",
-    "next": "^14.2.20",
+    "next": "^14.2.13",
+    "nivo": "^0.31.0",
+
     "npm": "^10.9.1",
+    "pie": "^0.2.1",
     "react": "^18.3.1",
     "react-apexcharts": "^1.6.0",
     "react-chartjs-2": "^5.2.0",
@@ -46,8 +51,8 @@
     "react-simple-maps": "^1.0.0",
     "react-slick": "^0.30.2",
     "recharts": "^2.12.7",
-    "swiper": "^11.1.15",
-    "tokens": "^0.0.1",
+    "tokens": "^0.0.8",
+
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {

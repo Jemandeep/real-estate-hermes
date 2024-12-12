@@ -55,18 +55,24 @@ const Layout = ({ children }) => {
     >
       <NavBar setNavHeight={setNavHeight} />
       <main
-        style={{
-          flex: 1,
-          padding: "2rem",
-          marginTop: `${navHeight}px`,
-          marginLeft: "auto",
-          marginRight: "auto",
-          maxWidth: "clamp(800px, 90%, 2600px)",
-          width: "100%",
-        }}
-      >
-        {children}
-      </main>
+  style={{
+    flex: 1,
+    padding: '2rem',
+    maxWidth: 'clamp(800px, 100%, 3600px)', // Limits width dynamically
+    margin: '0 auto',
+    width: '100%',
+  }}
+>
+  {children}
+</main>
+
+
+
+      {/* Optional Footer */}
+      <footer style={{ textAlign: 'center', padding: '1rem', background: '#f8f9fa' }}>
+        <p>© 2024 Your Company</p>
+      </footer>
+
     </div>
   );
 };
