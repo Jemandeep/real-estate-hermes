@@ -57,7 +57,7 @@ const Header = () => {
     backgroundRepeat: "no-repeat"
   }}
 >
-  <h1 className="text-4xl font-bold mb-4">
+  <h1 className="text-4xl font-bold mb-4 ">
     {userName ? `Welcome, ${userName}` : "Discover Your Dream Home"}
   </h1>
   <p className="text-lg mb-6">
@@ -66,7 +66,7 @@ const Header = () => {
   
   {/* Action Buttons */}
   <div className="space-x-4">
-    <a href="/listings" className="bg-white text-stone-600 font-semibold px-6 py-3 rounded-md hover:bg-gray-100">
+    <a href="/viewListings" className="bg-white text-stone-600 font-semibold px-6 py-3 rounded-md hover:bg-gray-100">
       Browse Listings
     </a>
   </div>

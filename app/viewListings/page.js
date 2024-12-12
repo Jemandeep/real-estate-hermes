@@ -13,7 +13,7 @@ const ViewListings = () => {
   const [error, setError] = useState(null);
   const [compareList, setCompareList] = useState([]); 
   const [sortOrder, setSortOrder] = useState('low'); 
-  const [priceRange, setPriceRange] = useState([0, 1000000]); 
+  const [priceRange, setPriceRange] = useState([0, 20000000]); // Adjusted upper limit
   const router = useRouter();
 
   // Fetch listings from Firebase
@@ -25,6 +25,7 @@ const ViewListings = () => {
           id: doc.id,
           ...doc.data(),
         }));
+        console.log('Fetched Listings:', fetchedListings); // For debugging
         setListings(fetchedListings);
         setLoading(false);
       } catch (error) {
@@ -58,23 +59,31 @@ const ViewListings = () => {
 
   // Sort listings based on selected order
   const sortedListings = [...listings].sort((a, b) => {
+    const priceA = Number(a.current_price) || 0;
+    const priceB = Number(b.current_price) || 0;
     if (sortOrder === 'low') {
-      return a.current_price - b.current_price;
+      return priceA - priceB;
     } else {
-      return b.current_price - a.current_price;
+      return priceB - priceA;
     }
   });
 
   // Filter listings based on selected price range
   const filteredListings = sortedListings.filter((listing) => {
-    const price = listing.current_price || 0;
+    const price = Number(listing.current_price) || 0;
     return price >= priceRange[0] && price <= priceRange[1];
   });
+
+  // Function to clear all filters
+  const clearFilters = () => {
+    setPriceRange([0, 20000000]); // Reset to default values
+    setSortOrder('low'); // Reset to default sort order
+  };
 
   return (
     <Layout>
       <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-8">View Listings</h1>
+        <h1 className="text-3xl font-extrabold text-center text-white mb-8">View Listings</h1>
 
         {/* Price Filter */}
         <div className="text-right mb-4">
@@ -98,8 +107,8 @@ const ViewListings = () => {
           />
         </div>
 
-        {/* Sort Button */}
-        <div className="text-right mb-4">
+        {/* Sort and Clear Filters */}
+        <div className="flex justify-end mb-4 space-x-4">
           <select 
             value={sortOrder} 
             onChange={(e) => setSortOrder(e.target.value)} 
@@ -108,6 +117,12 @@ const ViewListings = () => {
             <option value="low">Sort by Price: Low to High</option>
             <option value="high">Sort by Price: High to Low</option>
           </select>
+          <button
+            onClick={clearFilters}
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-200"
+          >
+            Clear All Filters
+          </button>
         </div>
 
         {loading ? (
@@ -123,27 +138,27 @@ const ViewListings = () => {
                     <div className="mb-4">
                       <p className="text-lg font-bold text-gray-800 mb-2 flex items-center">
                         <FaMapMarkerAlt className="mr-2 text-gray-700" />
-                        {listing.address}
+                        {listing.address || 'Address not available'}
                       </p>
                     </div>
                     <div className="mb-4">
                       <p className="text-sm text-gray-700 mb-2 flex items-center">
                         <FaBed className="mr-2 text-gray-600" />
-                        {listing.bed_count} Bedrooms
+                        {listing.bed_count || 'N/A'} Bedrooms
                       </p>
                       <p className="text-sm text-gray-700 mb-2 flex items-center">
                         <FaBath className="mr-2 text-gray-600" />
-                        {listing.bathroom_count} Bathrooms
+                        {listing.bathroom_count || 'N/A'} Bathrooms
                       </p>
                       <p className="text-sm text-gray-700 mb-2 flex items-center">
                         <FaHome className="mr-2 text-gray-600" />
-                        {listing.property_type}
+                        {listing.property_type || 'N/A'}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold">Current Price:</p>
                       <p className="text-lg font-semibold text-gray-800">
-                        ${listing.current_price ? listing.current_price.toLocaleString() : 'No price available'}
+                        ${listing.current_price ? Number(listing.current_price).toLocaleString() : 'No price available'}
                       </p>
                     </div>
                   </div>

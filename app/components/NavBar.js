@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -6,12 +8,25 @@ import { FaUserCircle } from "react-icons/fa";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
-const NavBar = () => {
+const NavBar = ({ setNavHeight = () => {} }) => {
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navRef = useRef(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const updateNavHeight = () => {
+      if (navRef.current) {
+        setNavHeight(navRef.current.offsetHeight);
+      }
+    };
+
+    updateNavHeight();
+    window.addEventListener("resize", updateNavHeight);
+    return () => window.removeEventListener("resize", updateNavHeight);
+  }, [setNavHeight]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -26,16 +41,6 @@ const NavBar = () => {
       }
     });
     return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLogout = async () => {
@@ -54,7 +59,10 @@ const NavBar = () => {
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
   return (
-    <nav className="bg-stone-100 shadow-lg py-6 fixed top-0 left-0 right-0 z-50">
+    <nav
+      ref={navRef}
+      className="bg-stone-100 shadow-lg py-6 fixed top-0 left-0 right-0 z-50"
+    >
       <div className="container mx-auto flex justify-between items-center px-8">
         <Link href="/" className="text-2xl font-extrabold text-gray-900">
           Calgary Real Estate
@@ -84,24 +92,6 @@ const NavBar = () => {
             className="text-lg text-stone-600 font-semibold hover:text-gray-900"
           >
             Calculator
-          </Link>
-          <Link
-            href="/rent"
-            className="text-lg text-stone-600 font-semibold hover:text-gray-900"
-          >
-            Rent
-          </Link>
-          <Link
-            href="/bookappointment"
-            className="text-lg text-stone-600 font-semibold hover:text-gray-900"
-          >
-            Book Appointment
-          </Link>
-          <Link
-            href="/investment"
-            className="text-lg text-stone-600 font-semibold hover:text-gray-900"
-          >
-            Investment
           </Link>
           <Link
             href="/community"
@@ -138,6 +128,7 @@ const NavBar = () => {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={toggleDropdown}
+                aria-expanded={isDropdownOpen}
                 className="flex items-center space-x-2 focus:outline-none"
               >
                 <FaUserCircle className="text-3xl text-stone-600" />
@@ -154,7 +145,7 @@ const NavBar = () => {
                   >
                     Account Info
                   </Link>
-                  <Link
+                  {/* <Link
                     href="/accounts/saved"
                     className="block px-6 py-3 text-lg text-stone-600 hover:bg-stone-200"
                   >
@@ -165,7 +156,7 @@ const NavBar = () => {
                     className="block px-6 py-3 text-lg text-stone-600 hover:bg-stone-200"
                   >
                     Settings
-                  </Link>
+                  </Link> */}
                   <button
                     onClick={handleLogout}
                     className="block w-full text-left px-6 py-3 text-lg text-stone-600 hover:bg-stone-200"
