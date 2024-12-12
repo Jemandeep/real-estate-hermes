@@ -67,7 +67,8 @@ const RentalIncomeExpenses = ({ userProperties }) => {
         margin: "20px 0",
         textAlign: "center",
         padding: "20px",
-        border: "1px solid #ddd",
+        boxShadow: "none", // Remove box shadow
+
       }}
     >
       <CardContent>

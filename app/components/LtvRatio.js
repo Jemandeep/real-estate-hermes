@@ -40,11 +40,10 @@ const LtvAverageGauge = ({ userProperties }) => {
         maxWidth: "1200px",
         margin: "20px auto",
         padding: "20px",
-        border: "1px solid #ddd",
-        borderRadius: "30px",
         textAlign: "center",
         overflow: "hidden",
-        height: "400px", // Adjust the height to match the PieChart
+        height: "400px",
+        boxShadow: "none", // Remove box shadow
       }}
     >
       <CardContent>
@@ -89,21 +88,9 @@ const LtvAverageGauge = ({ userProperties }) => {
             padAngle={0.7}
             cornerRadius={3}
             activeOuterRadiusOffset={8}
-            borderColor={{
-              from: "color",
-              modifiers: [["darker", 0.2]],
-            }}
-            arcLinkLabelsSkipAngle={10}
-            arcLinkLabelsTextColor="#ddd"
-            arcLinkLabelsThickness={2}
-            arcLinkLabelsColor={{ from: "color" }}
-            enableArcLabels={false}
-            arcLabelsRadiusOffset={0.4}
-            arcLabelsSkipAngle={7}
-            arcLabelsTextColor={{
-              from: "color",
-              modifiers: [["darker", 2]],
-            }}
+            colors={["#4A90E2", "#ADD8E6"]} // Blue and Light Blue
+            arcLinkLabelsSkipAngle={360} // Hide all arc link labels
+            enableArcLabels={false} // Disable arc labels
             defs={[
               {
                 id: "dots",

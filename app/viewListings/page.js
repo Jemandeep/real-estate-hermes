@@ -83,7 +83,7 @@ const ViewListings = () => {
   return (
     <Layout>
       <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-extrabold text-center text-white mb-8">View Listings</h1>
+        <h1 className="text-3xl font-extrabold text-center text-white mb-8 pt-8">View Listings</h1>
 
         {/* Price Filter */}
         <div className="text-right mb-4">

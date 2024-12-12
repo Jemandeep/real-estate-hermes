@@ -61,7 +61,6 @@ const Header = () => {
     {userName ? `Welcome, ${userName}` : "Discover Your Dream Home"}
   </h1>
   <p className="text-lg mb-6">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum.
   </p>
   
   {/* Action Buttons */}

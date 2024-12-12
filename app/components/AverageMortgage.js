@@ -19,12 +19,15 @@ const AverageMortgage = () => {
 
         setProperties(fetchedProperties);
 
-        const totalMortgage = fetchedProperties.reduce(
+        // Calculate total remaining mortgage amounts
+        const totalRemainingMortgage = fetchedProperties.reduce(
           (sum, property) =>
-            sum + parseFloat(property.mortgage_monthly_payment || 0) * 12,
+            sum +
+            (parseFloat(property.mortgage_amount || 0) - parseFloat(property.down_payment || 0)),
           0
         );
-        const average = totalMortgage / fetchedProperties.length || 0;
+
+        const average = totalRemainingMortgage / fetchedProperties.length || 0;
         setAverageMortgage(average);
       } catch (error) {
         console.error("Error fetching properties:", error);
@@ -44,8 +47,7 @@ const AverageMortgage = () => {
 
   const mortgageRemaining = properties.map(
     (property) =>
-      parseFloat(property.mortgage_amount || 0) -
-      parseFloat(property.down_payment || 0)
+      parseFloat(property.mortgage_amount || 0) - parseFloat(property.down_payment || 0)
   );
 
   const chartOptions = {
@@ -84,7 +86,7 @@ const AverageMortgage = () => {
       labels: { show: false },
     },
     yaxis: {
-      title: { text: "Mortgage Amount", style: { fontSize: "14px" } },
+      title: { text: " ", style: { fontSize: "14px" } },
       labels: {
         formatter: (val) =>
           val >= 1000000
@@ -97,12 +99,13 @@ const AverageMortgage = () => {
     tooltip: {
       y: { formatter: (val) => `$${val.toLocaleString()}` },
     },
-    colors: ["#4caf50", "#f44336"],
+    colors: ["#4A90E2", "#ADD8E6"], // Blue and Light Blue colors
     plotOptions: {
       bar: {
         horizontal: false,
         columnWidth: "30%",
         borderRadius: 4,
+        dataLabels: { enabled: false }, // Remove numbers in the middle of each bar
       },
     },
   };
@@ -115,18 +118,18 @@ const AverageMortgage = () => {
   return (
     <Card
       sx={{
-        marginBottom: "30px", // Add margin below to separate it
+        marginBottom: "30px",
         maxWidth: "1200px",
         margin: "20px auto",
         padding: "20px",
-        border: "1px solid #ddd",
         borderRadius: "30px",
         textAlign: "center",
-        overflow: "hidden", // Prevents content overflow
+        overflow: "hidden",
+        boxShadow: "none", // Remove box shadow
       }}
     >
       <CardContent>
-        <Typography variant="h6" sx={{ marginBottom: "20px" }}>
+        <Typography variant="h6" sx={{ marginBottom: "30px" }}>
           Average Mortgage: ${averageMortgage.toFixed(2)}
         </Typography>
         <Chart
@@ -134,7 +137,7 @@ const AverageMortgage = () => {
           series={chartSeries}
           type="bar"
           width="100%"
-          height="100%"
+          height="300px"
         />
       </CardContent>
     </Card>

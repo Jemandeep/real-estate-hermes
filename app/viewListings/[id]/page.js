@@ -106,7 +106,7 @@ const DetailedListing = () => {
     <Layout>
       <div className="container mx-auto p-6 bg-white">
         {/* Address Section */}
-        <h1 className="text-4xl font-extrabold text-center text-[#0A2647] mb-10">
+        <h1 className="text-4xl font-extrabold text-center text-[#0A2647] mb-10 pt-8">
           {listing.address}
         </h1>
 

@@ -1,5 +1,5 @@
 // app/property-estimation/page.js
-import PropertyEstimation from "../components/PropertyEstimation";
+import PropertyEstimation from "../components/propertyEstimation";
 import Layout from '../components/Layout';
 
 const PropertyEstimationPage = () => {
