@@ -86,15 +86,15 @@ const Analysis = () => {
       window.removeEventListener("resize", updateSidebarHeight);
     };
   }, [userProperties, listings]); // Add dependencies if the content height might change based on these
-  
+
   return (
     <Layout>
       {/* Main Container: Flexbox for Sidebar and Main Content */}
       <Box display="flex" gap="20px" sx={{
-            transform: "scale(0.8)",
-            transformOrigin: "top center", // Adjust origin if needed
-            height: "containerHeight",
-          }}>
+        transform: "scale(0.7)",
+        transformOrigin: "top center", // Adjust origin if needed
+        height: "containerHeight",
+      }}>
         {/* Sidebar Section */}
         <AnalysisSidebar sidebarHeight={sidebarHeight} />
 
@@ -119,7 +119,7 @@ const Analysis = () => {
             <Box gridColumn="span 8" className="grid-item" backgroundColor="#fff" borderRadius="8px" padding="20px">
               <RentalIncomeExpenses userProperties={userProperties} />
             </Box>
-  
+
             {/* Public Listings */}
             <Box
               gridColumn="span 4"
@@ -127,7 +127,7 @@ const Analysis = () => {
               backgroundColor="#fff"
               borderRadius="8px"
               padding="20px"
-              flex= "1"
+              flex="1"
               sx={{
                 overflowY: "auto",
                 "::-webkit-scrollbar": { width: "0px" },
@@ -175,7 +175,7 @@ const Analysis = () => {
                 )}
               </Box>
             </Box>
-  
+
             {/* Row 2: LTV Ratio, Average Mortgage, and Map */}
             <Box gridColumn="span 4" backgroundColor="#fff" borderRadius="8px" padding="20px">
               <LtvRatio userProperties={userProperties} />
@@ -192,5 +192,5 @@ const Analysis = () => {
     </Layout>
   );
 };
-  
+
 export default Analysis;
