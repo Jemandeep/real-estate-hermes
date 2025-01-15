@@ -36,7 +36,6 @@
     "framer-motion": "^11.13.5",
     "leaflet": "^1.9.4",
     "next": "^14.2.13",
-    "nivo": "^0.2.0",
     "npm": "^10.9.1",
     "pie": "^0.2.1",
     "react": "^18.3.1",
@@ -50,7 +49,7 @@
     "react-slick": "^0.30.2",
     "recharts": "^2.12.7",
     "swiper": "^11.1.15",
-    "tokens": "^0.0.1",
+    "tokens": "^0.0.8",
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {

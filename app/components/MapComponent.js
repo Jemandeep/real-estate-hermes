@@ -17,7 +17,6 @@ const MapComponent = memo(() => {
         }));
 
         console.log("Fetched Properties:", fetchedProperties); // Debugging log
-
         setUserProperties(fetchedProperties);
       } catch (error) {
         console.error("Error fetching properties:", error);
@@ -37,7 +36,7 @@ const MapComponent = memo(() => {
         alignItems: "flex-start",
         width: "100%",
         height: "100%",
-        maxHeight: "400px", // Optional: limit the height to prevent it from overflowing
+        maxHeight: "400px", // Optional: limit the height
       }}
     >
       <div
@@ -59,7 +58,9 @@ const MapComponent = memo(() => {
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">
+              OpenStreetMap
+            </a> contributors'
           />
 
           {/* Display user properties as small blue dots */}
@@ -68,7 +69,7 @@ const MapComponent = memo(() => {
               <CircleMarker
                 key={`user-property-${index}`}
                 center={[property.latitude, property.longitude]}
-                radius={6} // Small dot size
+                radius={6}
                 pathOptions={{ color: "black", fillColor: "blue", fillOpacity: 0.7 }}
               >
                 <Popup>
@@ -85,4 +86,5 @@ const MapComponent = memo(() => {
   );
 });
 
+MapComponent.displayName = "MapComponent";
 export default MapComponent;

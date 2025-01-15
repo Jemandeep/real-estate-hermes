@@ -1,6 +1,8 @@
 "use client";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
+import Image from "next/image";
+
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { useState, useEffect } from "react";
@@ -125,12 +127,15 @@ const DetailedListing = () => {
                 {listing.images && listing.images.length > 0 ? (
                   listing.images.map((image, index) => (
                     <SwiperSlide key={index} className="flex justify-center items-center">
-                      <img
-                        src={image}
-                        alt={`Image ${index + 1}`}
-                        className="w-full h-full object-cover rounded"
-                      />
-                    </SwiperSlide>
+  <Image
+    src={image}
+    alt={`Image ${index + 1}`}
+    width={100}
+    height={100}
+    className="object-cover rounded"
+  />
+</SwiperSlide>
+
                   ))
                 ) : (
                   <SwiperSlide className="flex justify-center items-center bg-gray-100">

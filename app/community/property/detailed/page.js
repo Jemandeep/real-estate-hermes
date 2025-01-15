@@ -1,5 +1,9 @@
 "use client";
-import React, { useState, useEffect } from "react";
+export const dynamic = "force-dynamic";
+
+import React, { Suspense } from "react";
+import Image from "next/image";
+import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Layout from "../../../components/Layout";
 import {
@@ -14,10 +18,18 @@ import {
 import { db } from "../../../../firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-const DetailedPropertyDiscussion = () => {
+export default function DetailedPropertyDiscussionPage() {
+  return (
+    <Suspense fallback={<div>Loading property details...</div>}>
+      <DetailedPropertyDiscussionContent />
+    </Suspense>
+  );
+}
+
+function DetailedPropertyDiscussionContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const listingId = searchParams.get("id"); // Get listing ID from URL query
+  const listingId = searchParams.get("id");
 
   const [discussions, setDiscussions] = useState([]);
   const [property, setProperty] = useState(null);
@@ -27,7 +39,6 @@ const DetailedPropertyDiscussion = () => {
 
   const auth = getAuth();
 
-  // Fetch current user data
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
@@ -42,10 +53,8 @@ const DetailedPropertyDiscussion = () => {
     return () => unsubscribe();
   }, [auth, router]);
 
-  // Fetch discussions from the `listings/{listingId}/discussions` subcollection
   useEffect(() => {
     if (!listingId) return;
-
     const discussionsRef = collection(db, "listings", listingId, "discussions");
     const unsubscribe = onSnapshot(
       discussionsRef,
@@ -63,18 +72,15 @@ const DetailedPropertyDiscussion = () => {
         setLoading(false);
       }
     );
-
     return () => unsubscribe();
   }, [listingId]);
 
-  // Fetch property details
   useEffect(() => {
     const fetchProperty = async () => {
       if (!listingId) return;
       try {
         const docRef = doc(db, "listings", listingId);
         const docSnap = await getDoc(docRef);
-
         if (docSnap.exists()) {
           setProperty({ id: docSnap.id, ...docSnap.data() });
         } else {
@@ -85,17 +91,14 @@ const DetailedPropertyDiscussion = () => {
         setError("Error fetching property details.");
       }
     };
-
     fetchProperty();
   }, [listingId]);
 
   const handleLike = async (discussionId) => {
     if (!user) return;
-
     const discussionRef = doc(db, "listings", listingId, "discussions", discussionId);
     const discussion = discussions.find((d) => d.id === discussionId);
     const { likedBy = [], dislikedBy = [] } = discussion;
-
     const userObj = { uid: user.uid, email: user.email };
     const updateData = {};
 
@@ -108,17 +111,14 @@ const DetailedPropertyDiscussion = () => {
         updateData.dislikedBy = arrayRemove(userObj);
       }
     }
-
     await updateDoc(discussionRef, updateData);
   };
 
   const handleDislike = async (discussionId) => {
     if (!user) return;
-
     const discussionRef = doc(db, "listings", listingId, "discussions", discussionId);
     const discussion = discussions.find((d) => d.id === discussionId);
     const { likedBy = [], dislikedBy = [] } = discussion;
-
     const userObj = { uid: user.uid, email: user.email };
     const updateData = {};
 
@@ -131,7 +131,6 @@ const DetailedPropertyDiscussion = () => {
         updateData.likedBy = arrayRemove(userObj);
       }
     }
-
     await updateDoc(discussionRef, updateData);
   };
 
@@ -154,19 +153,20 @@ const DetailedPropertyDiscussion = () => {
   return (
     <Layout>
       <div className="container mx-auto p-6 bg-white">
-        {/* Property Details Section */}
         <h1 className="text-4xl font-extrabold text-center text-[#0A2647] mb-10">
           {property.address}
         </h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Left Column: Images */}
           <div className="w-full h-full rounded-lg overflow-hidden border-2 border-[#144272]">
-            {property.images && property.images.length > 0 ? (
+            {property?.images?.length > 0 ? (
               property.images.map((image, index) => (
-                <img
+                <Image
                   key={index}
                   src={image}
                   alt={`Property Image ${index + 1}`}
+                  width={500}
+                  height={300}
                   className="w-full h-full object-cover rounded"
                 />
               ))
@@ -247,18 +247,15 @@ const DetailedPropertyDiscussion = () => {
           )}
         </div>
       </div>
-       {/* Add New Discussion Button */}
-       <div className="text-right">
-          <button
-            onClick={() => router.push(`/community/property/new?id=${listingId}`)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Add New Discussion
-          </button>
-        </div>
-      
+      {/* Add New Discussion Button */}
+      <div className="text-right">
+        <button
+          onClick={() => router.push(`/community/property/new?id=${listingId}`)}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Add New Discussion
+        </button>
+      </div>
     </Layout>
   );
-};
-
-export default DetailedPropertyDiscussion;
+}

@@ -81,12 +81,7 @@ const NavBar = ({ setNavHeight = () => {} }) => {
           >
             Listings
           </Link>
-          <Link
-            href="/advice"
-            className="text-lg text-stone-600 font-semibold hover:text-gray-900"
-          >
-            Advice
-          </Link>
+          
           <Link
             href="/mortcalculator"
             className="text-lg text-stone-600 font-semibold hover:text-gray-900"

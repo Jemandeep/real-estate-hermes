@@ -1,26 +1,42 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { doc, getDoc, collection, onSnapshot, updateDoc, addDoc, serverTimestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { db } from '../../../../firebase';
-import Layout from '../../../components/Layout';
+export const dynamic = "force-dynamic";
+
+import React, { Suspense } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import {
+  doc,
+  getDoc,
+  collection,
+  onSnapshot,
+  updateDoc,
+  addDoc,
+  serverTimestamp,
+  arrayUnion,
+  arrayRemove,
+} from "firebase/firestore";
+import { db } from "../../../../firebase";
+import Layout from "../../../components/Layout";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-// Basic Setup for Detailed Discussion Page:
+export default function DetailedDiscussionPage() {
+  return (
+    <Suspense fallback={<p>Loading discussion...</p>}>
+      <DetailedDiscussionContent />
+    </Suspense>
+  );
+}
 
-// The initial prompt was to create a detailed discussion page component where users can view a discussion’s title, content, likes, comments, and timestamps.
-// The page should include the ability to like or dislike comments, and the likes/dislikes should be managed so that a user can toggle them.
-
-const DetailedDiscussion = () => {
+function DetailedDiscussionContent() {
   const [discussion, setDiscussion] = useState(null);
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState(''); // State to store new comment input
+  const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(null); 
+  const [user, setUser] = useState(null);
 
   const searchParams = useSearchParams();
-  const id = searchParams.get('id');
+  const id = searchParams.get("id");
   const router = useRouter();
   const auth = getAuth();
 
@@ -28,7 +44,7 @@ const DetailedDiscussion = () => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         try {
-          const userRef = doc(db, 'users', currentUser.email);
+          const userRef = doc(db, "users", currentUser.email);
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
             setUser({
@@ -43,24 +59,18 @@ const DetailedDiscussion = () => {
           console.error("Error fetching user data:", error);
         }
       } else {
-        router.push('/login'); 
+        router.push("/login");
       }
     });
     return () => unsubscribe();
   }, [auth, router]);
 
-  // Fetching and Displaying Discussion Data:
-
-  // A prompt was given to fetch discussion data from Firestore using a unique id (obtained from the URL’s query parameters).
-  // The code needed to fetch the discussion details (title, content, etc.) and set up an error message if the discussion wasn’t found.
-
   useEffect(() => {
     const fetchDiscussion = async () => {
       if (!id) return;
       try {
-        const docRef = doc(db, 'discussions', id);
+        const docRef = doc(db, "discussions", id);
         const docSnap = await getDoc(docRef);
-
         if (docSnap.exists()) {
           setDiscussion({ id: docSnap.id, ...docSnap.data() });
         } else {
@@ -73,18 +83,12 @@ const DetailedDiscussion = () => {
         setLoading(false);
       }
     };
-
     fetchDiscussion();
   }, [id]);
 
-  // Real-time Comment Updates:
-
-  // Instructions were provided to add a real-time listener on the comments collection for each discussion to dynamically update the comments on the page without refreshing.
-  // This was achieved by using Firestore’s onSnapshot to listen for changes and setComments to update the state in real time.
-
   useEffect(() => {
     if (!id) return;
-    const commentsRef = collection(db, 'discussions', id, 'comments');
+    const commentsRef = collection(db, "discussions", id, "comments");
     const unsubscribe = onSnapshot(commentsRef, (snapshot) => {
       const commentsData = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -97,7 +101,7 @@ const DetailedDiscussion = () => {
 
   const handleAddComment = async (e) => {
     e.preventDefault();
-    if (newComment.trim() === '' || !user) return;
+    if (newComment.trim() === "" || !user) return;
 
     const commentData = {
       content: newComment,
@@ -108,16 +112,16 @@ const DetailedDiscussion = () => {
     };
 
     try {
-      const commentsRef = collection(db, 'discussions', id, 'comments');
+      const commentsRef = collection(db, "discussions", id, "comments");
       await addDoc(commentsRef, commentData);
 
       // Update comment count in discussion
-      const discussionRef = doc(db, 'discussions', id);
+      const discussionRef = doc(db, "discussions", id);
       await updateDoc(discussionRef, {
         commentCount: (discussion.commentCount || 0) + 1,
       });
 
-      setNewComment(''); // Clear input field after submission
+      setNewComment("");
     } catch (error) {
       console.error("Error adding comment:", error);
       setError("Failed to add comment. Please try again.");
@@ -125,8 +129,8 @@ const DetailedDiscussion = () => {
   };
 
   const handleLike = async (commentId) => {
-    if (!user) return; 
-    const commentRef = doc(db, 'discussions', id, 'comments', commentId);
+    if (!user) return;
+    const commentRef = doc(db, "discussions", id, "comments", commentId);
     const commentSnap = await getDoc(commentRef);
 
     if (commentSnap.exists()) {
@@ -146,14 +150,9 @@ const DetailedDiscussion = () => {
     }
   };
 
-  // User Authentication for Comments and Likes:
-
-  // A prompt was included to fetch the logged-in user’s details (email and user ID) via Firebase Authentication. If the user is not logged in, they are redirected to the login page.
-  // This is managed using Firebase’s onAuthStateChanged function, and if the user is authenticated, their email and other details are fetched from Firestore.
-
   const handleDislike = async (commentId) => {
-    if (!user) return; 
-    const commentRef = doc(db, 'discussions', id, 'comments', commentId);
+    if (!user) return;
+    const commentRef = doc(db, "discussions", id, "comments", commentId);
     const commentSnap = await getDoc(commentRef);
 
     if (commentSnap.exists()) {
@@ -181,22 +180,24 @@ const DetailedDiscussion = () => {
       <div className="max-w-3xl mx-auto p-6">
         {discussion && (
           <div className="bg-gray-50 rounded-lg p-6 mb-8">
-            <h1 className="text-4xl font-semibold mb-4 text-gray-800">{discussion.title}</h1>
+            <h1 className="text-4xl font-semibold mb-4 text-gray-800">
+              {discussion.title}
+            </h1>
             <p className="text-gray-700 mb-6">{discussion.content}</p>
             <div className="flex items-center text-sm text-gray-500 space-x-6">
               <p>👍 {discussion.likes || 0}</p>
               <p>💬 {discussion.commentCount || 0}</p>
               <p>
-                📅 Created:{' '}
+                📅 Created:{" "}
                 {discussion.createdAt?.seconds
                   ? new Date(discussion.createdAt.seconds * 1000).toLocaleDateString()
-                  : 'N/A'}
+                  : "N/A"}
               </p>
               <p>
-                ✏️ Last Edited:{' '}
+                ✏️ Last Edited:{" "}
                 {discussion.editedAt?.seconds
                   ? new Date(discussion.editedAt.seconds * 1000).toLocaleDateString()
-                  : 'N/A'}
+                  : "N/A"}
               </p>
             </div>
           </div>
@@ -211,12 +212,12 @@ const DetailedDiscussion = () => {
                 <p className="text-gray-800 mb-2">{comment.content}</p>
                 <div className="flex items-center justify-between text-sm text-gray-500">
                   <div>
-                    <p>By: {comment.createdBy || 'Unknown'}</p>
+                    <p>By: {comment.createdBy || "Unknown"}</p>
                     <p>
-                      Created At:{' '}
+                      Created At:{" "}
                       {comment.createdAt?.seconds
                         ? new Date(comment.createdAt.seconds * 1000).toLocaleDateString()
-                        : 'N/A'}
+                        : "N/A"}
                     </p>
                   </div>
                   <div className="flex items-center space-x-4">
@@ -224,14 +225,14 @@ const DetailedDiscussion = () => {
                       onClick={() => handleLike(comment.id)}
                       className="flex items-center text-gray-500 hover:text-gray-700"
                     >
-                      👍 <span className="ml-1">{comment.likedBy ? comment.likedBy.length : 0}</span>
+                      👍 <span className="ml-1">{comment.likedBy?.length || 0}</span>
                     </button>
                     <button
                       onClick={() => handleDislike(comment.id)}
                       className="flex items-center text-gray-500 hover:text-gray-700"
                     >
-                      👎{' '}
-                      <span className="ml-1">{comment.dislikedBy ? comment.dislikedBy.length : 0}</span>
+                      👎{" "}
+                      <span className="ml-1">{comment.dislikedBy?.length || 0}</span>
                     </button>
                   </div>
                 </div>
@@ -244,7 +245,9 @@ const DetailedDiscussion = () => {
 
         {/* Add New Comment */}
         <form onSubmit={handleAddComment} className="bg-gray-50 rounded-lg p-6">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-800">Add a Comment</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+            Add a Comment
+          </h2>
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
@@ -262,6 +265,4 @@ const DetailedDiscussion = () => {
       </div>
     </Layout>
   );
-};
-
-export default DetailedDiscussion;
+}
