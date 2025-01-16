@@ -4,64 +4,88 @@
 // =======
 // export const dynamic = "force-dynamic";
 
-// // import React, { useState, useEffect, useRef } from "react";
-// // import { Box, Button, Typography } from "@mui/material";
-// // import { getAuth, onAuthStateChanged } from "firebase/auth";
-// // import {
-// //   fetchUserProperties,
-// //   fetchListings,
-// //   fetchWatchlist,
-// //   addToWatchlist,
-// // } from "../components/firebaseUtils";
-// // import { calculateMetrics } from "../components/calculateMetrics";
-// // import Layout from "../components/Layout";
-// // import StatsGrid from "../components/Overview";
-// // import LtvRatio from "../components/LtvRatio";
-// // import AverageMortgage from "../components/AverageMortgage";
-// // import RentalIncomeExpenses from "../components/RentalIncomeExpenses";
-// // import ListingCard from "../components/ListingCard";
+// import React, { useState, useEffect, useRef } from "react";
+// import { Box, Button, Typography } from "@mui/material";
+// >>>>>>> Stashed changes
+// import { getAuth, onAuthStateChanged } from "firebase/auth";
+// import Layout from "../components/Layout";
+// import ListingCard from "../components/ListingCard";
+// import StatsGrid from "../components/Overview";
+// import LtvRatio from "../components/LtvRatio";
+// import AverageMortgage from "../components/AverageMortgage";
+// import {
+//   fetchUserProperties,
+//   fetchListings,
+//   fetchWatchlist,
+//   addToWatchlist,
+// } from "../components/firebaseUtils";
+// import { calculateMetrics } from "../components/calculateMetrics";
+// import RentalIncomeExpenses from "../components/RentalIncomeExpenses";
+// <<<<<<< Updated upstream
+// =======
+// import ListingCard from "../components/ListingCard";
 
-// // // 1) Dynamically import the map component, disabling SSR
-// // import NextDynamic from "next/dynamic";
-// // const MapComponent = NextDynamic(() => import("../components/MapComponent"), {
-// //   ssr: false,
-// // });
+// // 1) Dynamically import the map component, disabling SSR
+// import NextDynamic from "next/dynamic";
+// const MapComponent = NextDynamic(() => import("../components/MapComponent"), {
+//   ssr: false,
+// });
 
-// // import AnalysisSidebar from "../components/AnalysisSidebar";
+// import AnalysisSidebar from "../components/AnalysisSidebar";
+// >>>>>>> Stashed changes
 
-// // const Analysis = () => {
-// //   const [userProperties, setUserProperties] = useState([]);
-// //   const [listings, setListings] = useState([]);
-// //   const [error, setError] = useState(null);
-// //   const [metrics, setMetrics] = useState({
-// //     totalInvestment: 0,
-// //     currentPortfolioValue: 0,
-// //     roi: 0,
-// //     cashFlow: 0,
-// //   });
+// const Analysis = () => {
+//   const [userProperties, setUserProperties] = useState([]);
+//   const [listings, setListings] = useState([]);
+//   const [watchlist, setWatchlist] = useState([]);
+//   const [error, setError] = useState(null);
+//   const [metrics, setMetrics] = useState({
+//     totalInvestment: 0,
+//     currentPortfolioValue: 0,
+//     roi: 0,
+//     cashFlow: 0,
+//   });
+// <<<<<<< Updated upstream
+//   const [user, setUser] = useState(null);
+// =======
+// >>>>>>> Stashed changes
 
-// //   const auth = getAuth();
-// //   const mainContentRef = useRef(null); // Ref for the main content area
-// //   const [sidebarHeight, setSidebarHeight] = useState("auto");
+//   const auth = getAuth();
 
-// //   // Fetch user properties and listings on auth change
-// //   useEffect(() => {
-// //     const unsubscribe = onAuthStateChanged(auth, async (loggedUser) => {
-// //       if (loggedUser) {
-// //         try {
-// //           const properties = await fetchUserProperties(loggedUser.email);
-// //           setUserProperties(properties);
-// //           setMetrics(calculateMetrics(properties));
+//   // Fetch user properties and listings on auth change
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, async (loggedUser) => {
+//       if (loggedUser) {
+//         setUser(loggedUser);
+//         try {
+//           const properties = await fetchUserProperties(loggedUser.email);
+//           setUserProperties(properties);
+//           setMetrics(calculateMetrics(properties));
+// <<<<<<< Updated upstream
+//           setWatchlist(await fetchWatchlist(loggedUser.email));
+// =======
 
-// //           const fetchedListings = await fetchListings();
-// //           setListings(fetchedListings);
-// //         } catch (err) {
-// //           console.error(err);
-// //         }
-// //       }
-// //     });
-// //     return () => unsubscribe();
-// //   }, [auth]);
+//           const fetchedListings = await fetchListings();
+//           setListings(fetchedListings);
+// >>>>>>> Stashed changes
+//         } catch (err) {
+//           setError(err.message);
+//           console.error(err);
+//         }
+//       } else {
+//         setUser(null);
+//       }
+//     });
+
+//     fetchListings()
+//       .then(setListings)
+//       .catch((err) => {
+//         setError(err.message);
+//         console.error(err);
+//       });
+
+//     return () => unsubscribe();
+//   }, [auth]);
 
 //   // Handle watchlist addition
 //   const handleAddToWatchlist = async (listing) => {
@@ -154,112 +178,112 @@
 //       }
 //     };
 
-//     // Only attach the listener if window is available
-//     if (typeof window !== "undefined") {
-//       updateSidebarHeight();
-//       window.addEventListener("resize", updateSidebarHeight);
-//     }
+// //     // Only attach the listener if window is available
+// //     if (typeof window !== "undefined") {
+// //       updateSidebarHeight();
+// //       window.addEventListener("resize", updateSidebarHeight);
+// //     }
 
-//     return () => {
-//       if (typeof window !== "undefined") {
-//         window.removeEventListener("resize", updateSidebarHeight);
-//       }
-//     };
-//   }, [userProperties, listings]);
+// //     return () => {
+// //       if (typeof window !== "undefined") {
+// //         window.removeEventListener("resize", updateSidebarHeight);
+// //       }
+// //     };
+// //   }, [userProperties, listings]);
 
-//   return (
-//     <Layout>
-//       <Box
-//         display="flex"
-//         gap="20px"
-//         sx={{
-//           transform: "scale(0.7)",
-//           transformOrigin: "top center",
-//           height: "containerHeight",
-//         }}
-//       >
-//         {/* Sidebar Section */}
-//         <AnalysisSidebar sidebarHeight={sidebarHeight} />
+// //   return (
+// //     <Layout>
+// //       <Box
+// //         display="flex"
+// //         gap="20px"
+// //         sx={{
+// //           transform: "scale(0.7)",
+// //           transformOrigin: "top center",
+// //           height: "containerHeight",
+// //         }}
+// //       >
+// //         {/* Sidebar Section */}
+// //         <AnalysisSidebar sidebarHeight={sidebarHeight} />
 
-//         {/* Main Content */}
-//         <Box flexGrow={1} display="flex" flexDirection="column" ref={mainContentRef}>
-//           {/* Overview Section */}
-//           <Box mt="20px" paddingTop="30px">
-//             <StatsGrid metrics={metrics} />
-//           </Box>
+// //         {/* Main Content */}
+// //         <Box flexGrow={1} display="flex" flexDirection="column" ref={mainContentRef}>
+// //           {/* Overview Section */}
+// //           <Box mt="20px" paddingTop="30px">
+// //             <StatsGrid metrics={metrics} />
+// //           </Box>
 
-//           {/* Content Rows */}
-//           <Box
-//             display="grid"
-//             gridTemplateColumns="repeat(12, 1fr)"
-//             gap="20px"
-//             mt="20px"
-//             sx={{ gridAutoRows: "minmax(auto, max-content)" }}
-//             flexGrow={1}
-//           >
-//             {/* Rental Income & Expenses */}
-//             <Box
-//               gridColumn="span 8"
-//               backgroundColor="#fff"
-//               borderRadius="8px"
-//               padding="20px"
-//             >
-//               <RentalIncomeExpenses userProperties={userProperties} />
-//             </Box>
+// //           {/* Content Rows */}
+// //           <Box
+// //             display="grid"
+// //             gridTemplateColumns="repeat(12, 1fr)"
+// //             gap="20px"
+// //             mt="20px"
+// //             sx={{ gridAutoRows: "minmax(auto, max-content)" }}
+// //             flexGrow={1}
+// //           >
+// //             {/* Rental Income & Expenses */}
+// //             <Box
+// //               gridColumn="span 8"
+// //               backgroundColor="#fff"
+// //               borderRadius="8px"
+// //               padding="20px"
+// //             >
+// //               <RentalIncomeExpenses userProperties={userProperties} />
+// //             </Box>
 
-//             {/* Public Listings */}
-//             <Box
-//               gridColumn="span 4"
-//               backgroundColor="#fff"
-//               borderRadius="8px"
-//               padding="20px"
-//               flex="1"
-//               sx={{
-//                 overflowY: "auto",
-//                 "::-webkit-scrollbar": { width: "0px" },
-//                 msOverflowStyle: "none",
-//                 scrollbarWidth: "none",
-//               }}
-//             >
-//               <Typography variant="h5" fontWeight="600" mb="10px" color="#333">
-//                 Public Listings
-//               </Typography>
-//               <Box>
-//                 {listings.length > 0 ? (
-//                   listings.slice(0, 6).map((listing, index) => (
-//                     <Box
-//                       key={`${listing.id}-${index}`}
-//                       display="flex"
-//                       justifyContent="space-between"
-//                       alignItems="center"
-//                       borderBottom="4px solid #ddd"
-//                       p="15px"
-//                     >
-//                       <Box>
-//                         <Typography variant="subtitle2" fontWeight="500">
-//                           {listing.address}
-//                         </Typography>
-//                         <Typography variant="caption" color="textSecondary">
-//                           {listing.neighborhood}
-//                         </Typography>
-//                       </Box>
-//                       <Box textAlign="right">
-//                         <Typography variant="caption" color="textSecondary">
-//                           Current Price:
-//                         </Typography>
-//                         <Typography variant="subtitle2" fontWeight="500">
-//                           {listing.current_price
-//                             ? `$${parseFloat(listing.current_price).toLocaleString()}`
-//                             : "Price not available"}
-//                         </Typography>
-//                       </Box>
-//                     </Box>
-//                   ))
-//                 ) : (
-//                   <Typography color="textSecondary">No listings available.</Typography>
-//                 )}
-//               </Box>
-//             </Box>
+// //             {/* Public Listings */}
+// //             <Box
+// //               gridColumn="span 4"
+// //               backgroundColor="#fff"
+// //               borderRadius="8px"
+// //               padding="20px"
+// //               flex="1"
+// //               sx={{
+// //                 overflowY: "auto",
+// //                 "::-webkit-scrollbar": { width: "0px" },
+// //                 msOverflowStyle: "none",
+// //                 scrollbarWidth: "none",
+// //               }}
+// //             >
+// //               <Typography variant="h5" fontWeight="600" mb="10px" color="#333">
+// //                 Public Listings
+// //               </Typography>
+// //               <Box>
+// //                 {listings.length > 0 ? (
+// //                   listings.slice(0, 6).map((listing, index) => (
+// //                     <Box
+// //                       key={`${listing.id}-${index}`}
+// //                       display="flex"
+// //                       justifyContent="space-between"
+// //                       alignItems="center"
+// //                       borderBottom="4px solid #ddd"
+// //                       p="15px"
+// //                     >
+// //                       <Box>
+// //                         <Typography variant="subtitle2" fontWeight="500">
+// //                           {listing.address}
+// //                         </Typography>
+// //                         <Typography variant="caption" color="textSecondary">
+// //                           {listing.neighborhood}
+// //                         </Typography>
+// //                       </Box>
+// //                       <Box textAlign="right">
+// //                         <Typography variant="caption" color="textSecondary">
+// //                           Current Price:
+// //                         </Typography>
+// //                         <Typography variant="subtitle2" fontWeight="500">
+// //                           {listing.current_price
+// //                             ? `$${parseFloat(listing.current_price).toLocaleString()}`
+// //                             : "Price not available"}
+// //                         </Typography>
+// //                       </Box>
+// //                     </Box>
+// //                   ))
+// //                 ) : (
+// //                   <Typography color="textSecondary">No listings available.</Typography>
+// //                 )}
+// //               </Box>
+// //             </Box>
 
 //             {/* Row 2: LTV Ratio, Average Mortgage, and Map */}
 //             <Box

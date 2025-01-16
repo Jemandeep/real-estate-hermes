@@ -1,11 +1,22 @@
 "use client";
+<<<<<<< Updated upstream
+import React from 'react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+=======
 export const dynamic = "force-dynamic";
 
 import React, { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import { db } from '../../firebase';
 import { collection, getDocs } from "firebase/firestore";
-
+>>>>>>> Stashed changes
 
 const ListingCard = () => {
   const [listings, setListings] = useState([]);
