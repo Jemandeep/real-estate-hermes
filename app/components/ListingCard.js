@@ -1,8 +1,11 @@
 "use client";
+export const dynamic = "force-dynamic";
+
 import React, { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import { db } from '../../firebase';
 import { collection, getDocs } from "firebase/firestore";
+
 
 const ListingCard = () => {
   const [listings, setListings] = useState([]);

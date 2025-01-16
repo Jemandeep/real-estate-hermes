@@ -69,12 +69,12 @@ const NavBar = ({ setNavHeight = () => {} }) => {
         </Link>
 
         <div className="flex items-center space-x-6">
-          <Link
+          {/* <Link
             href="/analysis"
             className="text-lg text-stone-600 font-semibold hover:text-gray-900"
           >
             Analysis
-          </Link>
+          </Link> */}
           <Link
             href="/viewListings"
             className="text-lg text-stone-600 font-semibold hover:text-gray-900"
